@@ -1,0 +1,635 @@
+
+/* 全局样式 */
+body, a{
+	font: nomal 14px "微软雅黑", Arial, Times;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+}
+
+.tabs-panels>.Pn{
+	padding: 0;
+}
+a.close_tabs button{
+	background: url(../images/admin1/index_icon.png);
+	background-position: -384px 0;
+	background-repeat: no-repeat;
+	width: 24px;
+	height: 24px;
+	border: 0;
+	cursor: pointer;
+}
+a.close_tabs:hover button{
+	background-position: -360px 0;
+}
+/* 首页全局 */
+.admin_index a{
+    text-decoration: none;
+}
+.admin_index a:hover{
+    text-decoration: underline;
+}
+.admin_index select, .admin_index option, .admin_index input{
+	font-size: 14px;
+}
+.admin_index .CbT{
+	font-size: 14px;
+}
+.admin_index img{
+	border: 0;
+}
+.admin_index .sepline_h{
+	margin: 5px 0 5px 0;
+	border-top: 1px dashed #cccccc;
+	border-bottom: 1px dashed #ffffff;
+}
+
+.admin_index .admin_block>div.title{
+	position: relative;
+	height: 30px;
+}
+.admin_index .logo{
+	background-image: url(../images/admin1/index_icon.png);
+	background-repeat: no-repeat;
+	height: 24px;
+	width: 24px;
+}
+.admin_index .title .logo{
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
+.admin_index .title .text{
+	position: absolute;
+	left: 30px;
+	top: 0;
+    font-weight: bold;
+    font-size: 16px;
+    color: #333333;
+}
+.admin_index .title .left div, .admin_index .title .right div{
+	position: relative;
+	margin-top: 24px;
+	border-top: 1px solid #cccccc;
+	border-bottom: 1px solid #ffffff;
+}
+.admin_index .title .center{
+	width: 65px;
+	height: 30px;
+	background: url(../images/admin1/index_title_bg.png) center bottom no-repeat;
+}
+.admin_index ul{
+	margin: 0;
+	padding: 2px 0 0 0;
+	list-style: none;
+}
+.admin_index ul>li{
+	height: 20px;
+    font-size: 12px;
+    color: #333333;
+    border-bottom: 1px dashed #999999;
+    white-space: nowrap;
+}
+.admin_index ul>li a{
+    color: #333333;
+}
+.admin_index ul>li.item>div{
+	position: relative;
+}
+.admin_index ul>li .datetime{
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+
+.public_msgs, .wf_stat, .my_msgs{
+	border-bottom: 1px solid #cccccc;
+}
+
+.public_msgs .logo{
+	background-position: 0 0;
+}
+.sch_calendar .logo{
+	background-position: -24px 0;
+}
+.wf_stat .logo{
+	background-position: -48px 0;
+}
+.search_box .logo{
+	background-position: -288px 0;
+}
+.my_msgs .logo{
+	background-position: -312px 0;
+}
+.app_menus .logo{
+	background-position: -336px 0;
+}
+
+/* 流程任务统计 */
+.wf_stat .total{
+    font-size: 14px;
+    color: #333333;
+    padding: 8px;
+}
+.wf_stat .total .num{
+    padding: 0 5px 0 5px;
+}
+.wf_stat .total .num a{
+    color: #0267b5;
+    font-weight: bold;
+}
+.wf_stat .items .item{
+	position: relative;
+	height: 35px; 
+	background-color: #d7d7d7;
+	margin: 8px;
+}
+.wf_stat .items .logo{
+	position: absolute;
+	left: 30px;
+	top: 5px;
+}
+.wf_stat .items .text{
+	position: absolute;
+	top: 0;
+	left: 80px;
+	text-align: center;
+	padding-top: 8px;
+    font-size: 14px;
+}
+.wf_stat .items .num{
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 30px;
+	height: 31px;
+	background-image: url(../images/admin1/index_num_bg.png);
+	background-repeat: no-repeat;
+    padding: 5px 0 0 15px;
+    text-align: center;
+}
+.wf_stat .items .num a{
+    font-weight: bold;
+    font-size: 18px;
+    color: #ffffff;
+}
+
+.wf_stat .items2 li{
+	border: 0;
+}
+.wf_stat .items2 .item{
+	position: relative;	
+}
+.wf_stat .items2 .logo{
+	position: absolute;
+	left: 5px;
+	top: -2px;
+}
+.wf_stat .items2 .text{
+	position: absolute;
+	font-size: 14px;
+	color: #333;
+	left: 40px;
+}
+.wf_stat .items2 .num{
+    padding: 0 5px 0 5px;
+}
+.wf_stat .items2 .num a{
+    color: #0267b5;
+    font-weight: bold;
+}
+.wf_stat .waiting .logo{
+	background-position: -72px 0;
+}
+.wf_stat .specialUrgent .logo{
+	background-position: -96px 0;
+}
+.wf_stat .expired .logo{
+	background-position: -120px 0;
+}
+.wf_stat .hurry .logo{
+	background-position: -144px 0;
+}
+.wf_stat .urgent .logo{
+	background-position: -168px 0;
+}
+.wf_stat .expire .logo{
+	background-position: -192px 0;
+}
+.wf_stat .authorize .logo{
+	background-position: -216px 0;
+}
+.wf_stat .reading .logo{
+	background-position: -240px 0;
+}
+.wf_stat .attention .logo{
+	background-position: -264px 0;
+}
+.wf_stat .waiting .num, .wf_stat .hurry .num{
+	background-position: 0 0;
+}
+.wf_stat .specialUrgent .num, .wf_stat .urgent .num{
+	background-position: 0 -36px;
+}
+.wf_stat .expired .num, .wf_stat .expire .num{
+	background-position: 0 -72px;
+}
+.wf_tasks{
+}
+
+/* 应用中心 */
+.app_menus .item_bg{
+	position: relative;
+	width: 70px;
+	height: 70px;
+	left: 50%;
+	margin-left: -34px;
+	background-image: url(../images/admin1/index_menu_bg.png);
+	background-position: -70px 0;
+	background-repeat: no-repeat;
+}
+.app_menus a:hover{
+    text-decoration: none;
+}
+.app_menus a:hover .item_bg{
+	background-position: 0 0;
+}
+.app_menus .item_logo ,.func_menus .item_logo{
+	position: absolute;
+	width: 32px;
+	height: 32px;
+	left: 50%;
+	top: 50%;
+	margin-left: -16px;
+	margin-top: -16px;
+}
+.app_menus .items{
+	margin-top: 5px;
+}
+.app_menus .items td{
+	text-align: center;
+	padding: 12px;
+	border-right: 1px dashed #cccccc;
+	border-left: 1px dashed #ffffff;
+	border-bottom: 1px dashed #cccccc;
+	border-top: 1px dashed #ffffff;
+	white-space: nowrap;
+}
+.app_menus .items td>div{
+	position: relative;
+	left: 50%;
+	margin-left: -38px;
+	width: 75px;
+}
+.app_menus td.col_0{
+	border-left: 0px;
+}
+.app_menus tr.row_0>td{
+	border-top: 0px;
+}
+.app_menus td.col_2{
+	border-right: 0px;
+}
+.app_menus tr.row_2>td {
+	border-bottom: 0px;
+}
+.func_menus a, .app_menus a{
+    font-size: 14px;
+    color: #333333;
+}
+
+/* 只能检索 */
+.search_box .category select{
+	width: 150px;
+	height: 30px;
+	border: 1px solid #cccccc;
+}
+.search_box .keywords input{
+	width: 100%;
+	height: 28px;
+}
+.search_box .keywords_items {
+	width: 100%;
+	display:none;
+}
+.search_box .keywords_items .s_title{
+	font-size: 14px;
+	font-weight: bold;
+	color: #333333;
+	padding: 5px 0 5px 0;
+}
+.search_box .keyword {
+	padding: 20px 15px 20px 15px;
+}
+.search_box .keyword a{
+	color: #333333;
+}
+
+/* 日程计划 */
+.sch_calendar .sch_buttons{
+	padding-top: 10px;
+}
+.sch_calendar .sch-calendar{
+	position: relative;
+	margin: 10px 0;
+}
+.sch_calendar .sch_button{
+	padding: 3px 18px 4px 18px;
+	margin-right: 2px;
+	background-image: url(../images/admin1/index_sch_buttons.png);
+	background-position: 0 0;
+	background-repeat: no-repeat;
+	cursor: pointer;
+	font-size: 14px;
+}
+.sch_calendar .sch_button_selected{
+	background-position: 0 -27px;
+	color: #ffffff;
+}
+.sch_tasks{
+}
+.sch_tasks li.item{
+	border: 0;
+	padding-left: 0;
+	margin-left: 0;
+}
+.sch_tasks  .item>div{
+	position: relative;
+}
+.sch_tasks  .time{
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 60px; 
+	height: 25px;
+	padding-top: 2px;
+	background-image: url(../images/admin1/index_sch_buttons.png);
+	background-position: 0 -53px;
+	background-repeat: no-repeat;
+	text-align: center;
+}
+.sch_tasks  .text{
+	position: absolute;
+	left: 65px;
+	top: 0;
+	padding-top: 2px;
+}
+/*流程任务列表*/
+
+/* 二级页面-功能菜单列表 */
+.func_menus {
+	padding: 10px;
+}
+.func_menus .items{
+	margin-top: 10px;
+}
+.func_menus a{
+    text-decoration: none;
+}
+.func_menus a:hover{
+    text-decoration: none;
+}
+.func_menus .title{
+	position: relative;
+	height: 30px;
+}
+.func_menus .title .logo{
+	background-image: url(../images/admin1/index_icon.png);
+	background-repeat: no-repeat;
+	background-position: -336px 0;
+	position: absolute;
+	height: 24px;
+	width: 24px;
+	left: 0px;
+	top: 0px;
+}
+.func_menus .title .text{
+	position: absolute;
+	left: 30px;
+	top: 0;
+    font-weight: bold;
+    font-size: 16px;
+    color: #333333;
+}
+.func_menus .title .bottom_line{
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	border-top: 1px dashed #cccccc;
+	border-bottom: 1px dashed #ffffff;
+}
+.func_menus .items td{
+	border-top: 1px dashed #ffffff;
+	border-bottom: 1px dashed #cccccc;
+}
+.func_menus .items .row_0>td{
+	border-top: 0px dashed #ffffff;
+}
+.func_menus .items td.col_sep{
+	width: 1px;
+}
+.func_menus .items td.col_sep>div{
+	position: relative;
+	left: 0;
+	height: 80px;
+	border-right: 1px dashed #ffffff;
+	border-left: 1px dashed #cccccc;
+}
+.func_menus .items td.col_sep_0>div{
+	border-right: 0px;
+	border-left: 0px;
+}
+.func_menus .items td.item{
+	text-align: center;
+	padding: 20px;
+	white-space: nowrap;
+}
+.func_menus .items td.item>div{
+	position: relative;
+	width: 100px;
+	height: 100px;
+	left: 50%;
+	margin-left: -50px;
+	overflow: hidden;
+}
+.func_menus .item_bg{
+	position: relative;
+	width: 70px;
+	height: 70px;
+	left: 50%;
+	margin-left: -35px;
+	background-image: url(../images/admin1/index_menu_bg.png);
+	background-position: -70px 0;
+	background-repeat: no-repeat;
+}
+/*二级页面-文件夹菜单*/
+td.menu_tree{
+	border-right: 1px solid #cccccc;
+}
+UL.menu_tree, UL.menu_tree UL{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	width: 240px;
+}
+UL.menu_tree LI{
+	white-space: nowrap;
+	margin: 0;
+	padding: 0;
+	-moz-user-select: none; /* for Firefox */
+	-webkit-user-select: none; /* for Chrome */
+}
+UL.menu_tree .menu_item{
+	cursor: pointer;
+	width: 240px;
+}
+UL.menu_tree .menu1{
+	position: relative;
+	background: url(../images/admin1/idx2_menu1_bg.png) center bottom no-repeat; 
+	height: 31px;
+	font-weight: bold;
+	font-size: 16px;
+	text-align: center;
+	padding: 10px;
+	width: 220px;
+}
+UL.menu_tree .menu2_header{
+	height: 15px;
+	border-bottom: 1px solid #cccccc;
+}
+UL.menu_tree .menu2_logo{
+	padding-left: 10px;	
+}
+UL.menu_tree .menu2{
+	position: relative;
+	color: #000000; 
+	height: 22px; 
+	font-size: 14px;
+	font-weight: bold;
+	padding: 8px 0 5px 0;
+	border-top: 1px solid #ffffff;
+	border-bottom: 1px solid #cccccc;
+}
+UL.menu_tree .menu2 .menu2_end{
+	position: absolute;
+	top: 50%;
+	right: 10px;
+	width: 13px;
+	height: 10px;
+	margin-top: -5px;
+	background-image: url(../images/admin1/idx2_menu_end.png);
+	background-repeat: no-repeat; 
+	background-position:  0 -10px;
+}
+UL.menu_tree .menu2_selected{
+	background-color: #cccccc;
+	border-bottom: 1px solid #ffffff;
+}
+UL.menu_tree .menu2_selected .menu2_end{
+	background-position:  0 0;
+}
+UL.menu_tree .menu2_footer{
+	border-top: 1px solid #ffffff;
+}
+UL.menu_tree .menu2_selected{
+}
+UL.menu_tree .menu2_leaf .menu2_end{
+	background-position:  0 -100px;
+}
+UL.menu_tree .menu2_leaf_selected{
+}
+UL.menu_tree .menu3_header{
+	height: 0px;
+	border-top: 1px solid #cccccc;
+}
+UL.menu_tree .menu3{
+	position: relative;
+	height: 18px; 
+	padding: 5px 0 5px 0;
+	background: #ffffff;
+	font-size: 14px;
+	border-bottom: 1px dashed #cccccc;
+}
+UL.menu_tree .menu3_logo{
+	padding: 0 20px 0 20px;
+}
+UL.menu_tree .menu3_selected{
+	color: #990000;
+	border-bottom: 1px dashed #ffffff;
+}
+UL.menu_tree .menu3_footer{
+	height: 1px;
+	border-bottom: 1px solid #cccccc;
+}
+UL.menu_tree .menu4{
+	position: relative;
+	background: #ffffff;
+	color: #000000; 
+	font-size: 12px;
+	margin: 0;
+	padding: 0;
+	height: 15px;
+}
+UL.menu_tree .menu4 .title{
+	position: absolute;
+	top: 0px;
+	left: 75px;
+}
+UL.menu_tree .menu4_sep{
+	position: relative;
+	background: #ffffff;
+	color: #000000; 
+	font-size: 12px;
+	margin: 0;
+	padding: 0;
+	height: 6px;
+}
+UL.menu_tree .menu4_logo{
+	position: absolute;
+	top: 0px;
+	left: 50px;
+	width: 16px;
+	height: 15px;
+	margin: 0;
+	padding: 0;
+	/* 4级菜单：线条风格
+	background-image: url(../images/tree/tree_icons.png);
+	background-repeat: no-repeat;
+	*/
+}
+UL.menu_tree .menu4_sep .menu4_logo{
+	height: 6px;
+	/* 4级菜单：线条风格
+	background-position: -176px 0;
+	*/
+}
+UL.menu_tree .menu4_item .menu4_logo{
+	/* 4级菜单：线条风格
+	left_menu_4_logo.png
+	background-position: -192px 0;
+	*/
+	background: url(../images/admin1/left_menu_4_logo.png) right center no-repeat;
+}
+UL.menu_tree .menu4_last .menu4_logo{
+	/* 4级菜单：线条风格
+	background-position: -160px 0;
+	*/
+	background: url(../images/admin1/left_menu_4_logo.png) right center no-repeat;
+}
+UL.menu_tree .menu4_first .menu4_logo{
+	/* 4级菜单：线条风格
+	background-position: -192px 0;
+	*/
+	background: url(../images/admin1/left_menu_4_logo.png) right center no-repeat;
+}
+UL.menu_tree .menu4_selected{
+	color: #990000;
+}
+UL.menu_tree .menu4_footer{
+	background: #ffffff;
+	height: 10px;
+	border-bottom: 1px dashed #cccccc;
+}

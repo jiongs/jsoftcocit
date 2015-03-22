@@ -1,0 +1,168 @@
+/**
+ * Panel
+ */
+.Pn {
+	font-size: 12px;
+	text-align: left;
+	/*overflow: hidden;*/
+}
+
+/**
+ * Panel Header
+ */
+.PnH {
+	padding: 5px;
+	position: relative;
+	
+	border: 1px solid;
+	background-repeat: repeat-x;
+}
+
+.PnH a {
+	padding: 0;
+	margin: 0;
+}
+
+/* Panel Header No Border */
+.PnH-NB {
+	border-width: 0 0 1px 0;
+}
+
+/* Panel Header Logo/Button */
+.PnHL,.PnHB {
+	position: absolute;
+	height: 16px;
+	overflow: hidden;
+}
+
+/* Panel Header Logo */
+.PnHL {
+	top: 50%;
+	left: 6px;
+	width: 16px;
+	margin-top: -8px;
+}
+
+/* Panel Header Title */
+.PnHT {
+	background: url('images/blank.gif') no-repeat;
+	font-weight: bold;
+	color: #383838;
+	height: 16px;
+	line-height: 16px;
+	font-family: "微软雅黑",Arial,Times;
+	font-size: 14px;
+	padding-left: 8px;
+	text-align: left;
+}
+
+/* Panel Header Title with Logo */
+.PnHT-WL {
+	padding-left: 20px;
+}
+
+/* Panel Button */
+.PnHB {
+	top: 0;
+	right: 5px;
+	width: auto;
+	height: 100%;
+	padding-top: 5px;
+	background: url('images/blank.gif') no-repeat;
+}
+
+.PnHB a {
+	display: inline-block;
+	width: 18px;
+	height: 18px;
+	margin: 0 0 0 2px;
+	vertical-align: top;
+	opacity: 1;
+	filter: alpha(opacity = 100);
+}
+
+.PnHB a:hover {
+	opacity: 1;
+	filter: alpha(opacity = 100);
+
+	/* radius */
+	-moz-border-radius: 3px 3px 3px 3px;
+	-webkit-border-radius: 3px 3px 3px 3px;
+	border-radius: 3px 3px 3px 3px;
+}
+
+.PnHBC,.PnHBN,.PnHBX,.PnHBR,.PnHBL,.PnHBE {
+	background-repeat: no-repeat;
+}
+
+/* Panel Button - Minimize */
+.PnHBN {
+	background-position: 0px 0px;
+}
+/* Panel Button - Close */
+.PnHBC {
+	background-position: -18px 0px;
+}
+/* Panel Button - Maximize */
+.PnHBX {
+	background-position: -36px 0px;
+}
+
+/* Panel Button - Restore */
+.PnHBR {
+	background-position: -54px 0;
+}
+
+/* Panel Button - Collapse */
+.PnHBL {
+	background-position: -36px 0;
+}
+
+/* Panel Button - Expand */
+.PnHBE {
+	background-position: -36px -18px;
+}
+
+/**
+ * Panel Body
+ */
+.PnB {
+	overflow: hidden;
+	border: 1px solid;
+	border-top-width: 0px;
+}
+/* Panel Body No Header*/
+.PnB-NH {
+	border-top-width: 1px;
+}
+
+/*Panel Body No Border*/
+.PnB-NB {
+	border-width: 0px;
+}
+
+/* Panel Content*/
+.PnBC {
+	overflow: auto;
+}
+
+/* Panel Content Loading */
+.PnBCL {
+	padding: 11px 0px 10px 30px;
+	background: url('images/loading.gif') no-repeat 10px 10px;
+}
+
+/**
+ * Panel Other
+ */
+.panel-noscroll {
+	overflow: hidden;
+}
+
+.panel-fit,.panel-fit body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+}

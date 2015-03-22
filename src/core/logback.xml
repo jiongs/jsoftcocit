@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <appender name="System.out" class="ch.qos.logback.core.ConsoleAppender">
+        <Target>System.out</Target>
+        <encoder>
+            <pattern>[%t][%d{MM-dd HH:mm:ss}][%5p]%m%n</pattern>
+        </encoder>
+    </appender>
+    <logger name="com.jsoft.cocit.util.LogUtil" level="ERROR"></logger>
+
+    <root level="INFO">
+    </root>
+</configuration>

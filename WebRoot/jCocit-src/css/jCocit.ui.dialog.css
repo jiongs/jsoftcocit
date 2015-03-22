@@ -1,0 +1,48 @@
+/* Dialog Tool Bar */
+.DlTB {
+	padding: 10px 5px 5px 5px;
+}
+
+/* Dialog Tool Bar Button Separator */
+.DlTBS {
+	float: left;
+	height: 19px;
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #fff;
+	margin: 2px 1px;
+}
+
+/* Dialog Buttons */
+.DlBS {
+	padding: 5px 10px 10px 5px;
+	text-align: right;
+}
+.DlBS a.l-btn .l-btn-text {
+	padding-top: 2px;
+}
+.DlBS input[type=submit]{
+	cursor: pointer;
+}
+
+/* Dialog Buttons - Link Button */
+.DlBS .LkB {
+	padding: 0;
+	margin: 1px 0px 1px 6px;
+	width: 70px;
+	height: 28px;
+	font-size: 14px;
+	font-weight: bold;
+	cursor: pointer;
+	border: 1px solid #999;
+	color:  #383838;
+	background: #ccc;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+}
+
+/* tree dialog -> panel body content. */
+.treedialog > .PnBC {
+	padding: 0px;
+	overflow: hidden;
+}

@@ -1,0 +1,172 @@
+body {
+	margin: 0;
+	padding: 0;
+}
+body, .body_bg{
+	background: #ebebeb url(../images/themesgray/body_bg.jpg) left top repeat;
+}
+/** 
+ * Alerts Box 
+ */
+#AlHL,#AlHT,#AlHR,#AlHC {
+	background-color: #999999;
+	background-image: url(../images/themesgray/dialog_title_bg.png);
+	background-position: -36px 0;
+}
+
+#AlBM,#AlC .AlBt,#AlHC,#AlHT span {
+	font: normal 12px "微软雅黑", Arial, Times;
+	color: #000000;
+}
+
+#AlHT span {
+	font-size: 14px;
+}
+
+#AlBP,#AlBtP,#AlBL,#AlBtL,#AlBR,#AlBtR,#AlFL,#AlFC,#AlFR {
+	background-color: #EEEEEE;
+}
+
+#AlHC,#AlHR,#AlHT,#AlHL {
+	border-top: 1px solid #999999;
+}
+
+#AlBL,#AlBtL,#AlFL,#AlHL {
+	border-left: 1px solid #999999;
+}
+
+#AlBR,#AlBtR,#AlFR,#AlHR {
+	border-right: 1px solid #999999;
+}
+
+#AlFL,#AlFC,#AlFR,#AlHC,#AlHR,#AlHT,#AlHL {
+	border-bottom: 1px solid #999999;
+}
+
+#AlBI {
+	background-image: url(../images/themesgray/alerts.png);
+}
+
+#AlHC div {
+	background-image: url(../images/themesgray/panel.png)
+}
+/**
+ * Panel
+ */
+.PnB,.PnH,.WdH,.Wd,.WdB,.WdF,.WdB>.PnBC {
+	border-color: #999999;
+}
+
+.PnHBC,.PnHBN,.PnHBX,.PnHBR,.PnHBL,.PnHBE {
+	background-image: url('../images/themesgray/panel.png');
+}
+
+.PnB {
+	background: #ffffff url('../images/themesgray/panel_bg.jpg') left top repeat;
+	color: #000000;
+}
+
+.PnH { /* Panel Header */
+	background-color: #cccccc;
+}
+
+.PnH {
+	background: -webkit-linear-gradient(top, #cccccc 0, #999999 100%);
+	background: -moz-linear-gradient(top, #cccccc 0, #999999 100%);
+	background: -o-linear-gradient(top, #cccccc 0, #999999 100%);
+	background: linear-gradient(to bottom, #cccccc 0, #999999 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#cccccc, endColorstr=#999999, GradientType=0 );
+}
+
+.WdB {
+	background-color: #ffffff;
+}
+
+.WdB>.PnBC {
+	background-color: #ffffff;
+}
+
+.DlTB { /* Dialog Tool Bar */
+	background: transparent;
+}
+
+.DlBS { /* Dialog Buttons */
+	background: transparent;
+}
+/**
+ * GRID
+ */
+.datagrid-row-alt {
+	background: #ffffff;
+}
+
+.datagrid-row-over,.datagrid-header td.datagrid-header-over {
+	background: #e0f0ff;
+}
+
+.datagrid-row-selected {
+	background: #95cdff;
+	color: #ffffff;
+}
+
+.datagrid-header {
+	background-color: #cccccc;
+}
+
+.datagrid-td-rownumber {
+	background-color: #f8f8f8;
+}
+
+.datagrid-toolbar,.datagrid-pager {
+	background: #cccccc;
+}
+
+.datagrid-header,.datagrid-toolbar,.datagrid-pager,.datagrid-footer-inner {
+	border-color: #b8b8b8;
+}
+
+.datagrid-header td,.datagrid-body td,.datagrid-footer td {
+	border-color: #999999;
+}
+/*
+ * Tree
+ */
+.tree_container {
+	border: 1px solid #b8b8b8;
+}
+
+.TrN-H { /* Tree Node Hover */
+	background: #e0f0ff;
+	color: #000000;
+}
+
+.TrN-S { /* Tree Node Selected */
+	background: #95cdff;
+	color: #000000;
+}
+/*
+ * 表单
+ */
+.entityGroup {
+	background-color: #ffffff;
+}
+.entityGroupHeader {
+	border-color: #999999;
+	background-color: #cccccc;
+	color: #383838;
+}
+
+.entityFieldHeader,.entityFieldBox {
+	border-color: #c1c1c1;
+	color: #383838;
+}
+.entityFieldHeader {
+	background-color: #f1f1f1;
+}
+.entityFieldBox {
+	background-color: #ffffff;
+}
+
+.entityFieldBox .input,.entityFieldBox .select,.entityFieldBox .textarea,.entityFieldBox .CbB,.entityToolbar .CbB  {
+	border-color: #999999;
+}

@@ -1,0 +1,12 @@
+ {
+	 beansConfig : {
+		type : "com.jsoft.cocit.config.impl.BeansConfig",
+		fields : {
+			views : [],
+			fieldViews : [],
+			cellViews : [],
+			patternAdapters: [],
+			entityPackages : []
+		}
+	}
+}

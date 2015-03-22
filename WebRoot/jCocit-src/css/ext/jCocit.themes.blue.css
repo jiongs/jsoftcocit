@@ -1,0 +1,157 @@
+/** 
+ * Alerts Box 
+ */
+#AlHL,#AlHT,#AlHR,#AlHC {
+	background-color: #3f9ff7;
+	background-image: url(../images/themesblue/dialog_title_bg.png);
+	background-position: -36px 0;
+}
+
+#AlBM,#AlC .AlBt,#AlHC,#AlHT span {
+	font: normal 12px "微软雅黑", Arial, Times;
+	color: #000000;
+}
+
+#AlHT span {
+	font-weight: bold;
+	font-size: 14px;
+}
+
+#AlBP,#AlBtP,#AlBL,#AlBtL,#AlBR,#AlBtR,#AlFL,#AlFC,#AlFR {
+	background-color: #EEEEEE;
+}
+
+#AlHC,#AlHR,#AlHT,#AlHL {
+	border-top: 1px solid #1f5898;
+}
+
+#AlBL,#AlBtL,#AlFL,#AlHL {
+	border-left: 1px solid #1f5898;
+}
+
+#AlBR,#AlBtR,#AlFR,#AlHR {
+	border-right: 1px solid #1f5898;
+}
+
+#AlFL,#AlFC,#AlFR,#AlHC,#AlHR,#AlHT,#AlHL {
+	border-bottom: 1px solid #1f5898;
+}
+
+#AlBI {
+	background-image: url(../images/themesblue/alerts.png);
+}
+
+#AlHC div {
+	background-image: url('../images/themesblue/panel.png')
+}
+/**
+ * Panel
+ */
+.PnB,.PnH,.WdH,.Wd,.WdB,.WdF,.WdB>.PnBC {
+	border-color: #95B8E7;
+}
+.PnHBC,.PnHBN,.PnHBX,.PnHBR,.PnHBL,.PnHBE {
+	background-image: url('../images/themesblue/panel.png');
+}
+.PnB {
+	background: #ffffff;
+	color: #000000;
+}
+.Wd,.PnH {
+	background-color: #E0ECFF;
+}
+.PnH {
+  background: -webkit-linear-gradient(top,#EFF5FF 0,#E0ECFF 100%);
+  background: -moz-linear-gradient(top,#EFF5FF 0,#E0ECFF 100%);
+  background: -o-linear-gradient(top,#EFF5FF 0,#E0ECFF 100%);
+  background: linear-gradient(to bottom,#EFF5FF 0,#E0ECFF 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#EFF5FF,endColorstr=#E0ECFF,GradientType=0);
+}
+
+.WdB {
+	background-color: #E0ECFF;
+}
+
+.WdB>.PnBC {
+	background-color: #ffffff;
+}
+
+/**
+ * GRID
+ */
+.datagrid-row-alt {
+	background: #fafafa;
+}
+
+.datagrid-row-over,.datagrid-header td.datagrid-header-over {
+	background: #eaf2ff;
+	color: #000000;
+}
+
+.datagrid-row-selected {
+	background: #ffe48d;
+	color: #000000;
+}
+
+.datagrid-header,.datagrid-td-rownumber {
+	background-color: #efefef;
+	background: -webkit-linear-gradient(top, #F9F9F9 0, #efefef 100%);
+	background: -moz-linear-gradient(top, #F9F9F9 0, #efefef 100%);
+	background: -o-linear-gradient(top, #F9F9F9 0, #efefef 100%);
+	background: linear-gradient(to bottom, #F9F9F9 0, #efefef 100%);
+	background-repeat: repeat-x;
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#F9F9F9, endColorstr=#efefef, GradientType=0 );
+}
+
+.datagrid-toolbar,.datagrid-pager {
+	background: #F4F4F4;
+}
+
+.datagrid-header,.datagrid-toolbar,.datagrid-pager,.datagrid-footer-inner {
+	border-color: #dddddd;
+}
+
+.datagrid-header td,.datagrid-body td,.datagrid-footer td {
+	border-color: #cccccc;
+}
+/*
+ * Tree
+ */
+.tree_container {
+	border: 1px solid #79c4bf;
+}
+
+.TrN-H { /* Tree Node Hover */
+	background: #eaf2ff;
+	color: #000000;
+}
+
+.TrN-S { /* Tree Node Selected */
+	background: #ffe48d;
+	color: #000000;
+}
+/*
+ * 表单
+ */
+.entityGroup {
+	background-color: #ffffff;
+}
+.entityGroupHeader {
+	background-color: #efefef;
+	border-color: #dddddd;
+	color: #383838;
+}
+
+.entityFieldHeader,.entityFieldBox {
+	border-color: #dddddd;
+	color: #383838;
+}
+.entityFieldHeader {
+	background-color: #F4F4F4;
+}
+.entityFieldBox {
+	background-color: #ffffff;
+}
+.entityFieldBox .input,.entityFieldBox .select,.entityFieldBox .textarea,.entityFieldBox .CbB,.entityToolbar .CbB  {
+	border-color: #dddddd;
+}
