@@ -89,7 +89,7 @@ public interface ICommonConfig extends IConfig {
 	String getCocitSystemName();
 
 	String getCocitSystemKey();
-	
+
 	String getCocitTenantName();
 
 	String getCocitTenantKey();
@@ -310,4 +310,6 @@ public interface ICommonConfig extends IConfig {
 	boolean isMultiTenant();
 
 	boolean isMultiSystem();
+
+	public boolean isAutoUpgrade();
 }

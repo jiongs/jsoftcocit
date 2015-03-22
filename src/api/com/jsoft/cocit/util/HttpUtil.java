@@ -367,6 +367,7 @@ public abstract class HttpUtil {
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.combo.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.combotree.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.datagrid.js\" type=\"text/javascript\"></script>", contextPath);
+			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.combodialog.js\" type=\"text/javascript\"></script>", contextPath);
 			// write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.pagination.js\" type=\"text/javascript\"></script>", contextPath);
 			 write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.treegrid.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.upload.js\" type=\"text/javascript\"></script>", contextPath);

@@ -32,8 +32,48 @@ public interface UrlAPI {
 	 */
 	public static final String ENTITY_GET_GRID_JSON = ENTITY_GET_GRID_DATA;
 	public static final String ENTITY_GET_COMBO_GRID = ENTITY_URL_PREFIX + "/getComboGrid/*";
-	public static final String ENTITY_GET_COMBO_GRID_DATA = ENTITY_URL_PREFIX + "/getComboGridData/*";
-	public static final String ENTITY_GET_COMBO_LIST_DATA = ENTITY_URL_PREFIX + "/getComboListData/*";
+	/**
+	 * 获取Combo Grid数据。
+	 * <p>
+	 * 语法：/cocentity/getComboGridData/${fkTargetMenuID}:${fkTargetEntityID}/${entityID}:${fkFieldID}
+	 * <p>
+	 * fkTargetMenuID:当前模块外键字段引用了哪个菜单？
+	 * <p>
+	 * fkTargetEntityID:当前模块外键字段引用了哪个实体？
+	 * <p>
+	 * entityID:当前实体KEY
+	 * <p>
+	 * fkFieldID:当前实体外键字段KEY
+	 */
+	public static final String ENTITY_GET_COMBOGRID_DATA = ENTITY_URL_PREFIX + "/getComboGridData/*";
+	/**
+	 * 获取Combo List数据。
+	 * <p>
+	 * 语法：/cocentity/getComboListData/${fkTargetMenuID}:${fkTargetEntityID}/${entityID}:${fkFieldID}
+	 * <p>
+	 * fkTargetMenuID:当前模块外键字段引用了哪个菜单？
+	 * <p>
+	 * fkTargetEntityID:当前模块外键字段引用了哪个实体？
+	 * <p>
+	 * entityID:当前实体KEY
+	 * <p>
+	 * fkFieldID:当前实体外键字段KEY
+	 */
+	public static final String ENTITY_GET_COMBOLIST_DATA = ENTITY_URL_PREFIX + "/getComboListData/*";
+	/**
+	 * 获取Combo Tree数据。
+	 * <p>
+	 * 语法：/cocentity/getComboTreeData/${fkTargetMenuID}:${fkTargetEntityID}/${entityID}:${fkFieldID}
+	 * <p>
+	 * fkTargetMenuID:当前模块外键字段引用了哪个菜单？
+	 * <p>
+	 * fkTargetEntityID:当前模块外键字段引用了哪个实体？
+	 * <p>
+	 * entityID:当前实体KEY
+	 * <p>
+	 * fkFieldID:当前实体外键字段KEY
+	 */
+	public static final String ENTITY_GET_COMBOTREE_DATA = ENTITY_URL_PREFIX + "/getComboTreeData/*";
 	public static final String ENTITY_GET_FILTER = ENTITY_URL_PREFIX + "/getFilter/*";
 	public static final String ENTITY_GET_FILTER_DATA = ENTITY_URL_PREFIX + "/getFilterData/*";
 	public static final String ENTITY_GET_TREE = ENTITY_URL_PREFIX + "/getTree/*";

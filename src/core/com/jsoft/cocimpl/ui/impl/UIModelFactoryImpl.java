@@ -511,7 +511,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		model.setName(targetEntityService.getName());
 		String url = fkFieldService.getFkComboUrl();
 		if (StringUtil.isBlank(url)) {
-			url = MVCUtil.makeUrl(UrlAPI.ENTITY_GET_COMBO_GRID_DATA, targetMenuService, targetEntityService);
+			url = MVCUtil.makeUrl(UrlAPI.ENTITY_GET_COMBOGRID_DATA, targetMenuService, targetEntityService);
 			url += "/" + fkFieldService.getCocEntityKey() + ":" + fkFieldService.getFieldName();
 		} else {
 			url = MVCUtil.makeUrl(url);
@@ -555,7 +555,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	public UIList getComboList(SystemMenuService menuService, CocEntityService entityService, CocFieldService fkFieldService) {
 		String url = fkFieldService.getFkComboUrl();
 		if (StringUtil.isBlank(url)) {
-			url = MVCUtil.makeUrl(UrlAPI.ENTITY_GET_COMBO_LIST_DATA, menuService, entityService);
+			url = MVCUtil.makeUrl(UrlAPI.ENTITY_GET_COMBOLIST_DATA, menuService, entityService);
 			url += "/" + fkFieldService.getCocEntityKey() + ":" + fkFieldService.getFieldName();
 		} else {
 			url = MVCUtil.makeUrl(url);
@@ -570,6 +570,59 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		 * 返回
 		 */
 		return model;
+	}
+
+	@Override
+	public UITree getComboTree(SystemMenuService menuService, CocEntityService entityService, CocFieldService fkFieldService) {
+		String url = fkFieldService.getFkComboUrl();
+		if (StringUtil.isBlank(url)) {
+			url = MVCUtil.makeUrl(UrlAPI.ENTITY_GET_COMBOTREE_DATA, menuService, entityService);
+			url += "/" + fkFieldService.getCocEntityKey() + ":" + fkFieldService.getFieldName();
+		} else {
+			url = MVCUtil.makeUrl(url);
+		}
+		UITree model = new UITree();
+		model.setDataLoadUrl(url);
+		model.setId(makeHtmlID(UITree.class, entityService.getId()));
+		// model.set("checkbox", false);
+		// model.set("onlyLeafCheck", false);
+		// model.set("onlyLeafValue", false);
+		// model.set("cascadeCheck", false);
+
+		/*
+		 * 返回
+		 */
+		return model;
+	}
+
+	@Override
+	public UITreeData getComboTreeData(SystemMenuService menuService, CocEntityService entityService, CndExpr expr) {
+		// if (entityService.getFieldOfTree() == null)
+		// return null;
+
+		/*
+		 * 创建模型
+		 */
+		UITree model = new UITree();
+		model.setId(makeHtmlID(UITree.class, entityService.getId()));
+
+		
+		/*
+		 * 查询数据
+		 */
+		Tree data = entityService.getTreeData(expr);
+
+		/*
+		 * 设置模型属性
+		 */
+		UITreeData ret = new UITreeData();
+		ret.setModel(model);
+		ret.setData(data);
+
+		/*
+		 * 返回
+		 */
+		return ret;
 	}
 
 	@Override
@@ -1092,7 +1145,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		/*
 		 * 查询数据
 		 */
-		Tree data = entityService.getTreeData();
+		Tree data = entityService.getTreeData(null);
 
 		/*
 		 * 设置模型属性

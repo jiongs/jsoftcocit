@@ -5,8 +5,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.jsoft.cocimpl.entityengine.PatternAdapters;
 import com.jsoft.cocit.entityengine.PatternAdapter;
+import com.jsoft.cocit.entityengine.PatternAdapters;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.util.DateUtil;
 import com.jsoft.cocit.util.LogUtil;

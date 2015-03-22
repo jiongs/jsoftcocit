@@ -19,8 +19,6 @@ import com.jsoft.cocimpl.config.impl.LogConfig;
 import com.jsoft.cocimpl.config.impl.MessageConfig;
 import com.jsoft.cocimpl.context.HttpContextImpl;
 import com.jsoft.cocimpl.context.StopWatch;
-import com.jsoft.cocimpl.entityengine.EntityServiceFactory;
-import com.jsoft.cocimpl.entityengine.PatternAdapters;
 import com.jsoft.cocimpl.entityengine.impl.DataManagerFactoryImpl;
 import com.jsoft.cocimpl.entityengine.impl.EntityEngineImpl;
 import com.jsoft.cocimpl.entityengine.impl.service.EntityServiceFactoryImpl;
@@ -47,6 +45,8 @@ import com.jsoft.cocit.config.IDSConfig;
 import com.jsoft.cocit.config.IMessageConfig;
 import com.jsoft.cocit.entityengine.DataManagerFactory;
 import com.jsoft.cocit.entityengine.EntityEngine;
+import com.jsoft.cocit.entityengine.EntityServiceFactory;
+import com.jsoft.cocit.entityengine.PatternAdapters;
 import com.jsoft.cocit.orm.ExtOrm;
 import com.jsoft.cocit.orm.Orm;
 import com.jsoft.cocit.orm.generator.EntityGenerators;
@@ -129,7 +129,7 @@ public class CocitImpl extends Cocit {
 		 * 加载国际化配置文件
 		 */
 		i18nconfig = new MessageConfig();
-		
+
 		/*
 		 * 计算日志存放路径并缓存在系统属性表中
 		 */
@@ -232,7 +232,7 @@ public class CocitImpl extends Cocit {
 		LogUtil.info("初始化Cocit数据......");
 
 		try {
-			if (!this.getConfig().isProductMode()) {
+			if (this.getConfig().isAutoUpgrade()) {
 				this.entityEngine.setupCocitFromPackage();
 			}
 		} catch (Throwable e) {

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import com.jsoft.cocimpl.entityengine.PatternAdapters;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.config.IMessageConfig;
 import com.jsoft.cocit.constant.Const;
@@ -26,6 +25,7 @@ import com.jsoft.cocit.entity.coc.ICocField;
 import com.jsoft.cocit.entity.coc.ICocGroup;
 import com.jsoft.cocit.entity.cui.ICuiEntity;
 import com.jsoft.cocit.entityengine.PatternAdapter;
+import com.jsoft.cocit.entityengine.PatternAdapters;
 import com.jsoft.cocit.entityengine.field.IExtField;
 import com.jsoft.cocit.entityengine.service.CocActionService;
 import com.jsoft.cocit.entityengine.service.CocEntityService;
@@ -487,7 +487,7 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 		return tree;
 	}
 
-	public Tree getTreeData() {
+	public Tree getTreeData(CndExpr expr) {
 
 		Tree tree = Tree.make();
 
@@ -504,7 +504,7 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 		if (field != null) {
 			node = tree.addNode(null, field.getFieldName()).setName(field.getName());
 		}
-		this.makeSelfTreeNodes(tree, node, field);
+		this.makeSelfTreeNodes(tree, node, field, expr);
 		// if (!success) {
 		// tree.removeNode(node);
 		// }
@@ -550,7 +550,7 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 		return ret;
 	}
 
-	private boolean makeSelfTreeNodes(Tree tree, Node node, CocFieldService field) {
+	private boolean makeSelfTreeNodes(Tree tree, Node node, CocFieldService field, CndExpr expr) {
 		boolean ret = true;
 		String rootNodeID = node == null ? "" : node.getId();
 
@@ -583,14 +583,14 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 				if (fkGroupField.isManyToOne()) {
 					groupField = groupField + "." + fkGroupTargetField;
 				}
-				ret = makeSelfTreeNodes(tree, fkGroupField, null, rootNodeID, "", groupField);
+				ret = makeSelfTreeNodes(tree, fkGroupField, null, rootNodeID, "", groupField, null);
 				for (Node n : tree.getAll()) {
 					n.set("unselectable", true);
 				}
 			}
 
 			// 创建外键节点
-			ret = ret && makeSelfTreeNodes(tree, field, groupField, rootNodeID, groupField, "");
+			ret = ret && makeSelfTreeNodes(tree, field, groupField, rootNodeID, groupField, "", expr);
 
 		} else {
 			Option[] options = field.getDicOptionsArray();
@@ -604,11 +604,11 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 		}
 
 		log.debug("makeSelfTreeNodes：" + tree.getLog());
-		
+
 		return ret;
 	}
 
-	private boolean makeSelfTreeNodes(Tree tree, CocFieldService field, String groupField, String rootNodeID, String groupNodeIDPrefix, String nodeIDPrefix) {
+	private boolean makeSelfTreeNodes(Tree tree, CocFieldService field, String groupField, String rootNodeID, String groupNodeIDPrefix, String nodeIDPrefix, CndExpr expr) {
 
 		// 获取该字段引用的外键系统
 		CocEntityService fkModule = field.getFkTargetEntity();
@@ -618,7 +618,16 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 		// if (orm().count(fkSystemType) > 50) {
 		// return false;
 		// }
-		List fkSystemRecords = orm().query(fkSystemType, makeSortExpr((ICocEntity) fkModule, "tree"));
+		CndExpr sortExpr = makeSortExpr((ICocEntity) fkModule, "tree");
+		
+		if (expr == null) {
+			expr = sortExpr;
+		} else {
+			if (sortExpr != null) {
+				expr = expr.and(sortExpr);
+			}
+		}
+		List fkSystemRecords = orm().query(fkSystemType, expr);
 
 		// 数据自身树
 		String selfTreeProp = null;

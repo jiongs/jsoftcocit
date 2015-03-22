@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.jsoft.cocit.entity.coc.ICocEntity;
 import com.jsoft.cocit.exception.CocException;
+import com.jsoft.cocit.orm.expr.CndExpr;
 import com.jsoft.cocit.util.Tree;
 
 /**
@@ -94,7 +95,7 @@ public interface CocEntityService extends NamedEntityService<ICocEntity>, ICocEn
 
 	Tree getFilterData(List<String> filterFields, boolean usedToSubEntity);
 
-	Tree getTreeData();
+	Tree getTreeData(CndExpr expr);
 
 	Tree getRowsAuthData();
 

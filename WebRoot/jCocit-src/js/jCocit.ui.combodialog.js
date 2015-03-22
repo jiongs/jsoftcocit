@@ -35,7 +35,8 @@
 		var state = $d(selfHTML, "combodialog");
 		var opts = state.options;
 		$ac("combodialog-f", $(selfHTML));
-		var $combo = $(selfHTML).combo($.extend({}, opts, {
+		var $combo = $(selfHTML)
+		$combo.combo($.extend({}, opts, {
 			onInitPanel : function() {
 				return false;
 			},
@@ -51,37 +52,38 @@
 						width : opts.panelWidth,
 						height : opts.panelHeight,
 						modal : true,
+						combo : $combo,
 						logoCls : opts.iconCls || 'icon-logo',
-						buttons : [ {
-							text : opts.ok,
-							onClick : function(data) {
-								opts.onSelect.call(this, selfHTML, data);
-
-								var $grid = $(".jCocit-datagrid", $("#" + opts.dialogID));
-								if ($grid.length) {
-									var selectedRows = $grid.datagrid("getSelections");
-									var vv = [], ss = [];
-									for ( var i = 0; i < selectedRows.length; i++) {
-										vv.push(selectedRows[i][opts.gridIdField]);
-										ss.push(selectedRows[i][opts.gridTextField]);
-									}
-									if (!opts.multiple) {
-										$combo.combo("setValues", (vv.length ? vv : [ "" ]));
-										$combo.combo("setText", ss.join(opts.gridSeparator));
-									} else {
-										$combo.combo("setValues", vv);
-										$combo.combo("setText", ss);
-									}
-								}
-
-								$(this).dialog('close');
-							}
-						}, {
-							text : opts.cancel,
-							onClick : function(data) {
-								$(this).dialog('close');
-							}
-						} ],
+//						buttons : [ {
+//							text : opts.ok,
+//							onClick : function(data) {
+//								opts.onSelect.call(this, selfHTML, data);
+//
+//								var $grid = $(".jCocit-datagrid", $("#" + opts.dialogID));
+//								if ($grid.length) {
+//									var selectedRows = $grid.datagrid("getSelections");
+//									var vv = [], ss = [];
+//									for ( var i = 0; i < selectedRows.length; i++) {
+//										vv.push(selectedRows[i][opts.gridIdField]);
+//										ss.push(selectedRows[i][opts.gridTextField]);
+//									}
+//									if (!opts.multiple) {
+//										$combo.combo("setValues", (vv.length ? vv : [ "" ]));
+//										$combo.combo("setText", ss.join(opts.gridSeparator));
+//									} else {
+//										$combo.combo("setValues", vv);
+//										$combo.combo("setText", ss);
+//									}
+//								}
+//
+//								$(this).dialog('close');
+//							}
+//						}, {
+//							text : opts.cancel,
+//							onClick : function(data) {
+//								$(this).dialog('close');
+//							}
+//						} ],
 					});
 				}
 				return false;

@@ -11,7 +11,6 @@ import javax.servlet.ServletContext;
 import org.nutz.ioc.impl.NutIoc;
 import org.nutz.ioc.loader.json.JsonLoader;
 
-import com.jsoft.cocimpl.entityengine.PatternAdapters;
 import com.jsoft.cocimpl.entityengine.impl.PatternAdaptersImpl;
 import com.jsoft.cocimpl.entityengine.impl.pattern.CheckEmailAdapter;
 import com.jsoft.cocimpl.entityengine.impl.pattern.CheckPhoneAdapter;
@@ -64,6 +63,7 @@ import com.jsoft.cocimpl.ui.view.jcocitfield.TextareaFieldView;
 import com.jsoft.cocimpl.ui.view.jcocitfield.UploadFieldView;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.entityengine.PatternAdapter;
+import com.jsoft.cocit.entityengine.PatternAdapters;
 import com.jsoft.cocit.orm.generator.EntityGenerators;
 import com.jsoft.cocit.orm.generator.Generator;
 import com.jsoft.cocit.ui.view.UICellView;

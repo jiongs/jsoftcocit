@@ -235,7 +235,7 @@ public class UIField extends UIControlModel implements UIFieldModel {
 		if (fkTargetModule == null)
 			return null;
 
-		UITree fkDataModel = Cocit.me().getUiModelFactory().getTree(null, fkTargetModule);
+		UITree fkDataModel = Cocit.me().getUiModelFactory().getComboTree(null, fkTargetModule, fieldService);
 
 		return fkDataModel.getDataLoadUrl();
 	}

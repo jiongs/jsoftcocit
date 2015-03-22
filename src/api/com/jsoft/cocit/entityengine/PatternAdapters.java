@@ -1,6 +1,5 @@
-package com.jsoft.cocimpl.entityengine;
+package com.jsoft.cocit.entityengine;
 
-import com.jsoft.cocit.entityengine.PatternAdapter;
 
 public interface PatternAdapters {
 	PatternAdapter getAdapter(String pattern);

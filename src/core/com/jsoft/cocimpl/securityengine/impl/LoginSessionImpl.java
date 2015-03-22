@@ -7,7 +7,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.jsoft.cocimpl.entityengine.EntityServiceFactory;
 import com.jsoft.cocimpl.entityengine.impl.service.EmptySystemService;
 import com.jsoft.cocimpl.entityengine.impl.service.EmptyTenantService;
 import com.jsoft.cocit.Cocit;
@@ -17,6 +16,7 @@ import com.jsoft.cocit.constant.EntityTypes;
 import com.jsoft.cocit.constant.PrincipalTypes;
 import com.jsoft.cocit.entity.security.IAuthority;
 import com.jsoft.cocit.entity.security.ISystemMenu;
+import com.jsoft.cocit.entityengine.EntityServiceFactory;
 import com.jsoft.cocit.entityengine.service.SystemMenuService;
 import com.jsoft.cocit.entityengine.service.SystemService;
 import com.jsoft.cocit.entityengine.service.TenantService;

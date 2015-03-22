@@ -4,6 +4,7 @@ import com.jsoft.cocit.entityengine.service.CocActionService;
 import com.jsoft.cocit.entityengine.service.CocEntityService;
 import com.jsoft.cocit.entityengine.service.CocFieldService;
 import com.jsoft.cocit.entityengine.service.SystemMenuService;
+import com.jsoft.cocit.orm.expr.CndExpr;
 import com.jsoft.cocit.ui.model.control.UIActions;
 import com.jsoft.cocit.ui.model.control.UIEntities;
 import com.jsoft.cocit.ui.model.control.UIEntity;
@@ -45,6 +46,10 @@ public interface UIModelFactory {
 
 	UIList getComboList(SystemMenuService targetMenuService, CocEntityService targetEntityService, CocFieldService fkFieldService);
 
+	UITree getComboTree(SystemMenuService targetMenuService, CocEntityService targetEntityService, CocFieldService fkFieldService);
+
+	UITreeData getComboTreeData(SystemMenuService systemMenu, CocEntityService cocEntity, CndExpr expr);
+
 	UITree getTree(SystemMenuService menuService, CocEntityService entityService);
 
 	UITreeData getTreeData(SystemMenuService menuService, CocEntityService entityService);
@@ -76,4 +81,5 @@ public interface UIModelFactory {
 	UIGrid makeGrid();
 
 	UIField makeField();
+
 }

@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.jsoft.cocimpl.entityengine.EntityServiceFactory;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.FieldModes;
@@ -16,6 +15,7 @@ import com.jsoft.cocit.entity.IDataEntity;
 import com.jsoft.cocit.entity.IExtDataEntity;
 import com.jsoft.cocit.entity.IExtTenantOwnerEntity;
 import com.jsoft.cocit.entity.coc.ICocField;
+import com.jsoft.cocit.entityengine.EntityServiceFactory;
 import com.jsoft.cocit.entityengine.service.CocActionService;
 import com.jsoft.cocit.entityengine.service.CocEntityService;
 import com.jsoft.cocit.entityengine.service.CocFieldService;

@@ -91,7 +91,7 @@ public class EntityDataAction {
 		return dataModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_COMBO_GRID_DATA)
+	@At(UrlAPI.ENTITY_GET_COMBOGRID_DATA)
 	public UIGridData getComboGridData(String funcExpr, String fkFieldExpr) {
 		OpContext opContext = OpContext.make(funcExpr, null, null);
 
@@ -115,7 +115,7 @@ public class EntityDataAction {
 			CndExpr expr = opContext.makeExpr();
 			CndExpr fkComboExpr = ExprUtil.parseToExpr(fkField.getFkComboWhere());
 			if (fkComboExpr != null) {
-				expr.and(fkComboExpr);
+				expr = expr.and(fkComboExpr);
 			}
 
 			try {
@@ -146,7 +146,7 @@ public class EntityDataAction {
 		return dataModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_COMBO_LIST_DATA)
+	@At(UrlAPI.ENTITY_GET_COMBOLIST_DATA)
 	public UIListData getComboListData(String funcExpr, String fkFieldExpr) {
 		OpContext opContext = OpContext.make(funcExpr, null, null);
 
@@ -167,12 +167,10 @@ public class EntityDataAction {
 			dataModel.setModel(model);
 
 			// 构造查询条件
-
-			// 构造查询条件
 			CndExpr expr = opContext.makeExpr();
 			CndExpr fkComboExpr = ExprUtil.parseToExpr(fkField.getFkComboWhere());
 			if (fkComboExpr != null) {
-				expr.and(fkComboExpr);
+				expr = expr.and(fkComboExpr);
 			}
 
 			try {
@@ -186,6 +184,47 @@ public class EntityDataAction {
 				LogUtil.error("获取列表JSON数据失败！", e);
 
 				dataModel.setException(e);
+			}
+		}
+
+		LogUtil.debug("EntityAction.getEntityComboGridJson: uiModel = %s", dataModel);
+
+		/*
+		 * 及时清理内存
+		 */
+		opContext.release();
+
+		return dataModel;
+	}
+
+	@At(UrlAPI.ENTITY_GET_COMBOTREE_DATA)
+	public UITreeData getComboTreeData(String funcExpr, String fkFieldExpr) {
+		OpContext opContext = OpContext.make(funcExpr, null, null);
+
+		String[] array = MVCUtil.decodeArgs(fkFieldExpr);
+		CocEntityService cocEntity = Cocit.me().getEntityServiceFactory().getEntity(array[0]);
+		CocFieldService fkField = cocEntity.getField(array[1]);
+
+		UITreeData dataModel;
+		if (opContext.getException() != null) {
+			dataModel = (UITreeData) new UITreeData();
+			dataModel.setException(opContext.getException());
+		} else {
+
+			// 构造查询条件
+			CndExpr expr = opContext.makeExpr();
+			CndExpr fkComboExpr = ExprUtil.parseToExpr(fkField.getFkComboWhere());
+			if (fkComboExpr != null) {
+				expr = expr.and(fkComboExpr);
+			}
+
+			try {
+				dataModel = opContext.getUiModelFactory().getComboTreeData(opContext.getSystemMenu(), opContext.getCocEntity(), expr);
+			} catch (Throwable e) {
+				LogUtil.error("获取树形JSON数据失败！", e);
+
+				dataModel = (UITreeData) new UITreeData();
+				dataModel.setException(opContext.getException());
 			}
 		}
 

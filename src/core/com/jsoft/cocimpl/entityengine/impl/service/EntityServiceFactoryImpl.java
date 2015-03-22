@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.jsoft.cocimpl.entityengine.EntityServiceFactory;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.config.ICommonConfig;
 import com.jsoft.cocit.constant.EntityTypes;
@@ -16,6 +15,7 @@ import com.jsoft.cocit.entity.security.IExtTenant;
 import com.jsoft.cocit.entity.security.ISystem;
 import com.jsoft.cocit.entity.security.ITenant;
 import com.jsoft.cocit.entity.security.IUser;
+import com.jsoft.cocit.entityengine.EntityServiceFactory;
 import com.jsoft.cocit.entityengine.service.CocEntityService;
 import com.jsoft.cocit.entityengine.service.DataSourceService;
 import com.jsoft.cocit.entityengine.service.DicService;

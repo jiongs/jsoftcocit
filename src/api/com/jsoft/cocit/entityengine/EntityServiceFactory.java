@@ -1,4 +1,4 @@
-package com.jsoft.cocimpl.entityengine;
+package com.jsoft.cocit.entityengine;
 
 import java.io.Serializable;
 import java.util.List;

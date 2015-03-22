@@ -2,9 +2,9 @@ package com.jsoft.cocit.config;
 
 import java.util.List;
 
-import com.jsoft.cocimpl.entityengine.PatternAdapters;
 import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocit.entityengine.EntityEngine;
+import com.jsoft.cocit.entityengine.PatternAdapters;
 
 public interface IBeansConfig {
 

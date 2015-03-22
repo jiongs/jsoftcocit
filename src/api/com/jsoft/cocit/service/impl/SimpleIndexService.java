@@ -15,6 +15,7 @@ import com.jsoft.cocit.util.Option;
 
 public class SimpleIndexService implements IndexService {
 
+	@SuppressWarnings("deprecation")
 	private Date getDate() {
 		int yy = new Random().nextInt(2015);
 		yy = 2015 - 1900;

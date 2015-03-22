@@ -269,6 +269,10 @@ public class CocConfig extends BaseConfig implements ICommonConfig {
 		return this.getBoolean(MODE_PRODUCT);
 	}
 
+	public boolean isAutoUpgrade() {
+		return this.getBoolean("mode.autoupgrade");
+	}
+
 	public String getUploadPath() {
 		return this.get(PATH_UPLOAD);
 	}

@@ -118,14 +118,10 @@ public abstract class BaseUIModel implements UIModel {
 	 * 
 	 * @param propName
 	 * @param propValue
-	 * @deprecated 用 put 方法代替
 	 * @return
 	 */
 	public <T extends BaseUIModel> T set(String propName, Object propValue) {
-		if (propName != null && propValue != null)
-			context.put(propName, propValue);
-
-		return (T) this;
+		return put(propName, propValue);
 	}
 
 	public <T extends BaseUIModel> T put(String key, Object value) {
