@@ -153,7 +153,7 @@ public class DataEngineImpl implements DataEngine {
 				event.setDataObject(entity);
 
 				fireBeforeEvent(plugins, event);
-
+				
 				event.setReturnValue(orm.delete(entity));
 
 				fireAfterEvent(plugins, event);

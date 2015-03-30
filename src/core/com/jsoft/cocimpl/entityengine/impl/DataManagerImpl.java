@@ -3,14 +3,19 @@ package com.jsoft.cocimpl.entityengine.impl;
 import java.util.List;
 
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.constant.FieldNames;
+import com.jsoft.cocit.entity.IDataEntity;
 import com.jsoft.cocit.entityengine.DataEngine;
 import com.jsoft.cocit.entityengine.DataManager;
 import com.jsoft.cocit.entityengine.bizplugin.IBizPlugin;
 import com.jsoft.cocit.entityengine.service.CocActionService;
 import com.jsoft.cocit.entityengine.service.CocEntityService;
+import com.jsoft.cocit.entityengine.service.CocFieldService;
 import com.jsoft.cocit.entityengine.service.SystemMenuService;
 import com.jsoft.cocit.exception.CocException;
+import com.jsoft.cocit.orm.Orm;
 import com.jsoft.cocit.orm.expr.CndExpr;
+import com.jsoft.cocit.orm.expr.Expr;
 import com.jsoft.cocit.securityengine.LoginSession;
 import com.jsoft.cocit.securityengine.SecurityEngine;
 
@@ -52,13 +57,57 @@ public class DataManagerImpl implements DataManager {
 	public int delete(SystemMenuService menuService, CocEntityService entityService, Object entity, String actionMode) throws CocException {
 		this.checkPermission(menuService, entityService, entity, actionMode);
 
+		if (entity instanceof List) {
+			for (Object obj : (List) entity) {
+				checkRefedBy(entityService, obj);
+			}
+		} else {
+			checkRefedBy(entityService, entity);
+		}
+
 		return dataEngine.delete(entity, getPlugins(menuService, entityService, actionMode));
 	}
 
 	public int delete(SystemMenuService menuService, CocEntityService entityService, Long id, String actionMode) throws CocException {
 		this.checkPermission(menuService, entityService, actionMode);
 
+		checkRefedBy(entityService, dataEngine.orm().get(entityService.getClassOfEntity(), id, Expr.fieldRexpr("id|key")));
+
 		return dataEngine.delete(entityService.getClassOfEntity(), id, getPlugins(menuService, entityService, actionMode));
+	}
+
+	/**
+	 * 检查当前对象是否被其他对象外键所引用？
+	 * 
+	 * @param entityService
+	 * @param obj
+	 */
+	public void checkRefedBy(CocEntityService entityService, Object o) {
+		if (!(o instanceof IDataEntity)) {
+			return;
+		}
+
+		IDataEntity obj = (IDataEntity) o;
+		Orm orm = this.dataEngine.orm();
+		List<CocFieldService> fkFields = entityService.getFkFieldsOfOtherEntities();
+		if (fkFields != null) {
+			for (CocFieldService fld : fkFields) {
+				CocEntityService refEntity = fld.getEntity();
+				String fkTargetField = fld.getFkTargetFieldKey();
+				if (FieldNames.F_KEY.equals(fkTargetField)) {
+					String key = obj.getKey();
+					if (orm.count(refEntity.getClassOfEntity(), Expr.eq(fld.getFieldName(), key)) > 0) {
+						throw new CocException("数据被其他表引用！[table=%s]", refEntity.getName());
+					}
+				} else if (FieldNames.F_ID.equals(fkTargetField)) {
+					Long id = obj.getId();
+					if (orm.count(refEntity.getClassOfEntity(), Expr.eq(fld.getFieldName(), id)) > 0) {
+						throw new CocException("数据被其他表引用！[table=%s]", refEntity.getName());
+					}
+				}
+			}
+		}
+
 	}
 
 	public int deleteMore(SystemMenuService menuService, CocEntityService entityService, String actionMode, CndExpr expr) throws CocException {
