@@ -1026,11 +1026,16 @@ public class EntityFuncAction {
 				uiModel = AlertModel.makeSuccess(msg == null ? "永久删除成功！" : msg);
 			} catch (Throwable e) {
 				String msg = opContext.getCocAction().getErrorMessage();
-				uiModel = AlertModel.makeError(StringUtil.isBlank(msg) ? ExceptionUtil.msg(e) : msg);
+				if (StringUtil.isBlank(msg)) {
+					msg = ExceptionUtil.msg(e);
+				} else {
+					msg += ExceptionUtil.msg(e);
+				}
+				uiModel = AlertModel.makeError(msg);
 			}
 		}
 
-		LogUtil.debug("EntityAction.delDataObjects: uiModel = %s", uiModel);
+		LogUtil.debug("EntityAction.delete: uiModel = %s", uiModel);
 
 		/*
 		 * 及时清理内存

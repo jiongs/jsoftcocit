@@ -859,7 +859,7 @@
 			url : url,
 			data : data,
 			success : function(json) {
-				var msg = json.message || opts.successMessage;
+				var msg = json.message || opts.successMessage || jCocit.entity.defaults.successMessage;
 				if (msg) {
 					$.messager.showMsg(msg);
 				}
@@ -971,6 +971,7 @@
 		confirm : "Confirm",
 		cancel : "Cancel",
 		unsupport : "Not Support!",
+		successMessage : "Operation Success!",
 		deleteMessage : "Are you sure delete the selected data?",
 		warnMessage : "Are you sure execute the operation?",
 		unselectedAny : "Please select one record at least",

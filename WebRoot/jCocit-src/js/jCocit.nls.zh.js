@@ -125,6 +125,7 @@
 			confirm : "确 定",
 			cancel : "取 消",
 			unsupport : "不支持该操作！",
+			successMessage : "操作成功！",
 			deleteMessage : "您确定要删除选中的数据吗？",
 			warnMessage : "您确定要执行该操作吗？",
 			unselectedAny : "您尚未选中任何记录，请先选中一条或多条记录！",

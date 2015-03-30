@@ -148,6 +148,9 @@ public abstract class UIGridViews {
 
 			int pageSize = model.getPageSize();
 			pageSize = (height - 100) / 32 / 5 * 5;
+			if (pageSize < 10) {
+				pageSize = 10;
+			}
 			List<Integer> pageOptions = new ArrayList();
 			pageOptions.add(10);
 			pageOptions.add(20);

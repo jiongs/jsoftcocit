@@ -375,6 +375,7 @@ public abstract class HttpUtil {
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.button.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.dialog.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.messager.js\" type=\"text/javascript\"></script>", contextPath);
+			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.pagination.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.plugin.entity.js\" type=\"text/javascript\"></script>", contextPath);
 
 			if (themesJS != null) {

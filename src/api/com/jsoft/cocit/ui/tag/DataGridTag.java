@@ -1,16 +1,21 @@
 package com.jsoft.cocit.ui.tag;
 
+import java.io.Writer;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.action.OpContext;
 import com.jsoft.cocit.constant.ViewKeys;
 import com.jsoft.cocit.ui.model.control.UIEntity;
 import com.jsoft.cocit.ui.model.control.UIGrid;
+import com.jsoft.cocit.util.ExceptionUtil;
 import com.jsoft.cocit.util.StringUtil;
 
 public class DataGridTag extends BodyTagSupport {
@@ -24,6 +29,7 @@ public class DataGridTag extends BodyTagSupport {
 	protected String funcExpr = null;
 	protected String resultUI = null;
 	protected String paramUI = null;
+	protected String dataUrl = null;
 
 	public int doStartTag() throws JspException {
 
@@ -33,73 +39,97 @@ public class DataGridTag extends BodyTagSupport {
 
 		List<String> fieldList = StringUtil.toList(fields);
 		List<String> actionList = StringUtil.toList(rowActions);
-		if (mainModel == null && StringUtil.hasContent(funcExpr)) {
 
-			OpContext opContext = OpContext.make(funcExpr, null, null);
-			if (opContext.getException() != null) {
-				throw new JspException(opContext.getException());
-			}
+		Writer out = null;
+		try {
+			out = pageContext.getOut();
 
-			if ((fieldList != null && fieldList.size() > 0) || (actionList != null && actionList.size() > 0)) {
-				model = opContext.getUiModelFactory().getGrid(opContext.getSystemMenu(), opContext.getCocEntity(), fieldList, actionList);
+			if (mainModel == null && StringUtil.hasContent(funcExpr)) {
+
+				HttpContext httpContext = Cocit.me().getHttpContext();
+				if (httpContext == null) {
+					Cocit.me().makeHttpContext((HttpServletRequest) pageContext.getRequest(), (HttpServletResponse) pageContext.getResponse());
+				}
+
+				OpContext opContext = OpContext.make(funcExpr, null, null);
+				if (opContext.getException() != null) {
+					throw new JspException(opContext.getException());
+				}
+
+				if ((fieldList != null && fieldList.size() > 0) || (actionList != null && actionList.size() > 0)) {
+					model = opContext.getUiModelFactory().getGrid(opContext.getSystemMenu(), opContext.getCocEntity(), fieldList, actionList);
+				} else {
+					model = opContext.getUiModelFactory().getGrid(opContext.getSystemMenu(), opContext.getCocEntity());
+				}
+
 			} else {
-				model = opContext.getUiModelFactory().getGrid(opContext.getSystemMenu(), opContext.getCocEntity());
+
+				if ((fieldList != null && fieldList.size() > 0) || (actionList != null && actionList.size() > 0)) {
+
+					OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.OPCONTEXT_REQUEST_KEY, PageContext.REQUEST_SCOPE);
+					model = Cocit.me().getUiModelFactory().getGrid(opContext.getSystemMenu(), opContext.getCocEntity(), fieldList, actionList);
+
+				} else {
+					model = mainModel.getGrid();
+				}
+
 			}
 
-		} else {
+			if (model != null) {
+				if (width != 0)
+					model.set("width", width);
+				if (height != 0)
+					model.set("height", height);
+				if (StringUtil.hasContent(id)) {
+					model.setId(id);
+				}
+				if (StringUtil.hasContent(dataUrl)) {
+					model.setDataLoadUrl(dataUrl);
+				}
 
-			if ((fieldList != null && fieldList.size() > 0) || (actionList != null && actionList.size() > 0)) {
+				/*
+				 * 处理 resultUI
+				 */
+				if (StringUtil.hasContent(resultUI)) {
+					model.getResultUI().clear();
 
-				OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.OPCONTEXT_REQUEST_KEY, PageContext.REQUEST_SCOPE);
-				model = Cocit.me().getUiModelFactory().getGrid(opContext.getSystemMenu(), opContext.getCocEntity(), fieldList, actionList);
+					List<String> list = StringUtil.toList(resultUI);
+					for (String str : list) {
+						model.addResultUI(str);
+					}
+				}
 
-			} else {
-				model = mainModel.getGrid();
-			}
+				/*
+				 * 计算 paramUI
+				 */
+				if (StringUtil.hasContent(paramUI)) {
+					model.getParamUI().clear();
 
-		}
+					List<String> list = StringUtil.toList(paramUI);
+					for (String str : list) {
+						model.addParamUI(str);
+					}
+				}
 
-		if (model != null) {
-			if (width != 0)
-				model.set("width", width);
-			if (height != 0)
-				model.set("height", height);
-			if (StringUtil.hasContent(id)) {
-				model.setId(id);
-			}
-
-			/*
-			 * 处理 resultUI
-			 */
-			if (StringUtil.hasContent(resultUI)) {
-				model.getResultUI().clear();
-
-				List<String> list = StringUtil.toList(resultUI);
-				for (String str : list) {
-					model.addResultUI(str);
+				try {
+					model.render(out);
+				} catch (Exception e) {
+					throw new JspException(e);
 				}
 			}
 
-			/*
-			 * 计算 paramUI
-			 */
-			if (StringUtil.hasContent(paramUI)) {
-				model.getParamUI().clear();
+			return EVAL_BODY_INCLUDE;
 
-				List<String> list = StringUtil.toList(paramUI);
-				for (String str : list) {
-					model.addParamUI(str);
-				}
-			}
-
+		} catch (Throwable e) {
 			try {
-				model.render(pageContext.getOut());
-			} catch (Exception e) {
+				out.write(ExceptionUtil.msg(e));
+			} catch (Exception ex) {
 				throw new JspException(e);
 			}
-		}
 
-		return EVAL_BODY_INCLUDE;
+			return SKIP_BODY;
+
+		}
 	}
 
 	public void release() {
@@ -162,6 +192,14 @@ public class DataGridTag extends BodyTagSupport {
 
 	public void setRowActions(String rowActions) {
 		this.rowActions = rowActions;
+	}
+
+	public String getDataUrl() {
+		return dataUrl;
+	}
+
+	public void setDataUrl(String dataUrl) {
+		this.dataUrl = dataUrl;
 	}
 
 }

@@ -3,6 +3,8 @@ package com.jsoft.cocit.ui.tag;
 import java.io.IOException;
 import java.io.Writer;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.BodyTagSupport;
@@ -10,6 +12,7 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
 import com.jsoft.cocimpl.ui.UIView;
 import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.action.OpContext;
 import com.jsoft.cocit.constant.ViewKeys;
 import com.jsoft.cocit.constant.ViewNames;
@@ -30,18 +33,23 @@ public class EntityTag extends BodyTagSupport {
 
 		UIModel uiModel = (UIModel) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
 
-		if (uiModel == null && StringUtil.hasContent(funcExpr)) {
-
-			OpContext opContext = OpContext.make(funcExpr, null, null);
-			uiModel = opContext.getUiModelFactory().getMain(opContext.getSystemMenu(), opContext.getCocEntity(), usedToSubEntity);
-			if (opContext.getException() != null) {
-				throw new JspException(opContext.getException());
-			}
-		}
-
 		Writer out = null;
 		try {
 			out = pageContext.getOut();
+
+			if (uiModel == null && StringUtil.hasContent(funcExpr)) {
+
+				HttpContext httpContext = Cocit.me().getHttpContext();
+				if (httpContext == null) {
+					Cocit.me().makeHttpContext((HttpServletRequest) pageContext.getRequest(), (HttpServletResponse) pageContext.getResponse());
+				}
+
+				OpContext opContext = OpContext.make(funcExpr, null, null);
+				uiModel = opContext.getUiModelFactory().getMain(opContext.getSystemMenu(), opContext.getCocEntity(), usedToSubEntity);
+				if (opContext.getException() != null) {
+					throw new JspException(opContext.getException());
+				}
+			}
 
 			if (StringUtil.isBlank(viewName)) {
 				viewName = ViewNames.VIEW_MAIN;
@@ -53,14 +61,19 @@ public class EntityTag extends BodyTagSupport {
 			}
 
 			view.render(out, uiModel);
+
+			return EVAL_BODY_INCLUDE;
+
 		} catch (Throwable e) {
 			try {
 				out.write(ExceptionUtil.msg(e));
 			} catch (IOException e1) {
 			}
+
+			return SKIP_BODY;
+
 		}
 
-		return EVAL_BODY_INCLUDE;
 	}
 
 	public void release() {

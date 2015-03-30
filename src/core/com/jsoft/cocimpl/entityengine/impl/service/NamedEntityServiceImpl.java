@@ -1,5 +1,7 @@
 package com.jsoft.cocimpl.entityengine.impl.service;
 
+import java.io.Serializable;
+
 import com.jsoft.cocit.entity.INamedEntity;
 import com.jsoft.cocit.entityengine.service.NamedEntityService;
 
@@ -9,7 +11,7 @@ import com.jsoft.cocit.entityengine.service.NamedEntityService;
  * 
  * @param <T>
  */
-public abstract class NamedEntityServiceImpl<T extends INamedEntity> extends DataEntityServiceImpl<T> implements NamedEntityService<T>, INamedEntity {
+public abstract class NamedEntityServiceImpl<T extends INamedEntity> extends DataEntityServiceImpl<T> implements NamedEntityService<T>, INamedEntity, Serializable {
 
 	protected NamedEntityServiceImpl(T entity) {
 		super(entity);

@@ -3,6 +3,7 @@ package com.jsoft.cocimpl.entityengine.impl;
 import java.util.List;
 
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.config.IMessageConfig;
 import com.jsoft.cocit.constant.FieldNames;
 import com.jsoft.cocit.entity.IDataEntity;
 import com.jsoft.cocit.entityengine.DataEngine;
@@ -87,6 +88,8 @@ public class DataManagerImpl implements DataManager {
 			return;
 		}
 
+		IMessageConfig msgs = Cocit.me().getMessages();
+
 		IDataEntity obj = (IDataEntity) o;
 		Orm orm = this.dataEngine.orm();
 		List<CocFieldService> fkFields = entityService.getFkFieldsOfOtherEntities();
@@ -97,12 +100,12 @@ public class DataManagerImpl implements DataManager {
 				if (FieldNames.F_KEY.equals(fkTargetField)) {
 					String key = obj.getKey();
 					if (orm.count(refEntity.getClassOfEntity(), Expr.eq(fld.getFieldName(), key)) > 0) {
-						throw new CocException("数据被其他表引用！[table=%s]", refEntity.getName());
+						throw new CocException(msgs.getMsg("10013", obj, refEntity.getName()));
 					}
 				} else if (FieldNames.F_ID.equals(fkTargetField)) {
 					Long id = obj.getId();
 					if (orm.count(refEntity.getClassOfEntity(), Expr.eq(fld.getFieldName(), id)) > 0) {
-						throw new CocException("数据被其他表引用！[table=%s]", refEntity.getName());
+						throw new CocException(msgs.getMsg("10013", obj, refEntity.getName()));
 					}
 				}
 			}

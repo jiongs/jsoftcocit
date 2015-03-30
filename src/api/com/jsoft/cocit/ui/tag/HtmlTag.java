@@ -2,11 +2,14 @@ package com.jsoft.cocit.ui.tag;
 
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.action.OpContext;
 import com.jsoft.cocit.constant.ViewKeys;
 import com.jsoft.cocit.ui.model.UIModel;
@@ -28,21 +31,27 @@ public class HtmlTag extends BodyTagSupport {
 	public int doStartTag() throws JspException {
 
 		UIModel uiModel = (UIModel) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
+		
+		String title = "";
+		boolean isAjax = false;
+		
+		if (uiModel == null) {
 
-		if (uiModel == null && StringUtil.hasContent(funcExpr)) {
-
-			OpContext opContext = OpContext.make(funcExpr, null, null);
-			if (opContext.getException() != null) {
-				throw new JspException(opContext.getException());
+			HttpContext httpContext = Cocit.me().getHttpContext();
+			if (httpContext == null) {
+				Cocit.me().makeHttpContext((HttpServletRequest) pageContext.getRequest(), (HttpServletResponse) pageContext.getResponse());
 			}
 
-			uiModel = opContext.getUiModelFactory().getMain(opContext.getSystemMenu(), opContext.getCocEntity(), false);
-			pageContext.setAttribute(ViewKeys.UI_MODEL_KEY, uiModel);
 		}
 
-		if (uiModel != null && !uiModel.isAjax()) {
+		if (uiModel != null) {
+			isAjax = uiModel.isAjax();
+			title = uiModel.getTitle();
+		}
+		
+		if (!isAjax) {
 			try {
-				HttpUtil.renderHTMLHeader(pageContext.getOut(), Cocit.me().getContextPath(), uiModel.getTitle());
+				HttpUtil.renderHTMLHeader(pageContext.getOut(), Cocit.me().getContextPath(), title);
 			} catch (IOException e) {
 				throw new JspException(e);
 			}

@@ -94,7 +94,9 @@ public class OpContext {
 	public static OpContext make(String funcExpr) {
 		OpContext ret = new OpContext(funcExpr, null, null, false);
 
-		ret.getHttpContext().getRequest().setAttribute(OPCONTEXT_REQUEST_KEY, ret);
+		if (ret.httpContext != null) {
+			ret.httpContext.getRequest().setAttribute(OPCONTEXT_REQUEST_KEY, ret);
+		}
 
 		return ret;
 	}
@@ -121,7 +123,9 @@ public class OpContext {
 	public static OpContext make(String funcExpr, String dataArgs, CocEntityParam httpParams) {
 		OpContext ret = new OpContext(funcExpr, dataArgs, httpParams, false);
 
-		ret.getHttpContext().getRequest().setAttribute(OPCONTEXT_REQUEST_KEY, ret);
+		if (ret.httpContext != null) {
+			ret.httpContext.getRequest().setAttribute(OPCONTEXT_REQUEST_KEY, ret);
+		}
 
 		return ret;
 	}
@@ -149,7 +153,9 @@ public class OpContext {
 	public static OpContext make(String funcExpr, String dataArgs, CocEntityParam httpParams, boolean fireLoadEvent) {
 		OpContext ret = new OpContext(funcExpr, dataArgs, httpParams, fireLoadEvent);
 
-		ret.getHttpContext().getRequest().setAttribute(OPCONTEXT_REQUEST_KEY, ret);
+		if (ret.httpContext != null) {
+			ret.httpContext.getRequest().setAttribute(OPCONTEXT_REQUEST_KEY, ret);
+		}
 
 		return ret;
 	}
