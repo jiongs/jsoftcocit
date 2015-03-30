@@ -39,9 +39,10 @@ import com.jsoft.cocimpl.CocitImpl;
 import com.jsoft.cocimpl.orm.Pager;
 import com.jsoft.cocimpl.util.json.JsonImpl;
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.EntityTypes;
+import com.jsoft.cocit.constant.FieldNames;
 import com.jsoft.cocit.constant.OpCodes;
 import com.jsoft.cocit.constant.StatusCodes;
 import com.jsoft.cocit.entity.DataEntity;
@@ -149,7 +150,7 @@ public class EntityEngineImpl implements EntityEngine {
 				LogUtil.info("EntityEngine..setupCocitFromPackage: ......");
 
 				CocitImpl coc = (CocitImpl) Cocit.me();
-				ICommonConfig config = coc.getConfig();
+				ICocConfig config = coc.getConfig();
 				Orm orm = coc.getProxiedORM();
 
 				parseDefaultSystemAndTenant(orm);
@@ -162,6 +163,18 @@ public class EntityEngineImpl implements EntityEngine {
 				String systemKey = config.getCocitSystemKey();
 				parseCocEntityMenus(orm, systemKey);
 
+				String contextDir = Cocit.me().getContextDir();
+				File dataDir = new File(contextDir + "/WEB-INF/data");
+				File[] files = dataDir.listFiles();
+				for (File file : files) {
+					if (file.isDirectory())
+						continue;
+
+					if (file.exists()) {
+						String newName = file.getParentFile().getAbsolutePath() + File.separator + DateUtil.getNowDate() + File.separator + file.getName();
+						FileUtil.rename(file, newName);
+					}
+				}
 			}
 		});
 	}
@@ -260,7 +273,7 @@ public class EntityEngineImpl implements EntityEngine {
 	}
 
 	private void parseDefaultSystemAndTenant(Orm orm) throws CocException {
-		ICommonConfig config = Cocit.me().getConfig();
+		ICocConfig config = Cocit.me().getConfig();
 
 		List<IExtSystem> systems = new ArrayList();
 		/*
@@ -1041,10 +1054,14 @@ public class EntityEngineImpl implements EntityEngine {
 		}
 
 		IExtCocEntity cocEntity = (IExtCocEntity) orm.get(EntityTypes.CocEntity, CndExpr.eq(Const.F_KEY, cocEntityKey));
-		cocEntity = this.parseCocEntityFromAnnotation(orm, tenantKey, classOfEntity, cocEntity, $CocEntity, cocEntitySN, cocEntityKey);
+		try {
+			cocEntity = this.parseCocEntityFromAnnotation(orm, tenantKey, classOfEntity, cocEntity, $CocEntity, cocEntitySN, cocEntityKey);
+		} catch (Throwable e) {
+			throw new CocException("解析实体定义(%s)出错：%s ", classOfEntity.getSimpleName(), ExceptionUtil.msg(e));
+		}
 		if (cocEntity != null) {
 			if (!classOfEntity.getName().equals(cocEntity.getClassName())) {
-				throw new CocException("EntityEngine.parseCocEntityFromClass: 有两个实体使用了相同的KEY！[classOfEntity:%s, existedClassOfEntity: %s]",//
+				throw new CocException("有两个实体使用了相同的KEY！[classOfEntity:%s, existedClassOfEntity: %s]",//
 				        classOfEntity.getName(), //
 				        cocEntity.getClassName()//
 				);
@@ -1068,25 +1085,28 @@ public class EntityEngineImpl implements EntityEngine {
 			int cocActionSN = cocEntitySN * 100;
 			for (int i = 0; i < $CocActions.length; i++) {
 				CocAction $CocAction = $CocActions[i];
-
-				if (StringUtil.isBlank($CocAction.importFromFile())) {
-					ICocAction cocAction = this.parseCocAction(orm, tenantKey, cocEntity, $CocAction, cocActionSN++);
-
-					orm.save(cocAction);
-
-					newCocActionList.add(cocAction);
-				} else {
-					List<ICocAction> cocActionList = this.parseCocActionsFromJson(orm, tenantKey, cocEntity, $CocAction.importFromFile(), cocActionSN++);
-
-					for (ICocAction cocAction : cocActionList) {
+				try {
+					if (StringUtil.isBlank($CocAction.importFromFile())) {
+						ICocAction cocAction = this.parseCocAction(orm, tenantKey, cocEntity, $CocAction, cocActionSN++);
 
 						orm.save(cocAction);
 
 						newCocActionList.add(cocAction);
+					} else {
+						List<ICocAction> cocActionList = this.parseCocActionsFromJson(orm, tenantKey, cocEntity, $CocAction.importFromFile(), cocActionSN++);
+
+						for (ICocAction cocAction : cocActionList) {
+
+							orm.save(cocAction);
+
+							newCocActionList.add(cocAction);
+						}
+
 					}
 
+				} catch (Throwable e) {
+					throw new CocException("解析操作定义(%s.%s)出错：%s ", classOfEntity.getName(), $CocAction.key(), e);
 				}
-
 			}
 		}
 
@@ -1116,12 +1136,16 @@ public class EntityEngineImpl implements EntityEngine {
 				if ($CocColumns != null) {
 					for (int j = 0; j < $CocColumns.length; j++) {
 						CocColumn $CocColumn = $CocColumns[j];
-						IExtCocField field = this.parseCocField(orm, tenantKey, mirrorOfEntity, cocEntity, group, $CocColumn, gridSN++, fieldSN++);
+						try {
+							IExtCocField field = this.parseCocField(orm, tenantKey, mirrorOfEntity, cocEntity, group, $CocColumn, gridSN++, fieldSN++);
 
-						orm.save(field);
+							orm.save(field);
 
-						propNames.add(field.getFieldName());
-						newCocFieldList.add(field);
+							propNames.add(field.getFieldName());
+							newCocFieldList.add(field);
+						} catch (Throwable e) {
+							throw new CocException("EntityEngine..parseCocEntityFromClass: 解析字段定义出错：%s {%s.%s}", e, classOfEntity.getSimpleName(), $CocColumn.field());
+						}
 					}
 				}
 			}
@@ -1142,7 +1166,7 @@ public class EntityEngineImpl implements EntityEngine {
 				if (fld != null) {
 					throw new CocException("EntityEngine..parseCocEntityFromClass: “逻辑主键”字段注解是公共字段，不应该重复声明！[%s]", fld);
 				}
-			} catch (Throwable e) {
+			} catch (Exception e) {
 			}
 		}
 		if (isNamedEntity) {
@@ -1154,7 +1178,7 @@ public class EntityEngineImpl implements EntityEngine {
 				if (fld != null) {
 					throw new CocException("EntityEngine.parseCocEntityFromClass: “名称”字段注解是公共字段，不应该重复声明！[%s]", fld);
 				}
-			} catch (Throwable e) {
+			} catch (Exception e) {
 			}
 		}
 		if (isTreeEntity) {
@@ -1166,7 +1190,7 @@ public class EntityEngineImpl implements EntityEngine {
 				if (fld != null) {
 					throw new CocException("EntityEngine.parseCocEntityFromClass: “父节点”字段注解是公共字段，不应该重复声明！[%s]", fld);
 				}
-			} catch (Throwable e) {
+			} catch (Exception e) {
 			}
 		}
 
@@ -1221,16 +1245,24 @@ public class EntityEngineImpl implements EntityEngine {
 		int sn = 0;
 		if ($CuiEntity != null) {
 			sn++;
-			IExtCuiEntity ui = this.parseCuiEntityFromClass(orm, classOfEntity, cocEntity, $CuiEntity, sn);
-			newCuiList.add(ui);
+			try {
+				IExtCuiEntity ui = this.parseCuiEntityFromClass(orm, classOfEntity, cocEntity, $CuiEntity, sn);
+				newCuiList.add(ui);
+			} catch (Throwable e) {
+				throw new CocException("EntityEngine..parseCocEntityFromClass: 解析实体界面定义出错：%s {%s}", e, classOfEntity.getSimpleName());
+			}
 		}
 		Cui $Cui = (Cui) classOfEntity.getAnnotation(Cui.class);
 		if ($Cui != null) {
 			CuiEntity[] $CuiEntityList = $Cui.value();
 			for (CuiEntity ann : $CuiEntityList) {
 				sn++;
-				IExtCuiEntity ui = this.parseCuiEntityFromClass(orm, classOfEntity, cocEntity, ann, sn);
-				newCuiList.add(ui);
+				try {
+					IExtCuiEntity ui = this.parseCuiEntityFromClass(orm, classOfEntity, cocEntity, ann, sn);
+					newCuiList.add(ui);
+				} catch (Throwable e) {
+					throw new CocException("EntityEngine..parseCocEntityFromClass: 解析实体界面定义出错：%s {%s}", e, classOfEntity.getSimpleName());
+				}
 			}
 		}
 
@@ -4071,7 +4103,20 @@ public class EntityEngineImpl implements EntityEngine {
 		}
 
 		String dataFile = "/WEB-INF/data/" + classOfEntity.getSimpleName() + ".data.json";
-		return (List<T>) setupEntityDataFromJson(orm, tenantKey, classOfEntity, dataFile);
+		List<T> result = (List<T>) setupEntityDataFromJson(orm, tenantKey, classOfEntity, dataFile);
+
+		if (result != null && result.size() > 0) {
+			List<T> oldResult = (List<T>) orm.query(classOfEntity, Expr.eq(FieldNames.F_STATUS_CODE, StatusCodes.STATUS_CODE_INITED));
+			if (oldResult != null && oldResult.size() > 0) {
+				for (Object old : oldResult) {
+					if (!result.contains(old)) {
+						orm.delete(old);
+					}
+				}
+			}
+		}
+
+		return result;
 	}
 
 	public <T> List<T> setupEntityDataFromJson(Orm orm, String tenantKey, Class<T> klass, String json) {
@@ -4090,13 +4135,17 @@ public class EntityEngineImpl implements EntityEngine {
 		List<T> array = (List<T>) JsonUtil.loadFromJsonOrFile(klass, jsonData);
 		if (array != null) {
 
-			for (T ele : array) {
+			try {
+				for (T ele : array) {
 
-				List savedlist = saveObj(orm, ele, pkFields);
-				for (Object obj : savedlist) {
-					if (klass.isAssignableFrom(obj.getClass()))
-						newList.add((T) obj);
+					List savedlist = saveObj(orm, ele, pkFields);
+					for (Object obj : savedlist) {
+						if (klass.isAssignableFrom(obj.getClass()))
+							newList.add((T) obj);
+					}
 				}
+			} catch (Throwable e) {
+				throw new CocException("安装初始化数据出错！%s", ExceptionUtil.msg(e));
 			}
 		}
 
@@ -4112,6 +4161,9 @@ public class EntityEngineImpl implements EntityEngine {
 		CndExpr expr = null;
 		for (String pkFld : pkFields) {
 			Object pkVal = ObjectUtil.getValue(newObj, pkFld);
+			if (pkVal == null) {
+				throw new CocException("逻辑主键字段不允许为空！{field: %s.%s, data: %s}", newObj.getClass().getName(), pkFld, newObj);
+			}
 
 			CndExpr expr0 = CndExpr.eq(pkFld, pkVal);
 			if (pkVal == null || pkVal.toString().trim().length() == 0) {
@@ -4136,9 +4188,6 @@ public class EntityEngineImpl implements EntityEngine {
 
 			for (Field fld : fields) {
 				String fldname = fld.getName();
-				if (fldname.equals("clickNum") || fldname.equals("saleNum") || fldname.equals("commentNum"))
-					continue;
-
 				Object fldval = me.getValue(newObj, fldname);
 
 				// load entity
@@ -4157,9 +4206,24 @@ public class EntityEngineImpl implements EntityEngine {
 					fldval = orm.get(fldval.getClass(), fkexpr);
 				}
 
-				// 回写
-				if (fldval != null && !(fldval instanceof Map) && !(fldval instanceof Collection)) {
-					me.setValue(obj, fldname, fldval);
+				if (fldval != null) {
+					if (fldval instanceof String) {
+						if (((String) fldval).trim().length() == 0)
+							fldval = null;
+					} else if (ClassUtil.isNumber(fldval)) {
+						if (((Number) fldval).intValue() == 0)
+							fldval = null;
+					} else if (ClassUtil.isBoolean(fldval)) {
+						if (((Boolean) fldval).booleanValue() == false)
+							fldval = null;
+					} else if (fldval instanceof Map || fldval instanceof Collection) {
+						fldval = null;
+					}
+
+					// 回写
+					if (fldval != null) {
+						me.setValue(obj, fldname, fldval);
+					}
 				}
 			}
 		}

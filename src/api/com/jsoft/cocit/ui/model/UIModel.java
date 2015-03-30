@@ -52,6 +52,7 @@ public interface UIModel {
 	String getTitle();
 
 	<T> T get(String propName, T defaultReturn);
-	
-	public void render(Writer out) throws Exception ;
+
+	public void render(Writer out) throws Exception;
+
 }

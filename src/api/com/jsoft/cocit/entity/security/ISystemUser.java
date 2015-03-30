@@ -20,6 +20,11 @@ public interface ISystemUser extends IUser {
 
 	void setPassword(String pass);
 
+	/**
+	 * 设置用户名、密码时，必需同时调用setRowPassword，setRawPassword2，setUsername，密码才会生效，否则不会自动生成加密后的密码。
+	 * 
+	 * @param rawPwd
+	 */
 	void setRawPassword(String rawPwd);
 
 	void setRawPassword2(String rawPassword2);

@@ -1,6 +1,6 @@
 package com.jsoft.cocit.log;
 
-public interface Log {
+public interface Log extends org.nutz.log.Log{
 
 	boolean isFatalEnabled();
 

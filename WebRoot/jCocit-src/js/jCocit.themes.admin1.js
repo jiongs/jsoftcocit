@@ -1,18 +1,5 @@
 var doOpenTab = function(tabs, title, linkUrl) {
-	var $tabs = $(tabs);
-	var tab = $tabs.tabs("getTab", title);
-	if (!tab) {
-		if (linkUrl && linkUrl.trim().length > 0) {
-			$tabs.tabs("add", {
-				url : linkUrl + "/true",
-				cache : true,
-				closable : true,
-				title : title
-			});
-		}
-	} else {
-		$tabs.tabs("select", title);
-	}
+	jCocit.util.openTab(tabs, title, linkUrl);
 }
 var doSelectTab = function(tabTitle, tabIndex) {
 	var $uiList = $(".jCocit-ui", this);
@@ -49,56 +36,91 @@ var doInitIndex = function(indexID) {
 	$(".menu2", $tree).click(function() {
 		var $this = $(this);
 
-		if ($this.hasClass("menu2_leaf")) {
-			$(".menu2_leaf_selected", $tree).removeClass("menu2_leaf_selected");
+		$(".menu2_selected", $tree).removeClass("menu2_selected");
+		$(".menu2_leaf_selected", $tree).removeClass("menu2_leaf_selected");
+		$(".menu3_leaf_selected", $tree).removeClass("menu3_leaf_selected");
+		$(".menu4_selected", $tree).removeClass("menu4_selected");
 
+		if ($this.hasClass("menu2_leaf")) {
 			$this.addClass("menu2_leaf_selected");
 		} else {
-			$(".menu2_leaf_selected", $tree).removeClass("menu2_leaf_selected");
-
-			if ($this.hasClass("menu2_selected")) {
-				$(".menu2_selected", $tree).removeClass("menu2_selected");
-			} else {
-				$(".menu2_selected", $tree).removeClass("menu2_selected");
-
-				$this.addClass("menu2_selected");
-			}
-
-			var submenus = $(".menu2_submenus", $this.parent());
-			if (submenus.length > 0) {
-				if ($this.hasClass("menu2_expend")) {
-					$(".menu2", $tree).removeClass("menu2_expend");
-					$(".menu2_submenus", $tree).hide();
-				} else {
-					$(".menu2", $tree).removeClass("menu2_expend");
-					$(".menu2_submenus", $tree).hide();
-
-					submenus.show();
-					$this.addClass("menu2_expend");
-				}
-			}
+			$this.addClass("menu2_selected");
 		}
+
+		var submenus = $(".menu2_submenus", $this.parent());
+		if (submenus.length > 0) {
+			if ($this.hasClass("menu2_expend")) {
+				$(".menu2", $tree).removeClass("menu2_expend");
+				$(".menu2_submenus", $tree).hide();
+			} else {
+				$(".menu2", $tree).removeClass("menu2_expend");
+				$(".menu2_submenus", $tree).hide();
+
+				submenus.show();
+				$this.addClass("menu2_expend");
+			}
+		} else {
+			$(".menu2_expend", $tree).removeClass("menu2_expend");
+		}
+
+	}).hover(function() {
+		$(this).addClass("menu2_hover");
+	}, function() {
+		$(this).removeClass("menu2_hover");
 	});
 
 	$(".menu3", $tree).click(function() {
 		var $this = $(this);
 
-		$(".menu2_leaf_selected", $tree).removeClass("menu2_leaf_selected");
-		$(".menu3_selected", $tree).removeClass("menu3_selected");
-
-		$(".menu3_submenus", $this.parent().parent()).hide();
-		$(".menu3_submenus", $this.parent()).show();
-
-		$this.addClass("menu3_selected");
-	});
-	$(".menu4", $tree).click(function() {
-		var $this = $(this);
-
+		$(".menu2_selected", $tree).removeClass("menu2_selected");
 		$(".menu2_leaf_selected", $tree).removeClass("menu2_leaf_selected");
 		$(".menu3_leaf_selected", $tree).removeClass("menu3_leaf_selected");
 		$(".menu4_selected", $tree).removeClass("menu4_selected");
 
+		if ($this.hasClass("menu3_leaf")) {
+			$this.addClass("menu3_leaf_selected");
+		} else {
+			$this.addClass("menu3_selected");
+		}
+
+		$this.closest(".menu2_submenus").prev(".menu2").addClass("menu2_selected");
+
+		var submenus = $(".menu3_submenus", $this.parent());
+		if (submenus.length > 0) {
+			if ($this.hasClass("menu3_expend")) {
+				$(".menu3", $tree).removeClass("menu3_expend");
+				$(".menu3_submenus", $tree).hide();
+			} else {
+				$(".menu3", $tree).removeClass("menu3_expend");
+				$(".menu3_submenus", $tree).hide();
+
+				submenus.show();
+				$this.addClass("menu3_expend");
+			}
+		} else {
+			$(".menu3_expend", $tree).removeClass("menu3_expend");
+		}
+
+	}).hover(function() {
+		$(this).addClass("menu3_hover");
+	}, function() {
+		$(this).removeClass("menu3_hover");
+	});
+	$(".menu4", $tree).click(function() {
+		var $this = $(this);
+
+		$(".menu2_selected", $tree).removeClass("menu2_selected");
+		$(".menu2_leaf_selected", $tree).removeClass("menu2_leaf_selected");
+		$(".menu3_leaf_selected", $tree).removeClass("menu3_leaf_selected");
+		$(".menu4_selected", $tree).removeClass("menu4_selected");
+
+		$this.closest(".menu2_submenus").prev(".menu2").addClass("menu2_selected");
+
 		$this.addClass("menu4_selected");
+	}).hover(function() {
+		$(this).addClass("menu4_hover");
+	}, function() {
+		$(this).removeClass("menu4_hover");
 	});
 
 }

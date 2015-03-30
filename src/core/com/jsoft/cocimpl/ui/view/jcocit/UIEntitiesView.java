@@ -14,7 +14,7 @@ import com.jsoft.cocit.util.StringUtil;
 
 public class UIEntitiesView extends BaseModelView<UIEntities> {
 	public String getName() {
-		return ViewNames.VIEW_PANELS;
+		return ViewNames.VIEW_MAINS;
 	}
 
 	public void render(Writer out, UIEntities model) throws Exception {

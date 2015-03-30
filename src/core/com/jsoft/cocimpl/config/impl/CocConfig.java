@@ -7,7 +7,9 @@ import java.util.Properties;
 
 import org.nutz.lang.stream.StringInputStream;
 
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ViewConfig;
 import com.jsoft.cocit.util.FileUtil;
 import com.jsoft.cocit.util.LogUtil;
 import com.jsoft.cocit.util.StringUtil;
@@ -18,13 +20,16 @@ import com.jsoft.cocit.util.StringUtil;
  * @author Ji Yongshan
  * 
  */
-public class CocConfig extends BaseConfig implements ICommonConfig {
+@SuppressWarnings("deprecation")
+public class CocConfig extends BaseConfig implements ICocConfig, ICommonConfig {
 
 	private String configPath;
 
 	private String contextPath;
 
 	private String contextDir;
+
+	private ViewConfig viewConfig;
 
 	private void initDefault() {
 		properties.put(CONFIG_DB, "dbconfig.properties");
@@ -258,7 +263,7 @@ public class CocConfig extends BaseConfig implements ICommonConfig {
 		super.copyTo(config);
 	}
 
-	public ICommonConfig copy() {
+	public ICocConfig copy() {
 		CocConfig ret = new CocConfig();
 		this.copyTo(ret);
 
@@ -301,5 +306,13 @@ public class CocConfig extends BaseConfig implements ICommonConfig {
 	@Override
 	public boolean isMultiSystem() {
 		return this.getBoolean("cocit.isMultiSystem");
+	}
+
+	@Override
+	public ViewConfig getViewConfig() {
+		if (viewConfig == null) {
+			viewConfig = new ViewConfig(this);
+		}
+		return viewConfig;
 	}
 }

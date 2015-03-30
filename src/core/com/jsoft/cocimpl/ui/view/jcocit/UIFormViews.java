@@ -10,7 +10,6 @@ import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocimpl.ui.view.BaseModelView;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
-import com.jsoft.cocit.constant.ConfigKeys;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.FieldModes;
 import com.jsoft.cocit.constant.ViewNames;
@@ -60,10 +59,11 @@ public abstract class UIFormViews {
 			}
 
 			// if (!model.isAjax()) {
-			String btnPos = Cocit.me().getConfig().get(ConfigKeys.DIALOG_BUTTONS_POSITION, "entityButtons");
-			write(out, "<div class=\"%s\"><div>", btnPos);
+			String formButtonsCSS = Cocit.me().getConfig().getViewConfig().getFormButtonsCSS();
+			write(out, "<div class=\"%s\"><div>", formButtonsCSS);
 			// write(out, "<div class=\"entityButtons\">");
 			UIActions actions = model.getActions();
+			String buttonStyle = Cocit.me().getConfig().getViewConfig().getButtonStyle();
 			if (actions != null && actions.getData() != null && actions.getData().getChildren().size() > 0) {
 				List<Node> nodes = actions.getData().getChildren();
 				for (Node node : nodes) {
@@ -113,22 +113,35 @@ public abstract class UIFormViews {
 					if (!StringUtil.isBlank(msg))
 						append(options, ", warnMessage: '%s'", msg.replace("'", ""));
 
-					write(out, "<input type=\"submit\" data-options=\"%s\" onclick=\"jCocit.entity.doSubmitForm(this); return false;\" value=\"%s\" />&nbsp;&nbsp;", options, node.getName());
+					if ("button".equals(buttonStyle)) {
+						write(out, "<input type=\"submit\" data-options=\"%s\" onclick=\"jCocit.entity.doSubmitForm(this); return false;\" value=\"%s\" />", options, node.getName());
+					} else {
+						write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"%s, onClick:jCocit.entity.doSubmitForm\">%s</a>", options, node.getName());
+					}
 				}
 			} else {
-				if (model.getActionID().startsWith("v")) {
-					write(out, "<input type=\"submit\" onclick=\"jCocit.entity.doCloseWindow(this, %s); return false;\" value=\"关闭\" />&nbsp;&nbsp;", resultUI);
+				if ("button".equals(buttonStyle)) {
+					if (model.getActionID().startsWith("v")) {
+						write(out, "<input type=\"submit\" onclick=\"jCocit.util.closeWindow(this, %s); return false;\" value=\"关闭\" />", resultUI);
+					} else {
+						write(out, "<input type=\"submit\" onclick=\"jCocit.util.submitForm(this, %s);return false;\" value=\"提交\" />", resultUI);
+						write(out, "<input type=\"submit\" onclick=\"jCocit.util.closeWindow(this, %s); return false;\" value=\"取消\" />", resultUI);
+					}
 				} else {
-					write(out, "<input type=\"submit\" onclick=\"jCocit.entity.doSubmitForm(this, %s);return false;\" value=\"提交\" />&nbsp;&nbsp;", resultUI);
-					write(out, "<input type=\"submit\" onclick=\"jCocit.entity.doCloseWindow(this, %s); return false;\" value=\"取消\" />&nbsp;&nbsp;", resultUI);
+					if (model.getActionID().startsWith("v")) {
+						write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"resultUI: %s, onClick: jCocit.util.closeWindow\">关闭</a>", resultUI);
+					} else {
+						write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"resultUI: %s, onClick: jCocit.util.submitForm\">提交</a>", resultUI);
+						write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"resultUI: %s, onClick: jCocit.util.closeWindow\">取消</a>", resultUI);
+					}
 				}
 			}
+
 			write(out, "</div></div>");
 			// }
 
 			write(out, "</form>");
 		}
-
 	}
 
 	public static class UISubFormView extends BaseModelView<UIForm> {
@@ -489,6 +502,10 @@ public abstract class UIFormViews {
 			write(out, "<table valign=\"top\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr>");
 
 			for (UIField field : visibleFields) {
+				fieldService = field.getFieldService();
+				if (StringUtil.hasContent(fieldService.getFkDependFieldKey())) {
+					continue;
+				}
 
 				// 字段跨越多少列？
 				colspan = 1;
@@ -499,7 +516,6 @@ public abstract class UIFormViews {
 					columnCount = 1;
 				}
 
-				fieldService = field.getFieldService();
 				propName = fieldService.getFieldName();
 				fieldName = model.getBeanName() + "." + propName;
 				fieldValue = ObjectUtil.getValue(dataObject, propName);

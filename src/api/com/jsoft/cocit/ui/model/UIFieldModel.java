@@ -118,4 +118,8 @@ public interface UIFieldModel {
 	public <T extends BaseUIModel> T setViewName(String viewName);
 	
 	public <T extends BaseUIModel> T setTitle(String title);
+	
+	public void setSupportHtml(boolean supportHtml);
+	
+	public boolean isSupportHtml();
 }

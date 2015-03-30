@@ -84,8 +84,14 @@ public class UISearchFormView extends BaseModelView<UISearchBox> {
 		}
 		if (!buttonExisted) {
 			write(out, "<td colspan=2>");
-			write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button jCocit-dosearch\" data-options=\"onClick: jCocit.entity.doSearch\"\">%s</a>", "查询");
-			write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\" data-options=\"onClick: jCocit.entity.doResetForm\"\">%s</a>", "重置");
+			String buttonStyle = Cocit.me().getConfig().getViewConfig().getButtonStyle();
+			if ("button".equals(buttonStyle)) {
+				write(out, "<button class=\"coc-btn\" onClick=\"jCocit.entity.doSearch(this)\">%s</button>", "查询");
+				write(out, "<button class=\"coc-btn\" onClick=\"jCocit.util.resetForm(this)\">%s</button>", "重置");
+			} else {
+				write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\" data-options=\"onClick: jCocit.entity.doSearch\"\">%s</a>", "查询");
+				write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\" data-options=\"onClick: jCocit.util.resetForm\"\">%s</a>", "重置");
+			}
 			write(out, "</td>");
 		}
 		write(out, "</tr>");

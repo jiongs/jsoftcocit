@@ -550,16 +550,45 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 		return ret;
 	}
 
-	private boolean makeSelfTreeNodes(Tree tree, Node node, CocFieldService field, CndExpr expr) {
+	private boolean makeSelfTreeNodes(Tree tree, Node node, CocFieldService treeField, CndExpr expr) {
 		boolean ret = true;
 		String rootNodeID = node == null ? "" : node.getId();
 
-		if (field.isFkField()) {
+		if (treeField == null) {
+
+			/*
+			 * 获取外键目标实体的分组字段
+			 */
+			CocFieldService fkGroupField = null;
+			for (CocFieldService targetFkField : getFkFields()) {
+				if (targetFkField.isFkTargetAsGroup()) {
+					fkGroupField = targetFkField;
+					break;
+				}
+			}
+
+			// 创建外键节点的分组节点：即外键节点按什么字段进行分组？
+			String groupField = null;
+			if (fkGroupField != null) {
+				groupField = fkGroupField.getFieldName();
+				String fkGroupTargetField = fkGroupField.getFkTargetFieldKey();
+				if (fkGroupField.isManyToOne()) {
+					groupField = groupField + "." + fkGroupTargetField;
+				}
+				ret = makeSelfTreeNodes(tree, fkGroupField, null, rootNodeID, "", groupField, null);
+				for (Node n : tree.getAll()) {
+					n.set("unselectable", true);
+				}
+			}
+
+			// 创建外键节点
+			ret = ret && makeSelfTreeNodes(tree, treeField, groupField, rootNodeID, groupField, "", expr);
+		} else if (treeField.isFkField()) {
 
 			/*
 			 * 获取外键字段关联的目标模块
 			 */
-			CocEntityService fkTargetModule = field.getFkTargetEntity();
+			CocEntityService fkTargetModule = treeField.getFkTargetEntity();
 			if (fkTargetModule == null) {
 				return false;
 			}
@@ -590,10 +619,10 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 			}
 
 			// 创建外键节点
-			ret = ret && makeSelfTreeNodes(tree, field, groupField, rootNodeID, groupField, "", expr);
+			ret = ret && makeSelfTreeNodes(tree, treeField, groupField, rootNodeID, groupField, "", expr);
 
 		} else {
-			Option[] options = field.getDicOptionsArray();
+			Option[] options = treeField.getDicOptionsArray();
 			if (options == null || options.length == 0 || options.length > 200) {
 				return false;
 			}
@@ -608,33 +637,36 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 		return ret;
 	}
 
-	private boolean makeSelfTreeNodes(Tree tree, CocFieldService field, String groupField, String rootNodeID, String groupNodeIDPrefix, String nodeIDPrefix, CndExpr expr) {
+	private boolean makeSelfTreeNodes(Tree tree, CocFieldService treeField, String groupField, String rootNodeID, String groupNodeIDPrefix, String nodeIDPrefix, CndExpr expr) {
+		Class type = this.getClassOfEntity();
+		if (treeField != null) {
+			// 获取该字段引用的外键系统
+			CocEntityService fkModule = treeField.getFkTargetEntity();
 
-		// 获取该字段引用的外键系统
-		CocEntityService fkModule = field.getFkTargetEntity();
+			// 查询外键数据
+			type = ee().getTypeOfEntity(fkModule);
+			// if (orm().count(fkSystemType) > 50) {
+			// return false;
+			// }
+			CndExpr sortExpr = makeSortExpr((ICocEntity) fkModule, "tree");
 
-		// 查询外键数据
-		Class fkSystemType = ee().getTypeOfEntity(fkModule);
-		// if (orm().count(fkSystemType) > 50) {
-		// return false;
-		// }
-		CndExpr sortExpr = makeSortExpr((ICocEntity) fkModule, "tree");
-		
-		if (expr == null) {
-			expr = sortExpr;
-		} else {
-			if (sortExpr != null) {
-				expr = expr.and(sortExpr);
+			if (expr == null) {
+				expr = sortExpr;
+			} else {
+				if (sortExpr != null) {
+					expr = expr.and(sortExpr);
+				}
 			}
 		}
-		List fkSystemRecords = orm().query(fkSystemType, expr);
+
+		List fkSystemRecords = orm().query(type, expr);
 
 		// 数据自身树
-		String selfTreeProp = null;
-		ICocField selfTreeFld = ee().getFieldOfSelfTree(fkModule);
-		if (selfTreeFld != null) {
-			selfTreeProp = selfTreeFld.getFieldName();
-		}
+		// String selfTreeProp = null;
+		// ICocField selfTreeFld = ee().getFieldOfSelfTree(fkModule);
+		// if (selfTreeFld != null) {
+		// selfTreeProp = selfTreeFld.getFieldName();
+		// }
 
 		String parentID = "";
 		for (Object record : fkSystemRecords) {
@@ -651,8 +683,12 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 				String nodeName = obj.getName();
 
 				Node childNode = tree.addNode(parentID, nodeID);
-				childNode.setName(nodeName);
-				childNode.setSn(obj.getSn());
+				if (childNode == null) {
+					log.warnf("tree.addNode result is null! {parentId : %s, nodeID : %s}", parentID, nodeID);
+				} else {
+					childNode.setName(nodeName);
+					childNode.setSn(obj.getSn());
+				}
 
 			} else if (record instanceof ITree2Entity) {
 				ITree2Entity obj = (ITree2Entity) record;
@@ -690,17 +726,17 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 				childNode.setSn(obj.getSn());
 			} else {
 				// 计算上级节点ID
-				if (!StringUtil.isBlank(selfTreeProp)) {
-					Object parentObj = ObjectUtil.getValue(record, selfTreeProp);
-					if (parentObj != null)
-						parentID = "" + ObjectUtil.getValue(parentObj, Const.F_KEY);
-					else
-						parentID = "";
-				}
+				// if (!StringUtil.isBlank(selfTreeProp)) {
+				// Object parentObj = ObjectUtil.getValue(record, selfTreeProp);
+				// if (parentObj != null)
+				// parentID = "" + ObjectUtil.getValue(parentObj, Const.F_KEY);
+				// else
+				// parentID = "";
+				// }
 
 				// 计算节点ID
 				String nodeID = null;
-				if (ClassUtil.hasField(fkSystemType, Const.F_KEY)) {
+				if (ClassUtil.hasField(type, Const.F_KEY)) {
 					nodeID = "" + ObjectUtil.getValue(record, Const.F_KEY);
 				} else {
 					nodeID = "" + record.hashCode();
@@ -716,7 +752,7 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 				Node childNode = tree.addNode(parentID, nodeID).setName(nodeName);
 
 				// 计算节点顺序
-				if (ClassUtil.hasField(fkSystemType, Const.F_SN)) {
+				if (ClassUtil.hasField(type, Const.F_SN)) {
 					Integer seq = ObjectUtil.getValue(record, Const.F_SN);
 					if (seq != null)
 						childNode.setSn(seq);

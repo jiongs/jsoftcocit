@@ -41,7 +41,7 @@ public interface ICocAction extends ITreeEntity {
 	String getUiFormUrl();
 
 	String getUiFormTarget();
-
+	
 	/**
 	 * <b>默认值规则：</b>即执行该操作时，如果字段值不存在，则自动将规则中指定的字段值赋予相应的字段。
 	 */

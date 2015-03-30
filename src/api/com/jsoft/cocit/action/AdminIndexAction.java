@@ -38,7 +38,7 @@ public class AdminIndexAction extends AdminAction {
 	protected void init() {
 		super.init();
 
-		bodyTabsSpaceHeight = 40;
+		bodyTabsSpaceHeight = 45;
 		bodyTabsSpaceWidth = 0;
 		frameGap = 5;
 	}
@@ -252,7 +252,7 @@ public class AdminIndexAction extends AdminAction {
 		/*
 		 * 准备“一级页面”变量
 		 */
-		data.put("tabs1Height", bodyHeight + bodyTabsSpaceHeight);
+		data.put("tabs1Height", bodyHeight + bodyTabsSpaceHeight - 40);
 		data.put("tabs1Width", bodyWidth + leftWidth);
 
 		/*

@@ -106,21 +106,16 @@
 		return $window;
 	}
 	;
-	function _f(_10, _11, _12) {
+	function openWindow(title, msgDIV, buttons) {
 		var win = $("<div class=\"messager-body\"></div>").appendTo("body");
-		win.append(_11);
-		if (_12) {
-			var tb = $("<div class=\"messager-button\"></div>").appendTo(win);
-			for ( var _13 in _12) {
-				$("<a></a>").attr("href", "javascript:void(0)").text(_13).css("margin-left", 10).bind("click", eval(_12[_13])).appendTo(tb).linkbutton();
-			}
-		}
-		win.window({
-			title : _10,
-			noheader : (_10 ? false : true),
-			width : 300,
+		win.append(msgDIV);
+		win.dialog({
+			title : title,
+			noheader : (title ? false : true),
+			width : 400,
 			height : "auto",
 			modal : true,
+			shadow: false,
 			collapsible : false,
 			minimizable : false,
 			maximizable : false,
@@ -129,10 +124,10 @@
 				setTimeout(function() {
 					win.window("destroy");
 				}, 100);
-			}
+			},
+			buttons: buttons
 		});
 		win.window("window").addClass("messager-window");
-		win.children("div.messager-button").children("a:first").focus();
 		return win;
 	}
 	;
@@ -153,32 +148,31 @@
 				}
 			});
 		},
-		alert : function(_15, msg, _16, fn) {
-			var _17 = "<div>" + msg + "</div>";
-			switch (_16) {
+		alert : function(title, msg, type, callback) {
+			var msgDIV = "<div>" + msg + "</div>";
+			switch (type) {
 			case "error":
-				_17 = "<div class=\"messager-icon messager-error\"></div>" + _17;
+				msgDIV = "<div class=\"messager-icon messager-error\"></div>" + msgDIV;
 				break;
 			case "info":
-				_17 = "<div class=\"messager-icon messager-info\"></div>" + _17;
+				msgDIV = "<div class=\"messager-icon messager-info\"></div>" + msgDIV;
 				break;
 			case "question":
-				_17 = "<div class=\"messager-icon messager-question\"></div>" + _17;
+				msgDIV = "<div class=\"messager-icon messager-question\"></div>" + msgDIV;
 				break;
 			case "warning":
-				_17 = "<div class=\"messager-icon messager-warning\"></div>" + _17;
+				msgDIV = "<div class=\"messager-icon messager-warning\"></div>" + msgDIV;
 				break;
 			}
-			_17 += "<div style=\"clear:both;\"/>";
-			var _18 = {};
-			_18[$.messager.defaults.ok] = function() {
-				win.window("close");
-				if (fn) {
-					fn();
-					return false;
+			msgDIV += "<div style=\"clear:both;\"/>";
+			var buttons = [ {
+				text : '确定',
+				iconCls : 'icon-ok',
+				onClick : function(data) {
+					$(this).dialog('close');
 				}
-			};
-			var win = _f(_15, _17, _18);
+			}]
+			var win = openWindow(title, msgDIV, buttons);
 			return win;
 		},
 		confirm : function(_19, msg, fn) {
@@ -198,7 +192,7 @@
 					return false;
 				}
 			};
-			var win = _f(_19, _1a, _1b);
+			var win = openWindow(_19, _1a, _1b);
 			return win;
 		},
 		prompt : function(_1c, msg, fn) {
@@ -219,7 +213,7 @@
 					return false;
 				}
 			};
-			var win = _f(_1c, _1d, _1e);
+			var win = openWindow(_1c, _1d, _1e);
 			win.children("input.messager-input").focus();
 			return win;
 		},
@@ -246,7 +240,7 @@
 				interval : 300
 			}, _1f || {});
 			var _23 = "<div class=\"messager-progress\"><div class=\"messager-p-msg\"></div><div class=\"messager-p-bar\"></div></div>";
-			var win = _f(_22.title, _23, null);
+			var win = openWindow(_22.title, _23, null);
 			win.find("div.messager-p-msg").html(_22.msg);
 			var bar = win.find("div.messager-p-bar");
 			bar.progressbar({
@@ -278,4 +272,26 @@
 		ok : "Ok",
 		cancel : "Cancel"
 	};
+	/*
+	 * Common Functions
+	 */
+//	Jerror = function(message, title, callback) {
+//		$.messager.alert("提示", message+"<p><p><p><P><P>"+message, "error", callback);
+//	};
+//	Jwarn = function(message, title, callback) {
+//		$.messager.alert("提示", message+"<p><p><p><P><P>"+message, "error", callback);
+//	};
+//	Jinfo = function(message, title, callback) {
+//		$.messager.alert("提示", message+"<p><p><p><P><P>"+message, "error", callback);
+//	};
+//	Jalert = Jinfo;
+//	Jsuccess = function(message, title, callback) {
+//		$.messager.alert("提示", message, "info", callback);
+//	};
+//	Jconfirm = function(message, title, callback) {
+//		$.messager.alert("提示", message, "question", callback);
+//	};
+//	Jprompt = function(message, value, title, callback) {
+//		$.messager.alert("提示", message, "question", callback);
+//	};
 })(jQuery);

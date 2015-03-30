@@ -19,7 +19,7 @@ public abstract class DataEntityServiceImpl<T extends IDataEntity> implements Da
 	}
 
 	protected Orm orm() {
-		return Cocit.me().getProxiedORM();
+		return Cocit.me().orm();
 	}
 
 	protected EntityEngine ee() {

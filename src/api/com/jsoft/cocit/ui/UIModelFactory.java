@@ -1,5 +1,7 @@
 package com.jsoft.cocit.ui;
 
+import java.util.List;
+
 import com.jsoft.cocit.entityengine.service.CocActionService;
 import com.jsoft.cocit.entityengine.service.CocEntityService;
 import com.jsoft.cocit.entityengine.service.CocFieldService;
@@ -42,6 +44,8 @@ public interface UIModelFactory {
 
 	UIGrid getGrid(SystemMenuService menuService, CocEntityService entityService);
 
+	UIGrid getGrid(SystemMenuService menuService, CocEntityService entityService, List<String> fieldList, List<String> rowActionList);
+
 	UIGrid getComboGrid(SystemMenuService targetMenuService, CocEntityService targetEntityService, CocFieldService fkFieldService);
 
 	UIList getComboList(SystemMenuService targetMenuService, CocEntityService targetEntityService, CocFieldService fkFieldService);
@@ -56,7 +60,11 @@ public interface UIModelFactory {
 
 	UISearchBox getSearchBox(SystemMenuService menuService, CocEntityService entityService);
 
+	UISearchBox getSearchBox(SystemMenuService menuService, CocEntityService entityService, List<String> fields);
+
 	UIActions getActions(SystemMenuService menuService, CocEntityService entityService);
+
+	UIActions getActions(SystemMenuService menuService, CocEntityService entityService, List<String> actionKeys);
 
 	// /**
 	// * @deprecated 用{@link #getUIActions(SystemMenuService, CocEntityService)}代替

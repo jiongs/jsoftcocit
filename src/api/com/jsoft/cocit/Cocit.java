@@ -11,7 +11,7 @@ import com.jsoft.cocimpl.mvc.nutz.CocActionHandler;
 import com.jsoft.cocimpl.orm.generator.INamingStrategy;
 import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocit.config.IBeansConfig;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.config.IDSConfig;
 import com.jsoft.cocit.config.IMessageConfig;
 import com.jsoft.cocit.entityengine.DataManagerFactory;
@@ -92,7 +92,7 @@ public abstract class Cocit {
 
 	public abstract SecurityEngine getSecurityEngine();
 
-	public abstract ICommonConfig getConfig();
+	public abstract ICocConfig getConfig();
 
 	public abstract IBeansConfig getBeansConfig();
 

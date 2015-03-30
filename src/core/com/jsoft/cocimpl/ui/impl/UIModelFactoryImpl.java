@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.FieldModes;
 import com.jsoft.cocit.constant.OpCodes;
@@ -215,7 +216,11 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		;
 		model.setViewName(uiView);
 		model.setActionsPos(actionsPos);
-		model.setSearchBoxPos(searchBoxPos);
+		if (searchBoxPos == 0) {
+			model.setSearchBoxPos((byte) 4);
+		} else {
+			model.setSearchBoxPos(searchBoxPos);
+		}
 
 		/*
 		 * 检查当前GRID是否支持行编辑
@@ -253,6 +258,11 @@ public class UIModelFactoryImpl implements UIModelFactory {
 
 	@Override
 	public UISearchBox getSearchBox(SystemMenuService menuService, CocEntityService entityService) {
+		return getSearchBox(menuService, entityService, null);
+	}
+
+	@Override
+	public UISearchBox getSearchBox(SystemMenuService menuService, CocEntityService entityService, List<String> queryFields) {
 
 		/*
 		 * 获取需要引用的主界面
@@ -265,9 +275,8 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		/*
 		 * 计算UI属性
 		 */
-		List<String> queryFields = null;
 		CuiEntityService cui = entityService.getCuiEntity(cuiKey);
-		if (cui != null) {
+		if (queryFields == null && cui != null) {
 			queryFields = cui.getQueryFieldsList();
 		}
 
@@ -300,6 +309,11 @@ public class UIModelFactoryImpl implements UIModelFactory {
 
 	@Override
 	public UIGrid getGrid(SystemMenuService menuService, CocEntityService entityService) {
+		return getGrid(menuService, entityService, null, null);
+	}
+
+	@Override
+	public UIGrid getGrid(SystemMenuService menuService, CocEntityService entityService, List<String> fieldList, List<String> rowActionList) {
 
 		/*
 		 * 获取需要引用的主界面
@@ -312,19 +326,19 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		/*
 		 * 计算UI属性
 		 */
+		CuiEntityService cui = entityService.getCuiEntity(cuiKey);
+
 		CuiGridService cuiGrid = null;
-		List<String> allFieldNames = null;
 		List<String> frozenFieldNames = null;
 		List<String> fieldNames = null;
-		CuiEntityService cui = entityService.getCuiEntity(cuiKey);
-		if (cui != null) {
+		if (cui != null && (fieldList == null || fieldList.size() == 0)) {
 			cuiGrid = cui.getCuiGrid();
 			if (cuiGrid != null) {
-				allFieldNames = new ArrayList();
+				fieldList = new ArrayList();
 				frozenFieldNames = cuiGrid.getFrozenFieldsList();
-				allFieldNames.addAll(frozenFieldNames);
+				fieldList.addAll(frozenFieldNames);
 				fieldNames = cuiGrid.getFieldsList();
-				allFieldNames.addAll(fieldNames);
+				fieldList.addAll(fieldNames);
 			}
 		}
 
@@ -332,10 +346,13 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		 * 创建 Grid
 		 */
 		UIGrid model = new UIGrid()//
-		        .setDataLoadUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_GET_GRID_DATA, menuService, entityService))//
 		        .setId(makeHtmlID(UIGrid.class, entityService.getId()))//
 		        .setTitle(entityService.getName())//
 		;
+
+		/*
+		 * 计算 Grid 属性
+		 */
 		if (cuiGrid != null) {
 			model.set("", cuiGrid.isCheckOnSelect());
 			model.set("singleSelect", !cuiGrid.isMultiSelect());
@@ -366,34 +383,36 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			model.set("showHeader", cuiGrid.isShowHeader());
 			model.set("sortExpr", cuiGrid.getSortExpr());
 
-			String rowActions = cuiGrid.getRowActions();
-			if (StringUtil.hasContent(rowActions)) {
-				List<String> actionIDList = StringUtil.toList(rowActions, "|,， ");
-				Tree data = getActionsData(menuService, entityService, null, null, actionIDList);
-				UIActions rowUIActions = new UIActions().setData(data).setId(makeHtmlID(UIActions.class, entityService.getId()));
-
-				String rowActionsView = cuiGrid.getRowActionsView();
-				if (StringUtil.hasContent(rowActionsView))
-					rowUIActions.setViewName(rowActionsView);
-				// else
-				// rowUIActions.setViewName(ViewNames.CELL_VIEW_ROW_ACTIONS);
-
-				rowUIActions.addResultUI(model.getId());
-
-				model.setRowActions(rowUIActions);
-				model.setRowActionsPos(cuiGrid.getRowActionsPos());
-			}
-
 			model.setRowStyles(cuiGrid.getRowStyles());
 			model.setSortExpr(cuiGrid.getSortExpr());
 			model.setTreeField(cuiGrid.getTreeField());
 			model.setViewName(cuiGrid.getUiView());
+
+			if (rowActionList == null || rowActionList.size() == 0) {
+				String rowActions = cuiGrid.getRowActions();
+				rowActionList = StringUtil.toList(rowActions, "|,， ");
+			}
+		}
+
+		/*
+		 * 计算行操作
+		 */
+		if (rowActionList != null && rowActionList.size() > 0) {
+			Tree data = getActionsData(menuService, entityService, null, null, rowActionList);
+			UIActions rowUIActions = new UIActions().setData(data).setId(makeHtmlID(UIActions.class, entityService.getId()));
+
+			model.setRowActions(rowUIActions);
+			rowUIActions.addResultUI(model.getId());
+
+			if (cuiGrid != null) {
+				model.setRowActionsPos(cuiGrid.getRowActionsPos());
+			}
 		}
 
 		/*
 		 * 创建 Grid 列
 		 */
-		List<CocFieldService> fields = entityService.getFieldsOfGrid(allFieldNames);
+		List<CocFieldService> fields = entityService.getFieldsOfGrid(fieldList);
 		CuiGridFieldService cuiField = null;
 		int columnsTotalWidth = 0;
 		int width = -1;
@@ -497,6 +516,8 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		model.setColumnsTotalWidth(columnsTotalWidth);
 		model.setEntityKey(entityService.getKey());
 
+		model.setDataLoadUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_GET_GRID_DATA, menuService, entityService) + "/" + StringUtil.join(fieldList, null, "|") + "/" + StringUtil.join(rowActionList, null, "|"));
+
 		/*
 		 * 返回
 		 */
@@ -510,6 +531,8 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		model.setId(makeHtmlID(UIGrid.class, targetEntityService.getId()));
 		model.setName(targetEntityService.getName());
 		String url = fkFieldService.getFkComboUrl();
+		if (targetMenuService == null)
+			targetMenuService = targetEntityService.getSystemMenu();
 		if (StringUtil.isBlank(url)) {
 			url = MVCUtil.makeUrl(UrlAPI.ENTITY_GET_COMBOGRID_DATA, targetMenuService, targetEntityService);
 			url += "/" + fkFieldService.getCocEntityKey() + ":" + fkFieldService.getFieldName();
@@ -606,7 +629,6 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		UITree model = new UITree();
 		model.setId(makeHtmlID(UITree.class, entityService.getId()));
 
-		
 		/*
 		 * 查询数据
 		 */
@@ -627,8 +649,15 @@ public class UIModelFactoryImpl implements UIModelFactory {
 
 	@Override
 	public UIActions getActions(SystemMenuService menuService, CocEntityService entityService) {
+		return getActions(menuService, entityService, null);
+	}
 
-		List<String> actionIDList = menuService.getActionKeysWithoutRow();
+	@Override
+	public UIActions getActions(SystemMenuService menuService, CocEntityService entityService, List<String> actionIDList) {
+		ICocConfig config = Cocit.me().getConfig();
+
+		if (actionIDList == null || actionIDList.size() == 0)
+			actionIDList = menuService.getActionKeysWithoutRow();
 
 		/*
 		 * 获取需要引用的主界面
@@ -662,7 +691,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		if (StringUtil.hasContent(actionsView))
 			model.setViewName(actionsView);
 		else
-			model.setViewName(ViewNames.VIEW_BUTTONS);
+			model.setViewName(config.getViewConfig().getViewForGridActions());
 
 		/*
 		 * 返回
@@ -1563,6 +1592,9 @@ public class UIModelFactoryImpl implements UIModelFactory {
 					} else if (opID.startsWith("v")) {
 						mode = FieldModes.S;
 					}
+				}
+				if (StringUtil.hasContent(fld.getFkDependFieldKey())) {
+					mode = FieldModes.N;
 				}
 
 				/*

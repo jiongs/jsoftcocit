@@ -15,9 +15,9 @@ import com.jsoft.cocit.util.Tree;
 import com.jsoft.cocit.util.WriteUtil;
 import com.jsoft.cocit.util.Tree.Node;
 
-public class UIMenuView extends BaseModelView<UIActions> {
+public class UIActionsToolbarView extends BaseModelView<UIActions> {
 	public String getName() {
-		return ViewNames.VIEW_MENU;
+		return ViewNames.VIEW_ACTIONS_TOOLBAR;
 	}
 
 	public void render(Writer out, UIActions model) throws Exception {

@@ -7,7 +7,8 @@
             <pattern>[%t][%d{MM-dd HH:mm:ss}][%5p]%m%n</pattern>
         </encoder>
     </appender>
-    <logger name="com.jsoft.cocit.util.LogUtil" level="ERROR"></logger>
+    
+    <logger name="com.jsoft.cocit.util.LogUtil" level="WARN"></logger>
 
     <root level="INFO">
     </root>

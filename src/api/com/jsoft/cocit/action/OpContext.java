@@ -44,6 +44,8 @@ import com.jsoft.cocit.util.StringUtil;
  */
 public class OpContext {
 
+	public static final String OPCONTEXT_REQUEST_KEY = "opcontext";
+
 	private ExtHttpContext httpContext;
 	private Throwable exception;
 	private String funcExpr;
@@ -63,23 +65,23 @@ public class OpContext {
 	private String treeField;
 
 	public void release() {
-		this.httpContext = null;
-		this.exception = null;
-		this.funcExpr = null;
-		this.dataArgs = null;
-		this.systemMenuID = null;
-		this.cocEntityID = null;
-		this.cocActionID = null;
-		this.tenant = null;
-		this.system = null;
-		this.systemMenu = null;
-		this.cocEntity = null;
-		this.cocAction = null;
-		this.uiModelFactory = null;
-		this.dataManager = null;
-
-		this.dataObject = null;
-		this.dataID = null;
+		// this.httpContext = null;
+		// this.exception = null;
+		// this.funcExpr = null;
+		// this.dataArgs = null;
+		// this.systemMenuID = null;
+		// this.cocEntityID = null;
+		// this.cocActionID = null;
+		// this.tenant = null;
+		// this.system = null;
+		// this.systemMenu = null;
+		// this.cocEntity = null;
+		// this.cocAction = null;
+		// this.uiModelFactory = null;
+		// this.dataManager = null;
+		//
+		// this.dataObject = null;
+		// this.dataID = null;
 	}
 
 	/**
@@ -90,26 +92,66 @@ public class OpContext {
 	 * @return
 	 */
 	public static OpContext make(String funcExpr) {
-		return new OpContext(funcExpr, null, null, false);
+		OpContext ret = new OpContext(funcExpr, null, null, false);
+
+		ret.getHttpContext().getRequest().setAttribute(OPCONTEXT_REQUEST_KEY, ret);
+
+		return ret;
 	}
 
 	/**
-	 * 创建一个“操作助手”对象
+	 * 创建一个“操作环境”对象
 	 * 
 	 * @param funcExpr
-	 *            功能参数：“moduleID:tableID:opMode”
+	 *            功能表达式：该参数由“菜单编号:实体编号:操作编号”组成，其中菜单编号是必需的，后两个根据需要是可选的。<br/>
+	 *            平台会自动根据该参数加载“菜单服务对象，实体服务对象，操作服务对象”。<br/>
+	 *            菜单服务对象：可以调用opContext.getSystemMenu()方法获得；<br/>
+	 *            实体服务对象：可以调用opContext.getCocEntity()方法获得；<br/>
+	 *            操作服务对象：可以调用opContext.getCocAction()方法获得；
 	 * @param dataArgs
-	 *            要加载的实体数据
-	 * @param entityParamNode
-	 *            实体HTTP参数节点
+	 *            数据参数：由数据ID(物理主键)组成，可以是单值也可以是多值，多值用逗号分隔。<br/>
+	 *            平台会自动根据该参数加载“数据对象或数据列表”。<br>
+	 *            如果该参数是单值，则调用opContext.getDataObject()方法可以获得“实体对象”；<br/>
+	 *            如果该参数是多值，则调用opContext.getDataObject()方法可以获得“实体列表(List对象)”。<br/>
+	 * @param httpParams
+	 *            HTTP参数：浏览器上传入的参数如果以“entity.”开头的话，这些参数将被注入到httpParams中。<br/>
+	 *            httpParams传入到OpContext.make方法后，这些参数将被注入到已经加载的“数据对象或对象列表”中。
 	 * @return
 	 */
-	public static OpContext make(String funcExpr, String dataArgs, CocEntityParam entityParamNode) {
-		return new OpContext(funcExpr, dataArgs, entityParamNode, false);
+	public static OpContext make(String funcExpr, String dataArgs, CocEntityParam httpParams) {
+		OpContext ret = new OpContext(funcExpr, dataArgs, httpParams, false);
+
+		ret.getHttpContext().getRequest().setAttribute(OPCONTEXT_REQUEST_KEY, ret);
+
+		return ret;
 	}
 
-	public static OpContext make(String funcExpr, String dataArgs, CocEntityParam entityParamNode, boolean fireLoadEvent) {
-		return new OpContext(funcExpr, dataArgs, entityParamNode, fireLoadEvent);
+	/**
+	 * 创建一个“操作环境”对象
+	 * 
+	 * @param funcExpr
+	 *            功能表达式：该参数由“菜单编号:实体编号:操作编号”组成，其中菜单编号是必需的，后两个根据需要是可选的。<br/>
+	 *            平台会自动根据该参数加载“菜单服务对象，实体服务对象，操作服务对象”。<br/>
+	 *            菜单服务对象：可以调用opContext.getSystemMenu()方法获得；<br/>
+	 *            实体服务对象：可以调用opContext.getCocEntity()方法获得；<br/>
+	 *            操作服务对象：可以调用opContext.getCocAction()方法获得；
+	 * @param dataArgs
+	 *            数据参数：由数据ID(物理主键)组成，可以是单值也可以是多值，多值用逗号分隔。<br/>
+	 *            平台会自动根据该参数加载“数据对象或数据列表”。<br>
+	 *            如果该参数是单值，则调用opContext.getDataObject()方法可以获得“实体对象”；<br/>
+	 *            如果该参数是多值，则调用opContext.getDataObject()方法可以获得“实体列表(List对象)”。<br/>
+	 * @param httpParams
+	 *            HTTP参数，浏览器上传入的参数如果以“entity.”开头的话，这些参数将被注入到httpParams中。<br/>
+	 *            httpParams传入到OpContext.make方法后，这些参数将被注入到已经加载的“数据对象或对象列表”中。
+	 * @param fireLoadEvent
+	 * @return
+	 */
+	public static OpContext make(String funcExpr, String dataArgs, CocEntityParam httpParams, boolean fireLoadEvent) {
+		OpContext ret = new OpContext(funcExpr, dataArgs, httpParams, fireLoadEvent);
+
+		ret.getHttpContext().getRequest().setAttribute(OPCONTEXT_REQUEST_KEY, ret);
+
+		return ret;
 	}
 
 	private OpContext(String funcExpr, String dataArgs, CocEntityParam entityParamNode, boolean fireLoadEvent) {
@@ -617,14 +659,25 @@ public class OpContext {
 	}
 
 	/**
-	 * 解析查询条件，可以支持如下三种查询表达式：
+	 * 创建查询表达式：
+	 * <p>
+	 * 调用该方法，COC平台会自动将HTTP参数中的“query.jsonExpr”和“query.sqlExpr”转换成CndExpr表达式。
+	 * <p>
+	 * query.jsonExpr: 查询条件，语法（JSON表达式） 如：“{fld1: val1, fld2: [val3, val4, ...], 'fld3 cn': 'val5', '-keywords-': 'val6'}” <br/>
+	 * op：操作符，操作符可以是下列简写“ eq(equals)|ne(notEquals)|lt|le|gt|ge|bw(beginWith)|bn(notBeginWith)|ni(not in)|ew(endWith)|en(notEndWith)|cn(contains)|LIKE|nc(notContains)|nu(is null)|nn(not null) ”<br/>
+	 * -keywords-：关键字模糊查询，指定了该值，则其值将被作为关键字作模糊查询。
+	 * 
+	 * @return
 	 */
 	@SuppressWarnings("unused")
 	public CndExpr makeExpr() {
 		StringBuffer logExpr = new StringBuffer();
 		CndExpr retExpr = null;
 
-		String menuParamExpr = this.systemMenu.getWhereRule();
+		String menuParamExpr = null;
+		if (this.systemMenu != null) {
+			menuParamExpr = this.systemMenu.getWhereRule();
+		}
 		String querySqlExpr = httpContext.getParameterValue("query.sqlExpr", "");
 		// String queryFilterExpr = httpContext.getParameterValue("query.filterExpr", "");
 		String queryJsonExpr = httpContext.getParameterValue("query.jsonExpr", "");

@@ -11,7 +11,7 @@ import org.nutz.lang.Files;
 
 import com.jsoft.cocimpl.util.json.BaseJson;
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.exception.CocConfigException;
 
 /**
@@ -38,7 +38,7 @@ public abstract class JsonUtil {
 	public static <T> T loadFromJsonOrFile(Class<T> type, String str) {
 		List<T> array = new LinkedList();
 
-		ICommonConfig commonConfig = Cocit.me().getConfig();
+		ICocConfig commonConfig = Cocit.me().getConfig();
 		T[] array1 = null;
 		T[] array2 = null;
 		InputStream is = null;

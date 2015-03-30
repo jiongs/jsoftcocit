@@ -132,7 +132,7 @@ public interface DataManager {
 
 	public int count(SystemMenuService menuService, CocEntityService entityService, String opMode, CndExpr expr) throws CocException;
 
-	public List<Object> query(SystemMenuService menuService, CocEntityService entityService, String opMode, CndExpr expr) throws CocException;
+	public List query(SystemMenuService menuService, CocEntityService entityService, String opMode, CndExpr expr) throws CocException;
 
 	// /**
 	// * 查询分页数据集

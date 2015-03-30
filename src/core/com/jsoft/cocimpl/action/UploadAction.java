@@ -1,6 +1,7 @@
 package com.jsoft.cocimpl.action;
 
 import static com.jsoft.cocit.constant.UrlAPI.URL_CKFINDER;
+import static com.jsoft.cocit.constant.UrlAPI.URL_DOWNLOAD;
 import static com.jsoft.cocit.constant.UrlAPI.URL_UPLOAD;
 
 import java.io.File;
@@ -23,15 +24,17 @@ import com.jsoft.cocimpl.ckfinder.CKFinder;
 import com.jsoft.cocimpl.mvc.nutz.CocUploadAdaptor;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.EntityTypes;
 import com.jsoft.cocit.entity.log.IExtUploadLog;
+import com.jsoft.cocit.entity.log.IUploadLog;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.mvc.UIModelView;
 import com.jsoft.cocit.orm.Orm;
 import com.jsoft.cocit.ui.model.datamodel.JSONModel;
 import com.jsoft.cocit.util.DateUtil;
 import com.jsoft.cocit.util.FileUtil;
+import com.jsoft.cocit.util.HttpUtil;
 import com.jsoft.cocit.util.ImageUtil;
 import com.jsoft.cocit.util.JsonUtil;
 import com.jsoft.cocit.util.LogUtil;
@@ -87,6 +90,7 @@ public class UploadAction {
 
 			map.put("fileUrl", fileUrl);
 			map.put("fileName", info.getLocalName());
+			map.put("key", info.getKey());
 
 			// try {
 			// if (Images.isImage(fileUrl.substring(fileUrl.lastIndexOf(".") +
@@ -160,16 +164,16 @@ public class UploadAction {
 		}
 
 		Cocit me = Cocit.me();
-		
+
 		LogUtil.debug("UploadAction.save...[me: %s]", me);
-		
-		ICommonConfig config = me.getConfig();
+
+		ICocConfig config = me.getConfig();
 		HttpContext ctx = me.getHttpContext();
 		Orm orm = me.orm();
 
-		LogUtil.debug("UploadAction.save...[UPLOAD_FILTER: %s]", config.get(ICommonConfig.UPLOAD_FILTER));
-		
-		List<String> extList = StringUtil.toList(config.get(ICommonConfig.UPLOAD_FILTER).toLowerCase(), "|");
+		LogUtil.debug("UploadAction.save...[UPLOAD_FILTER: %s]", config.get(ICocConfig.UPLOAD_FILTER));
+
+		List<String> extList = StringUtil.toList(config.get(ICocConfig.UPLOAD_FILTER).toLowerCase(), "|");
 
 		if (!extList.contains(extName.toLowerCase())) {
 			throw new CocException("非法文件类型! [%s]", meta.getFileLocalName());
@@ -206,7 +210,7 @@ public class UploadAction {
 		localName = localName.replace(")", "_");
 		localName = localName.replace(" ", "_");
 		localName = localName.substring(0, localName.length() - extName.length() - 1);
-		
+
 		LogUtil.debug("UploadAction.save...[localName: %s]", localName);
 
 		// 计算文件名
@@ -228,7 +232,7 @@ public class UploadAction {
 				break;
 			}
 		}
-		
+
 		LogUtil.debug("UploadAction.save...[fileName: %s]", fileName);
 
 		file.getParentFile().mkdirs();
@@ -239,7 +243,7 @@ public class UploadAction {
 		 * 保存文件信息到数据库
 		 */
 		IExtUploadLog info = (IExtUploadLog) Mirror.me(EntityTypes.UploadLog).born();
-		
+
 		LogUtil.debug("UploadAction.save...[info: %s]", info);
 
 		if (StringUtil.hasContent(ctx.getLoginTenantKey()))
@@ -264,6 +268,25 @@ public class UploadAction {
 		LogUtil.debug("UploadAction.save: SUCCESS![filePath=%s]", info.getFilePath());
 
 		return info;
+	}
+
+	@At({ URL_DOWNLOAD })
+	public void download(String fileKey) {
+
+		Cocit coc = Cocit.me();
+		Orm orm = coc.orm();
+
+		IUploadLog uploadLog = orm.get(EntityTypes.UploadLog, fileKey);
+		if (uploadLog != null) {
+			File file = new File(uploadLog.getAbstractPath());
+			if (file.exists()) {
+				try {
+					HttpUtil.write(coc.getHttpContext().getResponse(), file);
+				} catch (IOException e) {
+					LogUtil.error("下载文件失败！", e);
+				}
+			}
+		}
 	}
 
 }

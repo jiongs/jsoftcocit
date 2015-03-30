@@ -37,7 +37,7 @@ public class UIEntities extends UIControlModel {
 
 	public String getViewName() {
 		if (StringUtil.isBlank(viewName))
-			return ViewNames.VIEW_PANELS;
+			return ViewNames.VIEW_MAINS;
 
 		return viewName;
 	}

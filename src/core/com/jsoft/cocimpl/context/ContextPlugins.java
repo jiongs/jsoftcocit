@@ -9,7 +9,7 @@ import java.util.Map;
 import org.nutz.lang.Mirror;
 
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.util.ClassUtil;
 import com.jsoft.cocit.util.ExceptionUtil;
@@ -74,7 +74,7 @@ public abstract class ContextPlugins {
 			Object plugin = pluginMap.get(interfaceOfPlugin);
 			if (plugin == null) {
 
-				String key = ICommonConfig.PLUGIN_PREFIX + interfaceOfPlugin.getSimpleName();
+				String key = ICocConfig.PLUGIN_PREFIX + interfaceOfPlugin.getSimpleName();
 				try {
 					String pluginImpl = Cocit.me().getConfig().get(key);
 					plugin = Class.forName(pluginImpl).newInstance();

@@ -14,14 +14,15 @@
 
 /* Dialog Buttons */
 .DlBS {
-	padding: 5px 10px 10px 5px;
+	padding: 3px 8px 10px 5px;
+	text-align: right;
+}
+.DlTB {
+	padding: 10px 8px 3px 5px;
 	text-align: right;
 }
 .DlBS a.l-btn .l-btn-text {
 	padding-top: 2px;
-}
-.DlBS input[type=submit]{
-	cursor: pointer;
 }
 
 /* Dialog Buttons - Link Button */

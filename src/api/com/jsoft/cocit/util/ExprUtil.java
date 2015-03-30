@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.orm.expr.CndExpr;
 import com.jsoft.cocit.orm.expr.CndType;
@@ -24,7 +24,7 @@ import com.jsoft.cocit.orm.expr.SimpleCndExpr;
 public abstract class ExprUtil {
 
 	public static CndExpr systemIs(String systemKey) {
-		ICommonConfig config = Cocit.me().getConfig();
+		ICocConfig config = Cocit.me().getConfig();
 
 		/*
 		 * 平台管理系统
@@ -48,7 +48,7 @@ public abstract class ExprUtil {
 	}
 
 	public static CndExpr tenantIs(String tenantKey) {
-		ICommonConfig config = Cocit.me().getConfig();
+		ICocConfig config = Cocit.me().getConfig();
 
 		/*
 		 * 平台用户

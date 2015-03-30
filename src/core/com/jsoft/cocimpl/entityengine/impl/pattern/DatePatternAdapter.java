@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.PatternNames;
 import com.jsoft.cocit.entityengine.PatternAdapter;
 import com.jsoft.cocit.exception.CocException;
@@ -25,7 +25,7 @@ public class DatePatternAdapter implements PatternAdapter<Date> {
 	@Override
 	public String getPattern() {
 		Cocit coc = Cocit.me();
-		ICommonConfig commonConfig = coc.getConfig();
+		ICocConfig commonConfig = coc.getConfig();
 
 		String format = commonConfig.get(CONFIG_KEY, DEFAULT_PATTERN);
 
@@ -48,7 +48,7 @@ public class DatePatternAdapter implements PatternAdapter<Date> {
 		}
 
 		Cocit coc = Cocit.me();
-		ICommonConfig commonConfig = coc.getConfig();
+		ICocConfig commonConfig = coc.getConfig();
 
 		String format = commonConfig.get(CONFIG_KEY, DEFAULT_PATTERN);
 
@@ -62,7 +62,7 @@ public class DatePatternAdapter implements PatternAdapter<Date> {
 		}
 
 		Cocit coc = Cocit.me();
-		ICommonConfig commonConfig = coc.getConfig();
+		ICocConfig commonConfig = coc.getConfig();
 		String format = commonConfig.get(CONFIG_KEY, DEFAULT_PATTERN);
 
 		try {

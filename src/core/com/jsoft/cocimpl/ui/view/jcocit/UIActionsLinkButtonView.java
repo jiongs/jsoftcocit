@@ -15,10 +15,10 @@ import com.jsoft.cocit.util.Tree;
 import com.jsoft.cocit.util.WriteUtil;
 import com.jsoft.cocit.util.Tree.Node;
 
-public class UIButtonsView extends BaseModelView<UIActions> {
+public class UIActionsLinkButtonView extends BaseModelView<UIActions> {
 
 	public String getName() {
-		return ViewNames.VIEW_BUTTONS;
+		return ViewNames.VIEW_ACTIONS_LINKBUTTON;
 	}
 
 	public void render(Writer out, UIActions model) throws Exception {

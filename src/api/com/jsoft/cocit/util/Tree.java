@@ -484,6 +484,10 @@ public class Tree {
 			this.statusCode = status;
 		}
 
+		public void setStatusCode(int status) {
+			this.statusCode = "" + status;
+		}
+
 		public String getType() {
 			return type;
 		}

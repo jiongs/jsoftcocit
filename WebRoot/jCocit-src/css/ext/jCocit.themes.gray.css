@@ -5,22 +5,36 @@ body {
 body, .body_bg{
 	background: #ebebeb url(../images/themesgray/body_bg.jpg) left top repeat;
 }
+
+form.entityForm, form.coc-form, 
+form.entityForm .CbT, form.coc-form .CbT,
+form.entityForm .input, .coc-input, 
+form.entityForm .select, .coc-select,
+form.entityForm .textarea, .coc-textarea,
+.entityToolbar, .coc-toolbar,
+.entityToolbar input, .coc-toolbar input,
+.entityToolbar select, .coc-toolbar select,
+.entityToolbar .CbT,  .coc-toolbar .CbT,
+.entityToolbar .entityFieldBox .CbT, .coc-fld .CbT,
+.PnHT,
+#AlBM,#AlC .AlBt,#AlHC,#AlHT span
+{
+	font-family: "微软雅黑", Arial, Times;
+}
 /** 
  * Alerts Box 
  */
 #AlHL,#AlHT,#AlHR,#AlHC {
-	background-color: #999999;
+	background-color: #3f9ff7;
 	background-image: url(../images/themesgray/dialog_title_bg.png);
 	background-position: -36px 0;
-}
-
-#AlBM,#AlC .AlBt,#AlHC,#AlHT span {
-	font: normal 12px "微软雅黑", Arial, Times;
-	color: #000000;
+	color: #ffffff;
 }
 
 #AlHT span {
+	font-weight: bold;
 	font-size: 14px;
+	color: #ffffff;
 }
 
 #AlBP,#AlBtP,#AlBL,#AlBtL,#AlBR,#AlBtR,#AlFL,#AlFC,#AlFR {
@@ -66,16 +80,21 @@ body, .body_bg{
 	color: #000000;
 }
 
-.PnH { /* Panel Header */
-	background-color: #cccccc;
-}
-
 .PnH {
+	background-color: #3f9ff7;
+	background-image: url('../images/themesgray/dialog_title_bg.png');
+	background-repeat: repeat-x;
+	background-position: 0 0;
+	/*
 	background: -webkit-linear-gradient(top, #cccccc 0, #999999 100%);
 	background: -moz-linear-gradient(top, #cccccc 0, #999999 100%);
 	background: -o-linear-gradient(top, #cccccc 0, #999999 100%);
 	background: linear-gradient(to bottom, #cccccc 0, #999999 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#cccccc, endColorstr=#999999, GradientType=0 );
+	*/
+}
+.PnHT{
+	color: #ffffff;
 }
 
 .WdB {
@@ -93,9 +112,29 @@ body, .body_bg{
 .DlBS { /* Dialog Buttons */
 	background: transparent;
 }
+.entityButtons button, .coc-btns button,
+.DlBS input[type=submit], 
+.DlBS button, 
+.DlTB input[type=submit], 
+.DlTB button, 
+.coc-btn
+{
+	border: 1px solid #999999;
+	background-color: transparent;
+	font-family: "微软雅黑", Arial, Times;
+}
+.DlBS input[type=submit]:hover, .DlTB input[type=submit]:hover, .DlBS button:hover, .DlTB button:hover, div.entityButtons button:hover, .coc-btn:hover{
+	background-color: #cccccc;
+}
 /**
  * GRID
  */
+.datagrid-cell a{
+	color: #000000;
+}
+.datagrid-row-over a:hover{
+	color: #ff9900;
+}
 .datagrid-row-alt {
 	background: #ffffff;
 }
@@ -105,6 +144,10 @@ body, .body_bg{
 }
 
 .datagrid-row-selected {
+	background: #95cdff;
+	color: #ffffff;
+}
+.datagrid-row-selected a{
 	background: #95cdff;
 	color: #ffffff;
 }
@@ -144,29 +187,78 @@ body, .body_bg{
 	background: #95cdff;
 	color: #000000;
 }
+
+/**
+ * Tabs
+ */
+/* Tabs Header 整个背景 */
+.tabs-wrap .tabs{
+	padding-top: 5px;
+}
+.tabs-header, .tabs-tool {
+	background-color: #DFDFDF;
+}
+.tabs-header-bottom .tabs-tool {
+	padding-top: 8px;
+}
+.tabs li{
+	background-color: #ffffff;
+	border-color: #999999;
+	padding: 1px;
+}
+.tabs li a.tabs-inner {
+	color: #000000;
+	background-color: #cccccc;
+}
+.tabs li a.tabs-inner:hover {
+	background-color: #95cdff;
+	color: #000000;
+}
+.tabs li.tabs-selected{
+	background-color: #ffffff;
+	border-color: #999999;
+}
+.tabs li.tabs-selected a.tabs-inner {
+	background-color: #95cdff;
+}
+.tabs-scroller-left, .tabs-scroller-right, .tabs li a.tabs-close {
+	background-image: url('../images/themesgray/ui_tabs.png');
+}
+
 /*
  * 表单
  */
-.entityGroup {
+.entityGroup, .coc-grp 
+{
 	background-color: #ffffff;
 }
-.entityGroupHeader {
+.entityGroupHeader, .coc-grph 
+{
 	border-color: #999999;
 	background-color: #cccccc;
 	color: #383838;
 }
 
-.entityFieldHeader,.entityFieldBox {
+.entityFieldHeader, .coc-fldh,
+.entityFieldBox, .coc-fld 
+{
 	border-color: #c1c1c1;
 	color: #383838;
 }
-.entityFieldHeader {
+.entityFieldHeader, .coc-fldh
+{
 	background-color: #f1f1f1;
 }
-.entityFieldBox {
+.entityFieldBox, .coc-fld
+{
 	background-color: #ffffff;
 }
 
-.entityFieldBox .input,.entityFieldBox .select,.entityFieldBox .textarea,.entityFieldBox .CbB,.entityToolbar .CbB  {
+.entityFieldBox .input, .coc-input,
+.entityFieldBox .select, .coc-select,
+.entityFieldBox .textarea, .coc-textarea,
+.entityFieldBox .CbB, .coc-fld .CbB,
+.entityToolbar .CbB, .coc-toolbar .CbB
+{
 	border-color: #999999;
 }

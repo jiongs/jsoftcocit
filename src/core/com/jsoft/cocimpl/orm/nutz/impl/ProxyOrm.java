@@ -308,8 +308,8 @@ public class ProxyOrm implements ExtOrm {
 	}
 
 	@Override
-	public int execSql(String sql, List sqlParams, Map<String, String> columnToPropMap) {
-		return orm.execSql(sql, sqlParams, columnToPropMap);
+	public int execSql(String sql, List sqlParams) {
+		return orm.execSql(sql, sqlParams);
 	}
 
 	@Override

@@ -21,11 +21,12 @@ import com.jsoft.cocimpl.ExtHttpContext;
 import com.jsoft.cocimpl.mvc.nutz.CocActionHandler;
 import com.jsoft.cocimpl.mvc.servlet.StaticResourceFilter;
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.UrlAPI;
 import com.jsoft.cocit.exception.CocConfigException;
 import com.jsoft.cocit.exception.CocUnloginException;
-import com.jsoft.cocit.util.LogUtil;
+import com.jsoft.cocit.log.Log;
+import com.jsoft.cocit.log.Logs;
 import com.jsoft.cocit.util.MVCUtil;
 
 /**
@@ -35,12 +36,13 @@ import com.jsoft.cocit.util.MVCUtil;
  * 
  */
 public class CocFilter implements Filter {
+	private static Log log = Logs.getLog(CocFilter.class);
 
 	private String encoding = "UTF-8";
 
 	private static String REXP_EXEC_RESOURCE = "^.+\\.(php|asp|aspx)$";
 
-	private static String REXP_IGNORE_RESOURCE = "^.+\\.(ico|java|jsp|jspx|js|css|jsf|php|asp|aspx|" + Cocit.me().getConfig().get(ICommonConfig.UPLOAD_FILTER) + ")$";
+	private static String REXP_IGNORE_RESOURCE = "^.+\\.(ico|java|jsp|jspx|js|css|jsf|php|asp|aspx|" + Cocit.me().getConfig().get(ICocConfig.UPLOAD_FILTER) + ")$";
 
 	private static String REXP_STATIC_RESOURCE = "^/(scripts2|themes2)/*";
 
@@ -68,7 +70,7 @@ public class CocFilter implements Filter {
 
 		String uri = MVCUtil.getPath(req);
 		String url = MVCUtil.getURL(req) + ";jsessionid=" + req.getRequestedSessionId() + ";IP=" + req.getRemoteAddr();// + ", referer:" + req.getHeader("referer") + "}";
-		if (LogUtil.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			StringBuffer sb = new StringBuffer();
 			Enumeration names = req.getParameterNames();
 			while (names.hasMoreElements()) {
@@ -95,7 +97,7 @@ public class CocFilter implements Filter {
 				}
 			}
 
-			LogUtil.info("MVC.doFilter: BEGIN ...... [%s]%s", url, sb);
+			log.infof("MVC.doFilter: BEGIN ...... [%s]%s", url, sb);
 		}
 
 		doPostEncoding(req, resp, chain);
@@ -117,7 +119,7 @@ public class CocFilter implements Filter {
 			}
 		}
 
-		LogUtil.info("MVC.doFilter: END! [%s][%s] ", url, Cocit.me().getStopWatch());
+		log.infof("MVC.doFilter: END! [%s][%s] ", url, Cocit.me().getStopWatch());
 	}
 
 	protected void doPostEncoding(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws UnsupportedEncodingException {
@@ -133,15 +135,15 @@ public class CocFilter implements Filter {
 
 			if (handler.execute(req, resp)) {
 
-				LogUtil.debug("MVC.doCocFilter: SUCCESS! [%s]", url);
+				log.debugf("MVC.doCocFilter: SUCCESS! [%s]", url);
 
 				return true;
 			}
 
-			LogUtil.error("MVC.doCocFilter: FAILED! [%s]", url);
+			log.errorf("MVC.doCocFilter: FAILED! [%s]", url);
 
 		} catch (Throwable e) {
-			LogUtil.error("MVC.doCocFilter: ERROR! [%s] %s", url, e);
+			log.errorf("MVC.doCocFilter: ERROR! [%s] %s", url, e);
 		} finally {
 			if (ctx != null)
 				ctx.release();
@@ -201,7 +203,7 @@ public class CocFilter implements Filter {
 
 				return true;
 			} catch (Throwable e) {
-				// LogUtil.warnf("处理静态资源出错! [%s] %s", url, e);
+				// log.warnf("处理静态资源出错! [%s] %s", url, e);
 				// return true;
 			}
 		}
@@ -209,7 +211,7 @@ public class CocFilter implements Filter {
 			try {
 				chain.doFilter(req, resp);
 			} catch (Throwable e) {
-				LogUtil.trace("%s", e);
+				log.trace("%s", e);
 			}
 			return true;
 		}
@@ -265,15 +267,15 @@ public class CocFilter implements Filter {
 			} else {
 				Filter nextFilter = additionalFilters.get(currentPosition++);
 
-				if (LogUtil.isTraceEnabled()) {
+				if (log.isTraceEnabled()) {
 
 					String url = MVCUtil.getURL((HttpServletRequest) request);
 
-					LogUtil.trace("Filter<%s>处理请求...[%s]<%s/%s>...", nextFilter.getClass().getSimpleName(), url, currentPosition, len);
+					log.tracef("Filter<%s>处理请求...[%s]<%s/%s>...", nextFilter.getClass().getSimpleName(), url, currentPosition, len);
 
 					nextFilter.doFilter(request, response, this);
 
-					LogUtil.trace("Filter<%s>处理请求: 结束. [%s]<%s/%s>...", nextFilter.getClass().getSimpleName(), url, currentPosition, len);
+					log.tracef("Filter<%s>处理请求: 结束. [%s]<%s/%s>...", nextFilter.getClass().getSimpleName(), url, currentPosition, len);
 
 				} else {
 					nextFilter.doFilter(request, response, this);

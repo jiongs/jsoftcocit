@@ -143,6 +143,12 @@ public interface UrlAPI {
 	public static final String URL_CKFINDER = "/coc/getCKFinder/*";
 	/** 文件上传API：用于表单中的上传组件 */
 	public static final String URL_UPLOAD = "/coc/upload/*";
+	/**
+	 * 下载文件的URL地址。
+	 * <p>
+	 * 路径参数：上传文件的文件KEY.
+	 */
+	public static final String URL_DOWNLOAD = "/coc/download/*";
 
 	// =================================================================================================================
 	//

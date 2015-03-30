@@ -19,7 +19,7 @@ import com.jsoft.cocit.util.UIPositionUtil;
 
 public class UIEntityView extends BaseModelView<UIEntity> {
 	public String getName() {
-		return ViewNames.VIEW_EXTGRID;
+		return ViewNames.VIEW_MAIN;
 	}
 
 	public void render(Writer out, UIEntity model) throws Exception {

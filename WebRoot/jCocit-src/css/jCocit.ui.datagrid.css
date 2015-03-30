@@ -250,7 +250,7 @@
 }
 
 .datagrid-body .datagrid-editable .datagrid-editable-input {
-	border-color: #999;
+	border-color: #999999;
 	font-family: "微软雅黑",Arial,Times;
 }
 .datagrid-header .datagrid-cell, .datagrid-body .datagrid-cell {

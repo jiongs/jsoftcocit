@@ -29,20 +29,16 @@ public class DataManagerFactoryImpl implements DataManagerFactory {
 	}
 
 	public DataManager getManager(SystemMenuService systemMenu) throws CocException {
-
+		String dsKey = null;
 		if (systemMenu == null) {
-			return null;
+			dsKey = null;
+		} else {
+			if (systemMenu.getType() != Const.MENU_TYPE_ENTITY)
+				throw new CocException("业务模块不存在! [moduleID=%s]", systemMenu);
+
+			dsKey = systemMenu.getDataSourceKey();
 		}
-		if (systemMenu.getType() != Const.MENU_TYPE_ENTITY)
-			throw new CocException("业务模块不存在! [moduleID=%s]", systemMenu);
 
-		// LoginSession login = Cocit.me().getHttpContext().getLoginSession();
-
-		// if (!Cocit.me().getSecurityEngine().allowVisitFuncMenu(login, systemMenu, false)) {
-		// throw new CocException("无权执行该操作!");
-		// }
-
-		String dsKey = systemMenu.getDataSourceKey();
 		DataSourceService ds = Cocit.me().getEntityServiceFactory().getDataSource(dsKey);
 		Orm orm = null;
 		if (ds != null) {

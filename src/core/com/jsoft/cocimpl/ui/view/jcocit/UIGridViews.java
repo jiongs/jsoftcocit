@@ -11,7 +11,6 @@ import org.lilystudio.util.StringWriter;
 import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocimpl.ui.view.BaseModelView;
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.constant.ConfigKeys;
 import com.jsoft.cocit.constant.FieldTypes;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.entityengine.service.CocFieldService;
@@ -37,7 +36,7 @@ public abstract class UIGridViews {
 		}
 
 		public void render(Writer out, UIGrid model) throws Exception {
-			String title = model.getTitle();
+			String title = "";// model.getTitle();
 			int height = model.get("height", Cocit.me().getHttpContext().getClientUIHeight());
 			int colTotalWidth = model.getColumnsTotalWidth();
 			if (colTotalWidth == 0) {
@@ -141,7 +140,7 @@ public abstract class UIGridViews {
 			UIActions rowActions = model.getRowActions();
 			int rowActionsWidth = 0;
 			int gridWidth = model.get("width", Cocit.me().getHttpContext().getClientUIWidth());
-			int columnsWidth = gridWidth - 78 - rowActionsWidth;
+			int columnsWidth = gridWidth - 54 - rowActionsWidth;
 			double fixColRate = 1.0;
 			if (columnsWidth > colTotalWidth) {
 				fixColRate = new Double(columnsWidth) / new Double(colTotalWidth);
@@ -174,7 +173,7 @@ public abstract class UIGridViews {
 				}
 			}
 			boolean pagination = (boolean) model.get("pagination", true);
-			String url = String.format("%s?_uiToken=%s", model.getDataLoadUrl(), token);
+			String url = model.getDataLoadUrl();
 
 			write(out, "<table id=\"%s\" class=\"jCocit-ui jCocit-%s entity-%s\" title=\"%s\" style=\"height: %spx; width:%spx;\" data-options=\"",//
 			        model.getId(), //
@@ -199,7 +198,10 @@ public abstract class UIGridViews {
 			write(out, ",sortField: '%s'", sortField);
 			write(out, ",sortOrder: '%s'", sortOrder);
 			write(out, ",WYSIWYG: true");
-			write(out, ",fitColumns: true");
+			if (rowActions != null)
+				write(out, ",fitColumns: true");
+			else
+				write(out, ",fitColumns: false");
 			write(out, ",noSelect: %s", (boolean) model.get("noSelect", false));
 			write(out, ",pagination: %s", pagination);
 			write(out, ",singleSelect: %s", singleSelect);//
@@ -382,13 +384,12 @@ public abstract class UIGridViews {
 			boolean noFirstRow = false;
 
 			UICellView rowActionsView = null;
-			String rowActionsViewName = null;
-			if (rowActions != null)
-				rowActionsViewName = rowActions.getViewName();
-			if (StringUtil.isBlank(rowActionsViewName)) {
-				rowActionsViewName = Cocit.me().getConfig().get(ConfigKeys.GRID_ROW_ACTIONS_VIEW, ViewNames.CELL_VIEW_ROW_ACTIONS);
+			if (rowActions != null) {
+				rowActionsView = views.getCellView(rowActions.getViewName());
+				if (rowActionsView == null) {
+					rowActionsView = views.getCellView(Cocit.me().getConfig().getViewConfig().getCellViewForRowActions());
+				}
 			}
-			rowActionsView = views.getCellView(rowActionsViewName);
 
 			sb = new StringBuffer();
 
@@ -404,10 +405,14 @@ public abstract class UIGridViews {
 				 * Render Row
 				 */
 				sb.append("{");
-				sb.append(String.format("\"id\":%s", JsonUtil.toJson(ObjectUtil.getValue(row, "id"))));
+				Object id = ObjectUtil.getValue(row, "id");
+				if (id == null || id.toString().trim().length() == 0) {
+					id = "hash_" + Integer.toHexString(row.hashCode());
+				}
+				sb.append(String.format("\"id\":%s", JsonUtil.toJson(id)));
 				for (UIFieldModel col : columns) {
-					// UIField uiFld = (UIField) col;
-					// CocFieldService fldService = uiFld.getFieldService();
+					UIField uiFld = (UIField) col;
+					CocFieldService fldService = uiFld.getFieldService();
 
 					field = col.getPropName();
 					fieldValue = ObjectUtil.getValue(row, field);
@@ -421,18 +426,23 @@ public abstract class UIGridViews {
 
 						sb.append(String.format(",\"%s\": %s", field, JsonUtil.toJson(strFieldValue)));
 					} else {
-						// if (fldService.isFkField()) {
-						// String id = "" + ObjectUtil.getId(fieldValue);
-						// String text = col.format(fieldValue);
-						// sb.append(String.format(",\"%s\": {\"id\": %s, \"text\"}", field, JsonUtil.toJson(id), JsonUtil.toJson(text)));
-						// } else {
-						sb.append(String.format(",\"%s\": %s", field, JsonUtil.toJson(StringUtil.escapeHtml(col.format(fieldValue)))));
-						// }
+						if (fldService.isFkField()) {
+							String value = StringUtil.escapeHtml(fieldValue == null ? "" : fieldValue.toString());
+							String text = StringUtil.escapeHtml(col.format(fieldValue));
+							sb.append(String.format(",\"%s\": {\"value\": %s, \"text\": %s}", field, JsonUtil.toJson(value), JsonUtil.toJson(text)));
+						} else {
+
+							if (col.isSupportHtml()) {
+								sb.append(String.format(",\"%s\": %s", field, JsonUtil.toJson(col.format(fieldValue))));
+							} else {
+								sb.append(String.format(",\"%s\": %s", field, JsonUtil.toJson(StringUtil.escapeHtml(col.format(fieldValue)))));
+							}
+						}
 					}
 
 				}
 
-				// Render Row Actionss
+				// Render Row Actions
 				if (rowActions != null) {
 					StringWriter actionsOut = new StringWriter();
 					rowActionsView.render(actionsOut, null, row, null, rowActions);

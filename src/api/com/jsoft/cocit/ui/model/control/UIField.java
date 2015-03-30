@@ -39,6 +39,7 @@ public class UIField extends UIControlModel implements UIFieldModel {
 	private boolean hidden;
 	private boolean showTips;
 	private boolean multiple;
+	private boolean supportHtml;
 
 	public UIField() {
 		super();
@@ -365,6 +366,14 @@ public class UIField extends UIControlModel implements UIFieldModel {
 
 	public boolean isMultiple() {
 		return multiple;
+	}
+
+	public boolean isSupportHtml() {
+		return supportHtml;
+	}
+
+	public void setSupportHtml(boolean supportHtml) {
+		this.supportHtml = supportHtml;
 	}
 
 }

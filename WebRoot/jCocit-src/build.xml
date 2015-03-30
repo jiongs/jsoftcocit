@@ -26,7 +26,7 @@
 
 	<!-- 设置UI模块 -->
 	<property name="JS.MODULES" value="utils,core,nls,cookie,parse,alerts,blockUI,ui.draggable,ui.droppable,ui.resizable,ui.panel,ui.window,ui.dialog,ui.messager,ui.tree,ui.combo,ui.combotree,ui.treedialog,ui.listtree,plugin.login,plugin.entity" />
-	<property name="JS.MODULES-UI" value="button,menu,validatebox,numberbox,spinner,spinnernumber,spinnertime,accordion,pagination,calendar,datagrid,combobox,combodate,combodatetime,combogrid,combodialog,menubar,toolbar,searchbox,slider,tabs,treegrid,propertygrid,tree.crud,upload,ckeditor" />
+	<property name="JS.MODULES-UI" value="button,menu,validatebox,numberbox,spinner,spinnernumber,spinnertime,accordion,pagination,calendar,datagrid,combobox,combodate,combodatetime,combogrid,combodialog,menubar,toolbar,searchbox,slider,tabs,treegrid,propertygrid,upload,ckeditor" />
 	<property name="JS.MODULES-WEB" value="web.KandyTabs,web.ad-gallery-v,web.ad-gallery" />
 	<property name="JS.MODULES-EXT" value="nls.zh,themes.admin1" />
 

@@ -338,7 +338,6 @@ public class FieldTag extends BodyTagSupport {
 	 * @throws JspException
 	 *             if a JSP exception has occurred
 	 */
-	@SuppressWarnings("deprecation")
 	public int doStartTag() throws JspException {
 
 		UIForm uiForm = (UIForm) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
@@ -383,8 +382,8 @@ public class FieldTag extends BodyTagSupport {
 		}
 
 		this.release();
-		
-		return (EVAL_BODY_TAG);
+
+		return (EVAL_BODY_INCLUDE);
 	}
 
 	private String renderInputElement() throws JspException {
@@ -392,6 +391,7 @@ public class FieldTag extends BodyTagSupport {
 
 		prepareAttribute(results, "type", this.type);
 		prepareAttribute(results, "name", prepareName());
+		prepareAttribute(results, "id", getId());
 		prepareValue(results);
 
 		Properties attrs = this.prepareAttributes();

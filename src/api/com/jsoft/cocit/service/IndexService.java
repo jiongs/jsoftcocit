@@ -18,7 +18,7 @@ public interface IndexService {
 	 * 
 	 * @return
 	 */
-	List<INoticeMessage> getPublicMessages(int pageSize);
+	List<? extends INoticeMessage> getPublicMessages(int pageSize);
 
 	/**
 	 * 获取“我的”消息
@@ -27,7 +27,7 @@ public interface IndexService {
 	 *            当前用户登录帐号
 	 * @return
 	 */
-	List<INoticeMessage> getMyMessages(int pageSize, String user);
+	List<? extends INoticeMessage> getMyMessages(int pageSize, String user);
 
 	/**
 	 * 获取“我的”计划日程
@@ -40,7 +40,7 @@ public interface IndexService {
 	 *            计划截止时间
 	 * @return
 	 */
-	List<IScheduleTask> getMyScheduleTasks(int pageSize, String user, Date dateFrom, Date dateTo);
+	List<? extends IScheduleTask> getMyScheduleTasks(int pageSize, String user, Date dateFrom, Date dateTo);
 
 	/**
 	 * 获取“领导”计划日程
@@ -53,7 +53,7 @@ public interface IndexService {
 	 *            计划截止时间
 	 * @return
 	 */
-	List<IScheduleTask> getLeaderScheduleTasks(int pageSize, String user, Date dateFrom, Date dateTo);
+	List<? extends IScheduleTask> getLeaderScheduleTasks(int pageSize, String user, Date dateFrom, Date dateTo);
 
 	/**
 	 * 获取“部门”计划日程
@@ -66,7 +66,7 @@ public interface IndexService {
 	 *            计划截止时间
 	 * @return
 	 */
-	List<IScheduleTask> getDepartmentScheduleTasks(int pageSize, String user, Date dateFrom, Date dateTo);
+	List<? extends IScheduleTask> getDepartmentScheduleTasks(int pageSize, String user, Date dateFrom, Date dateTo);
 
 	/**
 	 * 获取“我的”流程任务数量
@@ -86,7 +86,7 @@ public interface IndexService {
 	 *            任务级别：如“0-全部、1-待办、2-催办、3-特急办件、4-加急件、5-过期件、6-到期件、7-委托件、8-待阅件、9-关注”
 	 * @return
 	 */
-	List<IWorkflowTask> getMyWorkflowTasks(int pageSize, String user, int type);
+	List<? extends IWorkflowTask> getMyWorkflowTasks(int pageSize, String user, int type);
 
 	/**
 	 * 获取“搜索分类”
@@ -100,7 +100,7 @@ public interface IndexService {
 	 * 
 	 * @return
 	 */
-	List<ISearchKeyword> getSearchKeywords(int pageSize);
+	List<? extends ISearchKeyword> getSearchKeywords(int pageSize);
 
 	// /**
 	// * 获取“应用中心”功能菜单

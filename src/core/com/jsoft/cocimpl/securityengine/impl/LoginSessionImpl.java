@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.jsoft.cocimpl.entityengine.impl.service.EmptySystemService;
 import com.jsoft.cocimpl.entityengine.impl.service.EmptyTenantService;
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.EntityTypes;
 import com.jsoft.cocit.constant.PrincipalTypes;
@@ -85,7 +85,7 @@ public class LoginSessionImpl implements LoginSession {
 			this.system = system;
 
 			Cocit coc = Cocit.me();
-			ICommonConfig config = coc.getConfig();
+			ICocConfig config = coc.getConfig();
 			EntityServiceFactory sf = coc.getEntityServiceFactory();
 
 			if (user instanceof RootUserService) {

@@ -618,28 +618,29 @@ public class OrmImpl implements ExtOrm {
 					 * 设置查询参数
 					 */
 					int parameterIndex = 0;
-					for (Object param : sqlParams) {
-						parameterIndex++;
-						if (param instanceof Integer) {
-							stmt.setInt(parameterIndex, (Integer) param);
-						} else if (param instanceof Byte) {
-							stmt.setByte(parameterIndex, (Byte) param);
-						} else if (param instanceof Short) {
-							stmt.setShort(parameterIndex, (Short) param);
-						} else if (param instanceof Long) {
-							stmt.setLong(parameterIndex, (Long) param);
-						} else if (param instanceof Float) {
-							stmt.setFloat(parameterIndex, (Float) param);
-						} else if (param instanceof Double) {
-							stmt.setDouble(parameterIndex, (Double) param);
-						} else if (param instanceof Date) {
-							stmt.setDate(parameterIndex, (Date) param);
-						} else if (param instanceof Boolean) {
-							stmt.setBoolean(parameterIndex, (Boolean) param);
-						} else {
-							stmt.setString(parameterIndex, param.toString());
+					if (sqlParams != null)
+						for (Object param : sqlParams) {
+							parameterIndex++;
+							if (param instanceof Integer) {
+								stmt.setInt(parameterIndex, (Integer) param);
+							} else if (param instanceof Byte) {
+								stmt.setByte(parameterIndex, (Byte) param);
+							} else if (param instanceof Short) {
+								stmt.setShort(parameterIndex, (Short) param);
+							} else if (param instanceof Long) {
+								stmt.setLong(parameterIndex, (Long) param);
+							} else if (param instanceof Float) {
+								stmt.setFloat(parameterIndex, (Float) param);
+							} else if (param instanceof Double) {
+								stmt.setDouble(parameterIndex, (Double) param);
+							} else if (param instanceof Date) {
+								stmt.setDate(parameterIndex, (Date) param);
+							} else if (param instanceof Boolean) {
+								stmt.setBoolean(parameterIndex, (Boolean) param);
+							} else {
+								stmt.setString(parameterIndex, param.toString());
+							}
 						}
-					}
 
 					/*
 					 * 执行查询结果
@@ -720,7 +721,7 @@ public class OrmImpl implements ExtOrm {
 	}
 
 	@Override
-	public int execSql(final String sql, final List sqlParams, final Map<String, String> columnToPropMap) {
+	public int execSql(final String sql, final List sqlParams) {
 
 		return (Integer) this.dao.run(new ConnCallback() {
 			@Override
@@ -736,28 +737,29 @@ public class OrmImpl implements ExtOrm {
 					 * 设置查询参数
 					 */
 					int parameterIndex = 0;
-					for (Object param : sqlParams) {
-						parameterIndex++;
-						if (param instanceof Integer) {
-							stmt.setInt(parameterIndex, (Integer) param);
-						} else if (param instanceof Byte) {
-							stmt.setByte(parameterIndex, (Byte) param);
-						} else if (param instanceof Short) {
-							stmt.setShort(parameterIndex, (Short) param);
-						} else if (param instanceof Long) {
-							stmt.setLong(parameterIndex, (Long) param);
-						} else if (param instanceof Float) {
-							stmt.setFloat(parameterIndex, (Float) param);
-						} else if (param instanceof Double) {
-							stmt.setDouble(parameterIndex, (Double) param);
-						} else if (param instanceof Date) {
-							stmt.setDate(parameterIndex, (Date) param);
-						} else if (param instanceof Boolean) {
-							stmt.setBoolean(parameterIndex, (Boolean) param);
-						} else {
-							stmt.setString(parameterIndex, param.toString());
+					if (sqlParams != null)
+						for (Object param : sqlParams) {
+							parameterIndex++;
+							if (param instanceof Integer) {
+								stmt.setInt(parameterIndex, (Integer) param);
+							} else if (param instanceof Byte) {
+								stmt.setByte(parameterIndex, (Byte) param);
+							} else if (param instanceof Short) {
+								stmt.setShort(parameterIndex, (Short) param);
+							} else if (param instanceof Long) {
+								stmt.setLong(parameterIndex, (Long) param);
+							} else if (param instanceof Float) {
+								stmt.setFloat(parameterIndex, (Float) param);
+							} else if (param instanceof Double) {
+								stmt.setDouble(parameterIndex, (Double) param);
+							} else if (param instanceof Date) {
+								stmt.setDate(parameterIndex, (Date) param);
+							} else if (param instanceof Boolean) {
+								stmt.setBoolean(parameterIndex, (Boolean) param);
+							} else {
+								stmt.setString(parameterIndex, param.toString());
+							}
 						}
-					}
 
 					/*
 					 * 执行查询结果

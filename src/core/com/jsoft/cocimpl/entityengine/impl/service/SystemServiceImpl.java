@@ -74,7 +74,7 @@ public class SystemServiceImpl extends NamedEntityServiceImpl<ISystem> implement
 				 * 加载数据
 				 */
 				CndExpr expr = ExprUtil.systemIs(entityData.getKey());
-				List<ISystemMenu> menus = (List<ISystemMenu>) orm().query(EntityTypes.SystemMenu, expr);
+				List<ISystemMenu> menus = (List<ISystemMenu>) Cocit.me().getProxiedORM().query(EntityTypes.SystemMenu, expr);
 				if (menus != null) {
 					systemMenuMap = new HashMap();
 					systemMenus = new ArrayList();

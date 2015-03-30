@@ -1,11 +1,21 @@
 package com.jsoft.cocit.constant;
 
 public interface ViewNames {
-	/*
-	 * 
+	/**
+	 * 模块操作按钮：普通按钮(BUTTON标签)，不支持小图标、不支持下拉。
 	 */
-	String VIEW_BUTTONS = "buttons";
-	String VIEW_EXTGRID = "extgrid";
+	String VIEW_ACTIONS_BUTTON = "button";
+	/**
+	 * 模块操作按钮：圆弧形风格(A标签 class="jCocit-ui jCocit-button")，支持小图标、不支持下拉。
+	 */
+	String VIEW_ACTIONS_LINKBUTTON = "linkbutton";
+	/**
+	 * 模块操作按钮：工具栏风格(A 标签 class="jCocit-ui jCocit-toolbar")，支持小图标、支持下拉。
+	 */
+	String VIEW_ACTIONS_TOOLBAR = "toolbar";
+
+	String VIEW_MAINS = "mains";
+	String VIEW_MAIN = "main";
 	String VIEW_FORM = "form";
 	String VIEW_SUBFORM = "subform";
 	String VIEW_FORMDATA = "formdata";
@@ -13,8 +23,6 @@ public interface ViewNames {
 	String VIEW_GRIDDATA = "griddata";
 	String VIEW_TREEGRID = "treegrid";
 	String VIEW_TREEGRIDDATA = "treegriddata";
-	String VIEW_MENU = "menu";
-	String VIEW_PANELS = "panels";
 	String VIEW_SEARCHBOX = "searchbox";
 	String VIEW_SEARCHFORM = "searchform";
 	String VIEW_TREE = "tree";
@@ -52,7 +60,7 @@ public interface ViewNames {
 	 */
 	String CELL_VIEW_LINK_TO_FORM = "linkToForm";
 	String CELL_VIEW_LINK = "link";
-	String CELL_VIEW_ROW_ACTIONS = "rowActions";
-	String CELL_VIEW_ROW_LINK_ACTIONS = "rowLinkActions";
+	String CELL_VIEW_BUTTON_FOR_ROWACTIONS = "rowactions-button";
+	String CELL_VIEW_LINK_FOR_ROWACTIONS = "rowactions-link";
 	String CELL_VIEW_STYLE = "style";
 }

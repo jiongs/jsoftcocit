@@ -18,7 +18,6 @@ import com.jsoft.cocit.entityengine.annotation.CocGroup;
 import com.jsoft.cocit.entityengine.annotation.Cui;
 import com.jsoft.cocit.entityengine.annotation.CuiEntity;
 import com.jsoft.cocit.entityengine.annotation.CuiGrid;
-import com.jsoft.cocit.entityengine.annotation.CuiGridField;
 
 /**
  * 系统菜单组成了系统
@@ -37,18 +36,22 @@ import com.jsoft.cocit.entityengine.annotation.CuiGridField;
                    //
                    @CocGroup(name = "基本信息", key = "basic", fields = {
                            //
-                           @CocColumn(name = "上级菜单", field = "parentKey", fkTargetEntity = Const.TBL_SEC_SYSMENU), //
+                           @CocColumn(name = "上级菜单", field = "parentKey", fkTargetEntity = Const.TBL_SEC_SYSMENU, uiView = "combotree"), //
+                           @CocColumn(name = "上级菜单", field = "parentName", fkTargetEntity = Const.TBL_SEC_SYSMENU, fkTargetField = "name", fkDependField = "parentKey"), //
                            @CocColumn(name = "菜单名称", field = "name", mode = "c:M e:M"),//
                            @CocColumn(name = "菜单编码", field = "key", mode = "c:M e:M"),//
                            @CocColumn(name = "菜单序号", field = "sn", mode = "*:N v:P"),//
                            @CocColumn(name = "菜单类型", field = "type", mode = "c:M e:M", dicOptions = "90:分类菜单, 1:静态菜单, 2:实体菜单"), //
                            @CocColumn(name = "访问路径", field = "path"), //
                            @CocColumn(name = "菜单状态", field = "statusCode"),//
-                           @CocColumn(name = "挂载实体", field = "entityKey", fkTargetEntity = Const.TBL_COC_ENTITY, uiCascading = "type:2:M"), //
-                           @CocColumn(name = "操作列表", field = "actionPermission", uiView = "menuactions"),//
-                           @CocColumn(name = "字段列表", field = "fieldPermission", uiView = "menufields"),//
-                           @CocColumn(name = "数据权限", field = "dataPermission", uiView = "menudatas"),//
-                           @CocColumn(name = "菜单状态", field = "statusCode", uiView = "radio", dicOptions = "1:隐藏,0:正常"),//
+                           @CocColumn(name = "实体编号", field = "entityKey", fkTargetEntity = Const.TBL_COC_ENTITY, uiView = "combotree"), //
+                           @CocColumn(name = "操作列表", field = "actions"),//
+                           @CocColumn(name = "字段列表", field = "fields"),//
+                           @CocColumn(name = "查询条件", field = "whereRule"),//
+                           @CocColumn(name = "默认值", field = "defaultValuesRule"),//
+                           @CocColumn(name = "引用界面", field = "uiView"),//
+                           @CocColumn(name = "是否隐藏", field = "hidden"),//
+                           @CocColumn(name = "菜单状态", field = "statusCode", uiView = "radio", dicOptions = "1:隐藏,0:正常,99990:初始数据"),//
                    }), //
                    @CocGroup(name = "其他属性设置", key = "other", fields = {
                            //
@@ -56,21 +59,16 @@ import com.jsoft.cocit.entityengine.annotation.CuiGridField;
                            @CocColumn(name = "菜单图片", field = "image", pattern = "image"), //
                    }) // end group
            }// end groups
-           , dataFile = "SystemMenu.data.js"//
 )
 @Cui({//
-@CuiEntity(grid = @CuiGrid(treeField = "parentKey", fields = "name|key|actionPermission|sn",//
-                           fieldsDetail = {
-                                   //
-                                   @CuiGridField(field = "name"), //
-                                   @CuiGridField(field = "actionPermission"), //
-                           }//
+@CuiEntity(filterFields = "parentKey", queryFields = "name|entityKey",//
+           grid = @CuiGrid(fields = "name|key|entityKey|actions|type|statusCode", rowActions = "e|v|r|d"//
            )) //
 })
 public class SystemMenu extends TreeEntity implements IExtSystemMenu, IExtSystemOwnerEntity {
 
 	@Column(length = 64, nullable = false)
-	protected String systemKey = "";
+	protected String systemKey;
 	@Column(length = 64)
 	protected String dataSourceKey;
 	@Column(length = 512)

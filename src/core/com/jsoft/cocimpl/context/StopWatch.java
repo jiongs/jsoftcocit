@@ -40,24 +40,24 @@ public class StopWatch {
 		StringBuffer ret = new StringBuffer(100);
 		ret.append(new DecimalFormat("000").format(++count)).append(":  ");
 
-		ret.append("T(");
+		ret.append("elapse(");
 		ret.append(getElapse());
 		ret.append("/");
 		ret.append(System.currentTimeMillis() - from);
 
-		long totalMemery = Runtime.getRuntime().totalMemory();
-		ret.append("), M(");
-		ret.append(getMemElepse());
-		ret.append("/");
-		ret.append(totalMemery);
-		ret.append(")");
+		// long totalMemery = Runtime.getRuntime().totalMemory();
+		// ret.append("), M(");
+		// ret.append(getMemElepse());
+		// ret.append("/");
+		// ret.append(totalMemery);
+		// ret.append(")");
 
-		MemoryMXBean memorymbean = ManagementFactory.getMemoryMXBean();
-		MemoryUsage usage = memorymbean.getHeapMemoryUsage();
-		ret.append(", UsageMax: " + usage.getMax());
-		ret.append(", UsageUsed: " + usage.getUsed());
-		ret.append(", MXBeanUsage: " + memorymbean.getHeapMemoryUsage());
-		ret.append(", MXBeanNoneUsage: " + memorymbean.getNonHeapMemoryUsage());
+		// MemoryMXBean memorymbean = ManagementFactory.getMemoryMXBean();
+		// MemoryUsage usage = memorymbean.getHeapMemoryUsage();
+		// ret.append(", UsageMax: " + usage.getMax());
+		// ret.append(", UsageUsed: " + usage.getUsed());
+		// ret.append(", MXBeanUsage: " + memorymbean.getHeapMemoryUsage());
+		// ret.append(", MXBeanNoneUsage: " + memorymbean.getNonHeapMemoryUsage());
 
 		prev = System.currentTimeMillis();
 

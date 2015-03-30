@@ -45,7 +45,7 @@ public class EntityDataAction {
 	 * @return
 	 */
 	@At(UrlAPI.ENTITY_GET_GRID_DATA)
-	public UIGridData getGridData(String funcExpr) {
+	public UIGridData getGridData(String funcExpr, String fields, String rowActions) {
 		OpContext opContext = OpContext.make(funcExpr, null, null);
 
 		UIGridData dataModel = new UIGridData();
@@ -56,7 +56,7 @@ public class EntityDataAction {
 		} else {
 
 			// 构造Grid数据模型
-			UIGrid grid = (UIGrid) opContext.getUiModelFactory().getGrid(opContext.getSystemMenu(), opContext.getCocEntity());
+			UIGrid grid = (UIGrid) opContext.getUiModelFactory().getGrid(opContext.getSystemMenu(), opContext.getCocEntity(), StringUtil.toList(fields), StringUtil.toList(rowActions));
 			// grid.setTreeField(opContext.getTreeField());
 			String view = grid.getViewName();
 			if (StringUtil.hasContent(view)) {

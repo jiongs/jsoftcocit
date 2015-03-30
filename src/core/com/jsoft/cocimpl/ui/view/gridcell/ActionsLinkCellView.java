@@ -7,29 +7,29 @@ import java.util.List;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.entityengine.service.CocActionService;
-import com.jsoft.cocit.ui.model.UIActionsModel;
 import com.jsoft.cocit.ui.model.UIFieldModel;
+import com.jsoft.cocit.ui.model.control.UIActions;
 import com.jsoft.cocit.ui.view.UICellView;
-import com.jsoft.cocit.util.ExprUtil;
 import com.jsoft.cocit.util.MVCUtil;
+import com.jsoft.cocit.util.ExprUtil;
 import com.jsoft.cocit.util.ObjectUtil;
 import com.jsoft.cocit.util.StringUtil;
 import com.jsoft.cocit.util.Tree;
-import com.jsoft.cocit.util.Tree.Node;
 import com.jsoft.cocit.util.WriteUtil;
+import com.jsoft.cocit.util.Tree.Node;
 
-public class RowActionsCellView implements UICellView {
+public class ActionsLinkCellView implements UICellView {
 
 	public String getName() {
-		return ViewNames.CELL_VIEW_ROW_ACTIONS;
+		return ViewNames.CELL_VIEW_LINK_FOR_ROWACTIONS;
 	}
 
 	@Override
 	public void render(Writer out, UIFieldModel fieldModel, Object dataObject, String fieldName, Object fieldValue) throws Exception {
-		this.printHtml(out, dataObject, (UIActionsModel) fieldValue);
+		this.printHtml(out, dataObject, (UIActions) fieldValue);
 	}
 
-	private void printHtml(Writer out, Object dataObject, UIActionsModel model) throws Exception {
+	private void printHtml(Writer out, Object dataObject, UIActions model) throws Exception {
 		int width = model.get("width", 0);
 		width = width - 15;
 
@@ -43,7 +43,7 @@ public class RowActionsCellView implements UICellView {
 		}
 	}
 
-	private void printButtons(Writer out, UIActionsModel model, Object dataObject, List<Node> nodes) throws IOException {
+	private void printButtons(Writer out, UIActions model, Object dataObject, List<Node> nodes) throws IOException {
 		List<String> list = model.getResultUI();
 		StringBuffer sb = new StringBuffer();
 		for (String s : list) {
@@ -68,14 +68,15 @@ public class RowActionsCellView implements UICellView {
 			} else {
 				Long dataID = (Long) ObjectUtil.getId(dataObject);
 				String title = node.get("title", "");
-				WriteUtil.write(out, "<button title=\"%s\" onclick=\"jCocit.entity.doRowAction(event, this)\" data-options=\"", title == null ? "" : StringUtil.escapeHtml(title));
+				WriteUtil.write(out, "<a title=\"%s\" href=\"javascript:void(0)\" onclick=\"jCocit.entity.doRowAction(event, this)\" data-options=\"", title == null ? "" : StringUtil.escapeHtml(title));
 				WriteUtil.write(out, "name:'%s'", node.getName());
 
+				// token: 用来关联到导航树（filtertree_????）和DataGrid（datagrid_???）。???表示token。
 				String token = Cocit.me().getHttpContext().getClientUIToken();
-				WriteUtil.write(out, ", token: '%s'", token);
+				WriteUtil.write(out, ", token: '%s'", token);// 菜单通过该令牌获取DataGrid对象
 
 				if (resultUI.length() > 0) {
-					WriteUtil.write(out, ", resultUI: [%s]", resultUI);
+					WriteUtil.write(out, ", resultUI: [%s]", resultUI);// 菜单通过该令牌获取DataGrid对象
 				}
 
 				String opMode = node.get("opMode", "");
@@ -111,7 +112,7 @@ public class RowActionsCellView implements UICellView {
 				if (!StringUtil.isBlank(msg))
 					WriteUtil.write(out, ", warnMessage: '%s'", msg.replace("'", ""));
 
-				WriteUtil.write(out, "\">%s</button>", node.getName());
+				WriteUtil.write(out, "\">%s</a>&nbsp;&nbsp;", node.getName());
 			}
 
 		}

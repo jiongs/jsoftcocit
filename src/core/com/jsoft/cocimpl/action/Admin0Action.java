@@ -17,7 +17,7 @@ import com.jsoft.cocimpl.config.impl.BaseConfig;
 import com.jsoft.cocimpl.orm.DMLSession;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.config.IConfig;
 import com.jsoft.cocit.config.IDSConfig;
 import com.jsoft.cocit.config.IMessageConfig;
@@ -233,8 +233,8 @@ public class Admin0Action extends BaseAdminAction {
 		if (configNode != null && configNode.size() > 0) {
 			LogUtil.debug("保存参数配置...");
 			try {
-				ICommonConfig commonConfig = Cocit.me().getConfig();
-				ICommonConfig tmp = commonConfig.copy();
+				ICocConfig commonConfig = Cocit.me().getConfig();
+				ICocConfig tmp = commonConfig.copy();
 				configNode.inject(Mirror.me(tmp), tmp, null);
 				tmp.save();
 				((BaseConfig) commonConfig).setProperties(tmp.getProperties());

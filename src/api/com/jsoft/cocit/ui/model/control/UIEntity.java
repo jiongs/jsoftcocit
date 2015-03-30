@@ -42,7 +42,7 @@ public class UIEntity extends UIControlModel implements UIEntityModel {
 
 	public String getViewName() {
 		if (StringUtil.isBlank(viewName))
-			return ViewNames.VIEW_EXTGRID;
+			return ViewNames.VIEW_MAIN;
 
 		return viewName;
 	}

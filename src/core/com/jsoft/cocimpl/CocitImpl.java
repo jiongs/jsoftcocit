@@ -40,13 +40,15 @@ import com.jsoft.cocimpl.ui.impl.UIModelFactoryImpl;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.config.IBeansConfig;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.config.IDSConfig;
 import com.jsoft.cocit.config.IMessageConfig;
 import com.jsoft.cocit.entityengine.DataManagerFactory;
 import com.jsoft.cocit.entityengine.EntityEngine;
 import com.jsoft.cocit.entityengine.EntityServiceFactory;
 import com.jsoft.cocit.entityengine.PatternAdapters;
+import com.jsoft.cocit.log.Log;
+import com.jsoft.cocit.log.Logs;
 import com.jsoft.cocit.orm.ExtOrm;
 import com.jsoft.cocit.orm.Orm;
 import com.jsoft.cocit.orm.generator.EntityGenerators;
@@ -54,10 +56,10 @@ import com.jsoft.cocit.orm.listener.EntityListener;
 import com.jsoft.cocit.securityengine.LoginSession;
 import com.jsoft.cocit.securityengine.SecurityEngine;
 import com.jsoft.cocit.ui.UIModelFactory;
-import com.jsoft.cocit.util.LogUtil;
 import com.jsoft.cocit.util.StringUtil;
 
 public class CocitImpl extends Cocit {
+	private static Log log = Logs.getLog(CocitImpl.class);
 
 	private static final String WEB_APP_ROOT_KEY_PARAM = "webAppRootKey";
 	private static final String DEFAULT_WEB_APP_ROOT_KEY = "webapp.root";
@@ -73,7 +75,7 @@ public class CocitImpl extends Cocit {
 	private Map<String, String> contextParameters = new HashMap();
 	private ThreadLocal<StopWatch> stopWatchHolder = new ThreadLocal();
 	private Map<IDSConfig, ExtOrm> ormMap = new HashMap();
-	private ICommonConfig cocconfig = null;
+	private ICocConfig cocconfig = null;
 	private IMessageConfig i18nconfig = null;
 	private INamingStrategy namingStrategy;
 	private INamingStrategy namingStrategyForEncoding;
@@ -105,7 +107,7 @@ public class CocitImpl extends Cocit {
 
 		httpContextHolder.set(ret);
 
-		LogUtil.debug("Cocit.makeHttpContext: result = %s", ret);
+		log.debugf("Cocit.makeHttpContext: result = %s", ret);
 
 		return ret;
 	}
@@ -133,16 +135,16 @@ public class CocitImpl extends Cocit {
 		/*
 		 * 计算日志存放路径并缓存在系统属性表中
 		 */
-		String logsDir = this.contextParameters.get(ICommonConfig.PATH_LOGS);
+		String logsDir = this.contextParameters.get(ICocConfig.PATH_LOGS);
 		if (StringUtil.isBlank(logsDir)) {
 			logsDir = this.cocconfig.getLogsDir();
 		}
-		System.setProperty(ICommonConfig.PATH_LOGS, logsDir);
+		System.setProperty(ICocConfig.PATH_LOGS, logsDir);
 
 		/*
 		 * 计算临时目录
 		 */
-		String tempDir = this.contextParameters.get(ICommonConfig.PATH_TEMP);
+		String tempDir = this.contextParameters.get(ICocConfig.PATH_TEMP);
 		if (StringUtil.isBlank(tempDir)) {
 			tempDir = this.cocconfig.getTempDir();
 		}
@@ -187,7 +189,7 @@ public class CocitImpl extends Cocit {
 		// try {
 		// ipSeeker = new IPSeeker("QQWry.Dat", contextDir + File.separator + "WEB-INF" + File.separator + "lib");
 		// } catch (Throwable e) {
-		// LogUtil.error("加载IP地址转换包失败！");
+		// log.error("加载IP地址转换包失败！");
 		// }
 
 		// /*
@@ -227,29 +229,29 @@ public class CocitImpl extends Cocit {
 		initParamLog.append("\ndir.WEB-INF=").append(this.cocconfig.getWebInfoDir());
 		initParamLog.append("\ndir.classes=").append(this.cocconfig.getClassDir());
 
-		LogUtil.info("初始化Cocit平台: 配置信息:\n%s%s", this.cocconfig, initParamLog);
+		log.infof("初始化Cocit平台: 配置信息:\n%s%s", this.cocconfig, initParamLog);
 
-		LogUtil.info("初始化Cocit数据......");
+		log.info("初始化Cocit数据......");
 
 		try {
 			if (this.getConfig().isAutoUpgrade()) {
 				this.entityEngine.setupCocitFromPackage();
 			}
 		} catch (Throwable e) {
-			LogUtil.error("初始化Cocit数据出错！", e);
+			log.error("初始化Cocit数据出错！", e);
 		}
-
-		LogUtil.info("初始化Cocit平台: 结束.");
+		System.out.println("初始化Cocit平台: 结束.");
+		log.info("初始化Cocit平台: 结束.");
 	}
 
 	private CocitImpl(ServletContext context) {
 		synchronized (CocitImpl.class) {
 			if (initialized) {
-				LogUtil.warn("警告：不能重复初始化Cocit平台!");
+				log.warn("警告：不能重复初始化Cocit平台!");
 				return;
 			}
 
-			LogUtil.info("初始化Cocit平台...");
+			log.info("初始化Cocit平台...");
 
 			servletContext = context;
 
@@ -298,7 +300,7 @@ public class CocitImpl extends Cocit {
 			/*
 			 * 加载Cocit平台配置文件
 			 */
-			cocconfig = new CocConfig(contextPath, contextDir, contextParameters.get(ICommonConfig.PATH_CONFIG));
+			cocconfig = new CocConfig(contextPath, contextDir, contextParameters.get(ICocConfig.PATH_CONFIG));
 		}
 
 	}
@@ -506,7 +508,7 @@ public class CocitImpl extends Cocit {
 		return securityEngine;
 	}
 
-	public ICommonConfig getConfig() {
+	public ICocConfig getConfig() {
 		return cocconfig;
 	}
 

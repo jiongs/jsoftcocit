@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.jsoft.cocimpl.ui.UIView;
+import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.exception.CocException;
@@ -105,7 +106,9 @@ public abstract class BaseUIModel implements UIModel {
 	}
 
 	public void render(Writer out) throws Exception {
-		UIView view = Cocit.me().getViews().getView(getViewName());
+		UIViews views = Cocit.me().getViews();
+		String viewName = getViewName();
+		UIView view = views.getView(viewName);
 
 		if (view == null) {
 			throw new CocException("MVC.render: view not be found! [viewName: %s, model: %s]", getViewName(), this.getClass().getSimpleName());
@@ -278,4 +281,9 @@ public abstract class BaseUIModel implements UIModel {
 	public List<String> getFkFields() {
 		return fkFields;
 	}
+
+	public void setResultUI(List<String> resultUI) {
+    	this.resultUI = resultUI;
+    }
+
 }

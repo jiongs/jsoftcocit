@@ -31,11 +31,8 @@ public abstract class UIDataModel<M extends UIControlModel> implements UIModel {
 	 * 业务数据：待输出的业务数据对象
 	 */
 	protected Object data;
-
 	protected String contextPath;
-
 	protected Map<String, Object> context;
-
 	protected Throwable exception;
 
 	protected UIDataModel() {

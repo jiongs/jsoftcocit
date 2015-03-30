@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.nutz.json.Json;
 
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.entity.security.ITenant;
 import com.jsoft.cocit.entityengine.service.CocActionService;
@@ -234,7 +234,7 @@ public abstract class MVCUtil {
 	}
 
 	public static String getUploadPath() {
-		String uploadFolder = Cocit.me().getConfig().get(ICommonConfig.PATH_UPLOAD);
+		String uploadFolder = Cocit.me().getConfig().get(ICocConfig.PATH_UPLOAD);
 		if (StringUtil.isBlank(uploadFolder)) {
 			uploadFolder = "/upload";
 		}

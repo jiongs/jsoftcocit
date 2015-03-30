@@ -22,8 +22,9 @@ import com.jsoft.cocit.util.StringUtil;
 @CocEntity(name = "权限管理", key = Const.TBL_SEC_AUTHORITY, sn = 10, uniqueFields = "systemKey,userKey,groupKey,menuKey,roleKey", indexFields = "systemKey,userKey,groupKey,menuKey,roleKey", //
            actions = {//
            //
-                   @CocAction(name = "添加用户权限", opCode = OpCodes.OP_INSERT_FORM_DATA, key = "c", uiForm = "/WEB-INF/jsp/coc/user_authority_c.jsp", plugin = AuthorityPlugins.c.class), //
-                   @CocAction(name = "添加群组授权", opCode = OpCodes.OP_INSERT_FORM_DATA, key = "c1", uiForm = "group_perm"), //
+                   @CocAction(name = "添加用户权限", opCode = OpCodes.OP_INSERT_FORM_DATA, key = "c", plugin = AuthorityPlugins.c.class), //
+                   @CocAction(name = "添加群组授权", opCode = OpCodes.OP_INSERT_FORM_DATA, key = "c1", plugin = AuthorityPlugins.c.class), //
+                   @CocAction(name = "添加角色授权", opCode = OpCodes.OP_INSERT_FORM_DATA, key = "c2", plugin = AuthorityPlugins.c.class), //
                    // @CocAction(name = "批量授权", opCode = OpCodes.OP_INSERT_FORM_DATA, key = "c9"), //
                    // @CocAction(name = "修改", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "e"), //
                    // @CocAction(name = "查看", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "v"), //
@@ -55,6 +56,7 @@ import com.jsoft.cocit.util.StringUtil;
 @CuiEntity(uiView = "/WEB-INF/jsp/coc/authority.jsp") //
         , @CuiEntity(key = "user", uiView = "/WEB-INF/jsp/coc/user_authority.jsp") //
         , @CuiEntity(key = "group", uiView = "/WEB-INF/jsp/coc/group_authority.jsp") //
+        , @CuiEntity(key = "role", uiView = "/WEB-INF/jsp/coc/role_authority.jsp") //
 })
 public class AuthorityImpl extends TenantOwnerEntity implements IAuthority {
 
@@ -64,16 +66,16 @@ public class AuthorityImpl extends TenantOwnerEntity implements IAuthority {
 	protected String systemKey = "";
 
 	/*
-	 * 主体：用户、用户组等
+	 * 权限主体：用户、用户组、角色等
 	 */
 	protected String userKey = "";
 	protected String groupKey = "";
+	protected String roleKey = "";
 
 	/*
-	 * 功能：菜单、角色等
+	 * 功能：菜单、操作、数据、字段
 	 */
 	protected String menuKey = "";
-	protected String roleKey = "";
 
 	/*
 	 * 操作权限、数据权限、字段权限

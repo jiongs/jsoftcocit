@@ -249,6 +249,6 @@ public interface Orm {
 	 */
 	public <T> List<T> query(Class<T> typeOfEntity, String sql, List sqlParams, Map<String, String> columnToPropMap);
 
-	public int execSql(String sql, List sqlParams, Map<String, String> columnToPropMap);
+	public int execSql(String sql, List sqlParams);
 
 }

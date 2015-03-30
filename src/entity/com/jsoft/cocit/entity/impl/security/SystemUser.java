@@ -1,16 +1,15 @@
 package com.jsoft.cocit.entity.impl.security;
 
 import java.util.Date;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.OpCodes;
+import com.jsoft.cocit.constant.StatusCodes;
 import com.jsoft.cocit.entity.security.ISystemUser;
 import com.jsoft.cocit.entityengine.annotation.CocAction;
 import com.jsoft.cocit.entityengine.annotation.CocColumn;
@@ -30,15 +29,15 @@ import com.jsoft.cocit.util.StringUtil;
 @CocEntity(name = "系统用户管理", key = Const.TBL_SEC_SYSUSER, sn = 4, uniqueFields = Const.FLIST_TENANT_KEYS, indexFields = Const.FLIST_TENANT_KEYS,//
            actions = {
                    //
-                   @CocAction(name = "添加", opCode = OpCodes.OP_INSERT_FORM_DATA, key = "c", uiForm = "user_form"),//
-                   @CocAction(name = "编辑", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "e", uiForm = "user_form"), //
-                   @CocAction(name = "查看", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "v", uiForm = "user_form"), //
+                   @CocAction(name = "添加", opCode = OpCodes.OP_INSERT_FORM_DATA, key = "c", uiForm = "form_c"),//
+                   @CocAction(name = "编辑", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "e", uiForm = "form_c"), //
+                   @CocAction(name = "查看", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "v", uiForm = "form_c"), //
                    @CocAction(name = "删除", opCode = OpCodes.OP_DELETE_ROWS, key = "d", warnMessage = "您确定要删除该用户吗？"), //
-                   @CocAction(name = "重置密码", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "e1", uiForm = "user_form"), //
-                   @CocAction(name = "解锁", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "e2", uiForm = "user_form"), //
-                   @CocAction(name = "启用", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "e3", uiForm = "user_form"), //
-                   @CocAction(name = "停用", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "e4", uiForm = "user_form"), //
-                   @CocAction(name = "确认", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "e5", uiForm = "user_form"), //
+                   @CocAction(name = "重置密码", opCode = OpCodes.OP_UPDATE_ROW, key = "e1", warnMessage = "您确定要为该用户重置密码吗？", assignValues = "rawPassword: '12345678', rawPassword2: '12345678'"), //
+                   @CocAction(name = "启用", opCode = OpCodes.OP_UPDATE_ROWS, key = "e3", assignValues = "statusCode: 1"), //
+                   @CocAction(name = "停用", opCode = OpCodes.OP_UPDATE_ROWS, key = "e4", assignValues = "statusCode: " + StatusCodes.STATUS_CODE_DISABLED), //
+           // @CocAction(name = "解锁", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "e2", uiForm = "user_form"), //
+           // @CocAction(name = "确认", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "e5", uiForm = "user_form"), //
            },//
            groups = { @CocGroup(name = "基本信息", key = "basic", fields = { //
                                 @CocColumn(name = "登录帐号", field = "key", pattern = "username", mode = "c:M *:S"), //
@@ -47,20 +46,24 @@ import com.jsoft.cocit.util.StringUtil;
                                         @CocColumn(name = "手机号码", field = "telCode", pattern = "phone", length = 16), //
                                         @CocColumn(name = "登录密码", field = "rawPassword", uiView = "password", pattern = "password", mode = "*:N c:M e:E"), //
                                         @CocColumn(name = "验证密码", field = "rawPassword2", uiView = "password", mode = "*:N c:M e:E"), //
-                                        @CocColumn(name = "用户状态", field = "statusCode", dicOptions = "0:正常,1:已锁定,99990:初始化,-99999:已删除"),//
-                                }) // end group
+                                        @CocColumn(name = "用户状态", field = "statusCode", dicOptions = "0:新建,1:启用,-999:停用,99990:初始数据"),//
+                                }), // end group
+                   @CocGroup(name = "权限信息", key = "auth", fields = { //
+                             @CocColumn(name = "所属群组", field = "groups", fkTargetEntity = Const.TBL_SEC_GROUP, multiSelect = true, mode = "*:S c:E e:E"), //
+                                     @CocColumn(name = "群组名称", field = "groupNames", fkTargetEntity = Const.TBL_SEC_GROUP, fkDependField = "groupNames", fkTargetField = "name", mode = "*:S c:E e:E"), //
+                                     @CocColumn(name = "拥有角色", field = "roles", fkTargetEntity = Const.TBL_SEC_ROLE, fkTargetField = "key", mode = " *:S c:E e:E"),//
+                                     @CocColumn(name = "角色名称", field = "roleNames", fkTargetEntity = Const.TBL_SEC_ROLE, fkTargetField = "name", fkDependField = "roleNames", mode = "*:S c:E e:E") //
+                             }) // end group
            }// end groups
 )
 @CuiEntity(//
-           grid = @CuiGrid(fields = "key|name|emailAddress|telCode|statusCode"),//
+           grid = @CuiGrid(fields = "key|name|emailAddress|telCode|statusCode", rowActions = "e|v|d|e1|e3|e4"),//
            forms = {//
-           @CuiForm(key = "user_form", fields = "key,name,rawPassword,rawPassword2,emailAddress,telCode") //
+           @CuiForm(key = "form_c", fields = "key,name,rawPassword,rawPassword2,emailAddress,telCode,groups,roles") //
            }//
 )
 public class SystemUser extends Principal implements ISystemUser {
 
-	@OneToMany(mappedBy = "userMember")
-	protected List<GroupMember> groups;
 	protected String emailAddress;
 	protected String telCode;
 	@Column(length = 128)
@@ -73,8 +76,15 @@ public class SystemUser extends Principal implements ISystemUser {
 	protected String logo;
 	protected Date expiredFrom;
 	protected Date expiredTo;
+
+	@Column(length = 512)
+	protected String groups;
+	@Column(length = 512)
+	protected String groupNames;
 	@Column(length = 512)
 	protected String roles;
+	@Column(length = 512)
+	protected String roleNames;
 
 	@Transient
 	protected String rawPassword;
@@ -179,19 +189,11 @@ public class SystemUser extends Principal implements ISystemUser {
 	}
 
 	public boolean isLocked() {
-		return statusCode == 1;
+		return statusCode == -1;
 	}
 
 	public int getPrincipalType() {
 		return Const.USER_SYSTEM;
-	}
-
-	public List<GroupMember> getGroups() {
-		return groups;
-	}
-
-	public void setGroups(List<GroupMember> groups) {
-		this.groups = groups;
 	}
 
 	public String getRoles() {
@@ -200,6 +202,30 @@ public class SystemUser extends Principal implements ISystemUser {
 
 	public void setRoles(String roles) {
 		this.roles = roles;
+	}
+
+	public String getEmailAddress() {
+		return emailAddress;
+	}
+
+	public void setEmailAddress(String emailAddress) {
+		this.emailAddress = emailAddress;
+	}
+
+	public String getTelCode() {
+		return telCode;
+	}
+
+	public void setTelCode(String telCode) {
+		this.telCode = telCode;
+	}
+
+	public String getGroups() {
+		return groups;
+	}
+
+	public void setGroups(String groups) {
+		this.groups = groups;
 	}
 
 }

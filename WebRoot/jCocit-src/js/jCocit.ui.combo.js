@@ -63,7 +63,8 @@
 			$ac("CbV", $f(".combo-value", $combo));
 			$ac("CbPnBC", $f(".combo-content", $combo));
 		} else {
-			$combo = $('<div class="Cb"><div class="CbB"><input type="text" class="CbT" /><input type="text" class="CbA" /></div><input type="hidden" class="CbV" /></div>').insertAfter(selfHTML);
+			$combo = $('<div class="Cb"><div class="CbB"><input type="text" class="CbT" /><input type="text" class="CbA" /></div><input type="hidden" class="CbV" /></div>').insertAfter(
+					selfHTML);
 			$ac("combo-f", $target).prependTo($f(".CbB", $combo)).hide();
 		}
 
@@ -73,16 +74,13 @@
 			$f(".CbV", $combo).attr("name", name);
 			$target.removeAttr("name").attr("comboName", name);
 		}
-		var textFieldName = $target.attr("textFieldName");
-		if (textFieldName) {
-			$target.attr("name", textFieldName);
-		}
+		var textFieldName = $target.attr("textFieldName") || "";
 		if ($target.is("input") || $target.is("textarea")) {
 			$f(".CbT", $combo).remove();
 			$ac("CbT", $target).show();
 		}
 
-		var t = $f(".CbT", $combo).attr("autocomplete", "off");
+		var t = $f(".CbT", $combo).attr("autocomplete", "off").attr("name", textFieldName);
 
 		return $combo;
 	}

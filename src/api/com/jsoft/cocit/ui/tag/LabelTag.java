@@ -19,7 +19,6 @@ public class LabelTag extends BodyTagSupport {
 	 */
 	protected String property = null;
 
-	@SuppressWarnings("deprecation")
 	public int doStartTag() throws JspException {
 
 		UIForm uiForm = (UIForm) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
@@ -37,7 +36,7 @@ public class LabelTag extends BodyTagSupport {
 			TagUtils.getInstance().write(this.pageContext, property);
 		}
 
-		return (EVAL_BODY_TAG);
+		return (EVAL_BODY_INCLUDE);
 	}
 
 	public void release() {

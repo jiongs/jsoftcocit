@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.EntityTypes;
 import com.jsoft.cocit.entity.coc.ICocEntity;
 import com.jsoft.cocit.entity.config.IDataSource;
@@ -101,11 +101,11 @@ public class EntityServiceFactoryImpl implements EntityServiceFactory {
 		}
 
 		if (StringUtil.isBlank(systemKey)) {
-			ICommonConfig config = Cocit.me().getConfig();
+			ICocConfig config = Cocit.me().getConfig();
 			systemKey = config.getDefaultSystemKey();
 		}
 		if (StringUtil.isBlank(systemKey)) {
-			ICommonConfig config = Cocit.me().getConfig();
+			ICocConfig config = Cocit.me().getConfig();
 			systemKey = config.getCocitSystemKey();
 		}
 
@@ -148,7 +148,7 @@ public class EntityServiceFactoryImpl implements EntityServiceFactory {
 					IExtTenant obj = (IExtTenant) helper.getTenant(tenantKey);
 
 					if (obj == null) {
-						ICommonConfig config = Cocit.me().getConfig();
+						ICocConfig config = Cocit.me().getConfig();
 						if (config.getCocitTenantKey().equals(tenantKey)) {
 							try {
 								obj = (IExtTenant) EntityTypes.Tenant.newInstance();

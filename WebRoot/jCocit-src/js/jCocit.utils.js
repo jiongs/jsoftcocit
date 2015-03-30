@@ -574,7 +574,7 @@ function checkHeartbeat_coc() {
 		data : "",
 		dataType : "json",
 		success : function(json) {
-			_sto(checkHeartbeat_coc, 10800000);// 3*60*60*1000
+			_sto(checkHeartbeat_coc, 10800000);// 5*60*60*1000
 		},
 		error : function(jqXHR, statusText, responseError) {
 			//alert("访问服务器出错！" + responseError);

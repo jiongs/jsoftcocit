@@ -438,6 +438,9 @@ public abstract class StringUtil {
 	}
 
 	public static String join(List list, String fld, String seperator) {
+		if (list == null) {
+			return "";
+		}
 		if (seperator == null) {
 			seperator = ",";
 		}
@@ -571,7 +574,7 @@ public abstract class StringUtil {
 			// WITHOUT_TONE：无音标 (zhong)
 			// WITH_TONE_NUMBER：1-4数字表示英标 (zhong4)
 			// WITH_TONE_MARK：直接用音标符（必须WITH_U_UNICODE否则异常） (zhòng)
-			format.setToneType(HanyuPinyinToneType.WITH_TONE_NUMBER);
+			format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
 
 			// WITH_V：用v表示ü (nv)
 			// WITH_U_AND_COLON：用"u:"表示ü (nu:)

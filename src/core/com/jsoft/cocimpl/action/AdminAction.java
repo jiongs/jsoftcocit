@@ -5,7 +5,7 @@ import org.nutz.mvc.annotation.Fail;
 import org.nutz.mvc.annotation.Ok;
 
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.mvc.UIModelView;
 import com.jsoft.cocit.ui.model.UIModel;
@@ -21,7 +21,7 @@ public class AdminAction extends BaseAdminAction {
 		adminUrl = ADMIN_URL;
 
 		Cocit coc = Cocit.me();
-		ICommonConfig config = coc.getConfig();
+		ICocConfig config = coc.getConfig();
 
 		resourcePath = config.get("admin.resourcePath", "/admin");
 		topHeight = config.getInt("admin.topHeight", 98);

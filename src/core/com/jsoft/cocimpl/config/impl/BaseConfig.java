@@ -11,7 +11,7 @@ import java.util.Properties;
 import org.nutz.lang.stream.StringInputStream;
 
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.config.IConfig;
 import com.jsoft.cocit.config.IDynaBean;
 import com.jsoft.cocit.util.ExceptionUtil;
@@ -115,7 +115,7 @@ public abstract class BaseConfig implements IConfig, IDynaBean {
 		/*
 		 * 加载默认配置文件
 		 */
-		String filePath = ICommonConfig.CONFIG_FILE_PACKAGE + this.configFile;
+		String filePath = ICocConfig.CONFIG_FILE_PACKAGE + this.configFile;
 		InputStream is = null;
 		try {
 			String content = null;

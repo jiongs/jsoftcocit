@@ -643,6 +643,9 @@
 			append = subtreeUL.append;
 			subtreeUL = subtreeUL.target || selfUL;
 		}
+		
+		if(dataRows == null)
+			return;
 
 		/**
 		 * folderNode is the current folder node which sub tree data is being loaded.
@@ -652,12 +655,14 @@
 		var folderNode = null, folderNodeCord = "", opts = _options(selfUL), state = _state(selfUL), $tree = $(selfUL), $subtree = $(subtreeUL), item, openAll, depth, newToken = state.token, keywords = opts.keywords;
 
 		if (selfUL == subtreeUL) {
-			opts.data = dataRows;
+			if (!append)
+				opts.data = dataRows;
 		} else {
 			folderNode = getNode(selfUL, $subtree.prev()[0]);
 			folderNodeCord = folderNode._cord_ || "";
-			item = _getItem(opts.data, folderNodeCord);
-			item.children = dataRows;
+			var item = _getItem(opts.data, folderNodeCord);
+			if (item)
+				item.children = dataRows;
 		}
 
 		cascadeCheck = cascadeCheck && opts.cascadeCheck;
@@ -782,7 +787,7 @@
 			}
 
 			// set sub tree min height
-			if (folderNode)
+			if (folderNode && !opts.dnd && !opts.editable)
 				$subtree.css("min-height", dataRows.length * opts.rowHeight);
 
 			$tree.trigger("scroll.tree");
@@ -944,6 +949,9 @@
 			if (!formatTitle) {
 				return 0;
 			}
+			if (children && children.length == 0) {
+				children = false;
+			}
 
 			resultHTML.push('<li><div unselectable="on" class="TrN');
 
@@ -1060,7 +1068,9 @@
 				if (closed)
 					resultHTML.push('display:none;');
 
-				resultHTML.push('min-height: ' + children.length * opts.rowHeight + "px;");
+				if (!opts.dnd && !opts.editable) {
+					resultHTML.push('min-height: ' + children.length * opts.rowHeight + "px;");
+				}
 
 				resultHTML.push('">');
 
@@ -1648,7 +1658,7 @@
 
 		// $log("ui.tree:_getItem: cord=[{1}], dot=[{2}], idx=[{3}], nextCord=[{4}], item.id=[{5}], item.childrenURL=[{6}]", 0, cord, dot, "" + idx, nextCord, item.id, item.childrenURL);
 
-		if (nextCord) {
+		if (nextCord && item) {
 			return _getItem(item.children, nextCord);
 		}
 
@@ -1664,8 +1674,14 @@
 		var $node = $(nodeDIV);
 		var _cord_ = $node.attr("cord");
 		var item = {};
-		if (_cord_)
+		if (_cord_) {
 			item = _getItem(opts.data, _cord_);
+			if (!item) {
+				item = {};
+				item.id = $node.attr("nid");
+				item.text = $node.attr("title");
+			}
+		}
 
 		var node = $.extend({}, item, {
 			target : nodeDIV,
@@ -1709,17 +1725,20 @@
 
 		if ($.type(idOrConfig) == "object") {
 			if (idOrConfig.target)
-				$tree = $(idOrConfig.target);
-
-			field = idOrConfig.field;
-			value = idOrConfig.value;
+				$tree = $(idOrConfig.target).next();
+			if (idOrConfig.field) {
+				field = idOrConfig.field;
+				value = idOrConfig.value;
+			} else {
+				value = idOrConfig.id;
+			}
 		}
 
 		var $node;
 		if (field == "id")
-			$node = $(selfUL).find("div.TrN[nid='" + value + "']");
+			$node = $tree.find("div.TrN[nid='" + value + "']");
 		else
-			$node = $(selfUL).find("div.TrN[title='" + value + "']");
+			$node = $tree.find("div.TrN[title='" + value + "']");
 
 		if ($node.length) {
 			return getNode(selfUL, $node[0]);
@@ -1729,6 +1748,8 @@
 	}
 
 	function selectNode(selfUL, nodeDIV, ignoreOnSelect) {
+		if (nodeDIV == null)
+			return;
 
 		var selected = true;
 		if ($.type(nodeDIV.target) != "undefined") {
@@ -1737,6 +1758,9 @@
 		}
 
 		var node = getNode(selfUL, nodeDIV);
+		if (node == null) {
+			return;
+		}
 		if (node.unselectable) {
 			return;
 		}
@@ -1921,6 +1945,454 @@
 
 	function isLeafNode(selfUL, nodeDIV) {
 		return _isLeafNode($(nodeDIV));
+	}
+
+	/**
+	 * Append nodes to tree.
+	 */
+	function appendNodes(selfUL, nodeConfig) {
+		var $parent = $(nodeConfig.parent);
+		var $subtree;
+		if ($parent.length == 0) {
+			$subtree = $(selfUL);
+		} else {
+			$subtree = $parent.next();
+			if ($subtree.length == 0) {
+				$subtree = $("<ul></ul>").insertAfter($parent);
+			}
+		}
+		if (nodeConfig.data && nodeConfig.data.length) {
+			var $icon = $f("span.TrI", $parent);
+			if ($hc("TrI-L", $icon)) {
+				$ac("TrI-F TrI-FO", $rc("TrI-L", $icon));
+				var hit = $ac("TrH-E", $('<span class="TrH"></span>')).insertBefore($icon);
+				if (hit.prev().length) {
+					hit.prev().remove();
+				}
+			}
+		}
+		$(selfUL).tree("loadNodes", {
+			target : $subtree[0],
+			data : nodeConfig.data,
+			append : true
+		});
+		_refreshCheckbox(selfUL, $subtree.prev());
+	}
+
+	function _checkNode(selfUL, nodeDIV, checked) {
+		return $(selfUL).tree(checked ? "check" : "uncheck", nodeDIV);
+	}
+
+	function _refreshCheckbox(selfUL, nodeDIV) {
+		var opts = _options(selfUL);
+		var $node = $(nodeDIV);
+		if ($(selfUL).tree("isLeaf", nodeDIV)) {
+			var $checkbox = $f(".TrC", $node);
+			if ($checkbox.length) {
+				if ($hc("TrC-1", $checkbox))
+					_checkNode(selfUL, nodeDIV, true);
+				else
+					_checkNode(selfUL, nodeDIV, false);
+
+			} else {
+				if (opts.onlyLeafCheck)
+					$ac("TrC-0", $('<span class="TrC"></span>')).insertBefore($f(".TrT", $node));
+
+			}
+		} else {
+			var $checkbox = $f(".TrC", $node);
+			if ($checkbox.length > 0 && opts.onlyLeafCheck) {
+				if (opts.checkLeftCls)
+					$ac("TrN-no-checkbox", $node);
+
+				$checkbox.remove();
+			} else {
+				if ($hc("TrC-1", $checkbox)) {
+					_checkNode(selfUL, nodeDIV, true);
+				} else {
+					if ($hc("TrC-2", $checkbox)) {
+						var checked = true;
+						var unchecked = true;
+						var nodes = $(selfUL).tree("getDescendants", nodeDIV);
+						for ( var i = 0; i < nodes.length; i++) {
+							if (nodes[i].checked) {
+								unchecked = false;
+							} else {
+								checked = false;
+							}
+						}
+						if (checked) {
+							_checkNode(selfUL, nodeDIV, true);
+						}
+						if (unchecked) {
+							_checkNode(selfUL, nodeDIV, false);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Insert nodes to tree.
+	 */
+	function insertNode(selfUL, nodeConfig) {
+		var refDIV = nodeConfig.before || nodeConfig.after;
+		var refParentNode = $(selfUL).tree("getParent", refDIV);
+		var $newLI;
+		if (refParentNode) {
+			appendNodes(selfUL, {
+				parent : refParentNode.target,
+				data : [ nodeConfig.data ]
+			});
+			var subtree = $(refParentNode.target).next();
+			var page = $c("div:last", subtree)
+			$newLI = $c("li:last", page);
+		} else {
+			appendNodes(selfUL, {
+				parent : null,
+				data : [ nodeConfig.data ]
+			});
+			var page = $c("div:last", $(selfUL))
+			$newLI = $c("li:last", page);
+		}
+		if (nodeConfig.before) {
+			$newLI.insertBefore($p($(refDIV)));
+		} else {
+			$newLI.insertAfter($p($(refDIV)));
+		}
+	}
+
+	/**
+	 * Remove node from tree
+	 */
+	function removeNode(selfUL, nodeDIV) {
+		var opts = _options(selfUL);
+		var parentNode = $(selfUL).tree("getParent", nodeDIV);
+		var $node = $(nodeDIV);
+		var node = _getNode(selfUL, nodeDIV);
+		if (opts.onRemove.call(selfUL, node) != false) {
+			var $li = $p($node);
+			$li.remove();
+
+			var $subtree = $p($li);
+			if ($c("li", $subtree).length == 0) {
+				var $node = $subtree.prev();
+				$ac("TrI-L", $rc("TrI-F", $f(".TrI", $node)));
+				$f(".TrH", $node).remove();
+				$('<span class="TrD"></span>').prependTo($node);
+				if ($subtree[0] != selfUL) {
+					$subtree.remove();
+				}
+			}
+			if (parentNode) {
+				_refreshCheckbox(selfUL, parentNode.target);
+			}
+			$(selfUL).tree("_refreshJoinLines", selfUL);
+
+			opts.onAfterRemove.call(selfUL, node);
+		}
+	}
+
+	function _getNode(selfUL, node) {
+		return $(selfUL).tree("getNode", node);
+	}
+
+	function updateNode(selfUL, newNode) {
+		var opts = _options(selfUL);
+		var $node = $(newNode.target);
+		var oldNode = _getNode(selfUL, newNode.target);
+		if (oldNode.iconCls) {
+			$rc(oldNode.iconCls, $f(".TrI", $node));
+		}
+		var node = $.extend({}, oldNode, newNode);
+		$d(newNode.target, "TrN", node);
+		$node.attr("nid", node.id);
+		$f(".TrT", $node).html(node.text);
+
+		var _cord_ = $node.attr("cord");
+		var item = {};
+		if (_cord_)
+			item = _getItem(opts.data, _cord_);
+		item.id = node.id;
+		item.text = node.text;
+
+		if (node.iconCls) {
+			$ac(node.iconCls, $f(".TrI", $node));
+		}
+		if (oldNode.checked != node.checked) {
+			_checkNode(selfUL, newNode.target, node.checked);
+		}
+	}
+
+	function beginEdit(selfUL, nodeDIV) {
+		var opts = _options(selfUL);
+		var node = _getNode(selfUL, nodeDIV);
+		if (opts.onBeforeEdit.call(selfUL, node) == false) {
+			return;
+		}
+		$(nodeDIV).css("position", "relative");
+		var $title = $f(".TrT", $(nodeDIV));
+		var width = $ow($title);
+		$title.empty();
+		var $nodeEditor = $("<input class=\"TrE\">").appendTo($title);
+		$nodeEditor.val(node.text).focus();
+		// $w(width + 20, $nodeEditor);
+		$h(document.compatMode == "CSS1Compat" ? (18 - ($oh($nodeEditor) - $h($nodeEditor))) : 18, $nodeEditor);
+		$nodeEditor.bind("click", function(e) {
+			// return false;
+		}).bind("mousedown", function(e) {
+			e.stopPropagation();
+		}).bind("mousemove", function(e) {
+			e.stopPropagation();
+		}).bind("keydown", function(e) {
+			if (e.keyCode == 13) {
+				endEdit(selfUL, nodeDIV);
+				return false;
+			} else {
+				if (e.keyCode == 27) {
+					cancelEdit(selfUL, optsd8);
+					return false;
+				}
+			}
+		}).bind("blur", function(e) {
+			e.stopPropagation();
+			endEdit(selfUL, nodeDIV);
+		});
+	}
+
+	function endEdit(selfUL, nodeDIV) {
+		var opts = _options(selfUL);
+		$(nodeDIV).css("position", "");
+		var $titleEditor = $f("input.TrE", $(nodeDIV));
+		var val = $titleEditor.val();
+		var node = _getNode(selfUL, nodeDIV);
+		node.text = val;
+
+		var result = opts.onEdit.call(selfUL, node);
+		if (result && result.success) {
+			if (result.id)
+				node.id = result.id;
+			if (result.text)
+				node.text = result.text;
+
+			$titleEditor.remove();
+			updateNode(selfUL, node);
+
+			opts.onAfterEdit.call(selfUL, node);
+		}
+	}
+
+	function cancelEdit(selfUL, nodeDIV) {
+		var $self = $(selfUL);
+		var opts = _options(selfUL);
+		$self.css("position", "");
+		$f("input.TrE", $self).remove();
+		var node = _getNode(selfUL, nodeDIV);
+		updateNode(selfUL, node);
+		opts.onCancelEdit.call(selfUL, node);
+	}
+
+	function disableDnd(selfUL) {
+		var $node = $f("div.TrN", $(selfUL));
+		$node.draggable("disable");
+		// $node.css("cursor", "pointer");
+	}
+
+	function enableDnd(selfUL) {
+		var state = $d(selfUL, "tree");
+		var opts = state.options;
+		var $tree = state.tree;
+		state.disabledDroppableNodes = [];
+
+		// create node draggable object
+		$f("div.TrN", $tree).draggable({
+			disabled : false,
+			revert : true,
+			cursor : "pointer",
+			proxy : function(nodeDIV) {
+				var $proxyNode = $('<div class="TrP"><span class="TrP-N TrP-I">&nbsp;</span></div>').appendTo("body");
+				$proxyNode.append($f(".TrT", $(nodeDIV)).html());
+				$proxyNode.hide();
+				return $proxyNode;
+			},
+			deltaX : 15,
+			deltaY : 15,
+			onBeforeDrag : function(e) {
+				var $this = $(this);
+				var $eventTarget = $(e.target);
+
+				// call-back onBeforeDrag function
+				if (opts.onBeforeDrag.call(selfUL, _getNode(selfUL, this)) == false) {
+					return false;
+				}
+
+				// cannot drag "+/-" icon or checkbox
+				if ($hc("TrH", $eventTarget) || $hc("TrC", $eventTarget)) {
+					return false;
+				}
+
+				// the pressing mouse key is not left
+				if (e.which != 1) {
+					return false;
+				}
+
+				// the node cannot be dragged into it's children nodes
+				$f("div.TrN", $this.next("ul")).droppable({
+					accept : "no-accept"
+				});
+
+				// get indent
+				var $indent = $f("span.TrD", $this);
+				if ($indent.length) {
+					e.data.offsetWidth -= $indent.length * $w($indent);
+				}
+
+			},
+			onStartDrag : function() {
+				$(this).draggable("proxy").css({
+					left : -10000,
+					top : -10000
+				});
+
+				// call-back onStartDrag function
+				opts.onStartDrag.call(selfUL, _getNode(selfUL, this));
+
+				//
+				var node = _getNode(selfUL, this);
+				if (node.id == undefined) {
+					node.id = "jCocit_tree_node_id_temp";
+					updateNode(selfUL, node);
+				}
+
+				// set dragging node id
+				state.draggingNodeId = node.id;
+			},
+			onDrag : function(e) {
+				var x1 = e.pageX, y1 = e.pageY, x2 = e.data.startX, y2 = e.data.startY;
+				var d = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+				if (d > 3) {
+					$(this).draggable("proxy").show();
+				}
+				this.pageY = e.pageY;
+			},
+			onStopDrag : function() {
+				$f("div.TrN", $(this).next("ul")).droppable({
+					accept : "div.TrN"
+				});
+				for ( var i = 0; i < state.disabledDroppableNodes.length; i++) {
+					$(state.disabledDroppableNodes[i]).droppable("enable");
+				}
+				state.disabledDroppableNodes = [];
+				var node = $(selfUL).tree("find", state.draggingNodeId);
+				if (node.id == "jCocit_tree_node_id_temp") {
+					node.id = "";
+					updateNode(selfUL, node);
+				}
+				opts.onStopDrag.call(selfUL, node);
+			}
+		}).droppable({
+			accept : "div.TrN",
+			onDragEnter : function(e, draggingNodeDIV) {
+				if (opts.onDragEnter.call(selfUL, this, _getNode(selfUL, draggingNodeDIV)) == false) {
+					var $this = $(this);
+					_refreshProxyNode(nodeDIV, false);
+					$rc("TrP-A TrP-T TrP-B", $this);
+					$this.droppable("disable");
+					state.disabledDroppableNodes.push(this);
+				}
+			},
+			onDragOver : function(e, draggingNodeDIV) {
+				var $this = $(this);
+				if ($this.droppable("options").disabled) {
+					return;
+				}
+				var pageY = draggingNodeDIV.pageY;
+				var top = $this.offset().top;
+				var h = top + $oh($this);
+				_refreshProxyNode(draggingNodeDIV, true);
+				$rc("TrP-A TrP-T TrP-B", $this);
+				if (pageY > top + (h - top) / 2) {
+					if (h - pageY < 5)
+						$ac("TrP-B", $this);
+					else
+						$ac("TrP-A", $this);
+
+				} else {
+					if (pageY - top < 5)
+						$ac("TrP-T", $this);
+					else
+						$ac("TrP-A", $this);
+
+				}
+				if (opts.onDragOver.call(selfUL, this, _getNode(selfUL, draggingNodeDIV)) == false) {
+					_refreshProxyNode(draggingNodeDIV, false);
+					$rc("TrP-A TrP-T TrP-B", $this);
+					$this.droppable("disable");
+					state.disabledDroppableNodes.push(this);
+				}
+			},
+			onDragLeave : function(e, draggingNodeDIV) {
+				_refreshProxyNode(draggingNodeDIV, false);
+				$rc("TrP-A TrP-T TrP-B", $(this));
+				opts.onDragLeave.call(selfUL, this, _getNode(selfUL, draggingNodeDIV));
+			},
+			onDrop : function(e, draggingNodeDIV) {
+				var $this = $(this);
+				var droppingNodeDIV = this;
+				var _move, position;
+				if ($hc("TrP-A", $this)) {
+					_move = _moveInto;
+				} else {
+					_move = _moveTo;
+					position = $hc("TrP-T", $this) ? "top" : "bottom";
+				}
+				_move(draggingNodeDIV, droppingNodeDIV, position);
+				$rc("TrP-A TrP-T TrP-B", $this);
+			}
+		});
+
+		function _refreshProxyNode(droggingNode, yes) {
+			var $dndIcon = $f("span.TrP-I", $(droggingNode).draggable("proxy"));
+			$ac(yes ? "TrP-Y" : "TrP-N", $rc("TrP-Y TrP-N", $dndIcon));
+		}
+
+		function _moveInto(draggingNodeDIV, droppingNodeDIV) {
+			if (_getNode(selfUL, droppingNodeDIV).state == "closed") {
+				$(selfUL).tree("_expand", {
+					target : droppingNodeDIV,
+					callback : function() {
+						_appendTo();
+					}
+				});
+			} else {
+				_appendTo();
+			}
+
+			function _appendTo() {
+				var draggingNode = $(selfUL).tree("pop", draggingNodeDIV);
+				$(selfUL).tree("append", {
+					parent : droppingNodeDIV,
+					data : [ draggingNode ]
+				});
+				opts.onDrop.call(selfUL, droppingNodeDIV, draggingNode, "append");
+			}
+
+		}
+
+		function _moveTo(draggingNodeDIV, droppingNodeDIV, position) {
+			var nodeConfig = {};
+			if (position == "top") {
+				nodeConfig.before = droppingNodeDIV;
+			} else {
+				nodeConfig.after = droppingNodeDIV;
+			}
+			var draggingNode = $(selfUL).tree("pop", draggingNodeDIV);
+			nodeConfig.data = draggingNode;
+			$(selfUL).tree("insert", nodeConfig);
+			opts.onDrop.call(selfUL, droppingNodeDIV, draggingNode, position);
+		}
+
 	}
 
 	/**
@@ -2379,7 +2851,67 @@
 		 * Disable drag tree node
 		 */
 		disableDnd : $n,
-		_refreshJoinLines : $X(_refreshJoinLines)
+		_refreshJoinLines : $X(_refreshJoinLines),
+		/**
+		 * Append tree node into position specified by argument "nodeConfig"
+		 * <p>
+		 * args: nodeConfig - this is node JSON data configuration
+		 */
+		append : $X(appendNodes),
+		/**
+		 * Insert tree node into position specified by argument "nodeConfig"
+		 * <p>
+		 * args: nodeConfig - this is node JSON data configuration
+		 */
+		insert : $X(insertNode),
+		/**
+		 * Remove tree node specified by argument "nodeDIV"
+		 * <p>
+		 * args: nodeDIV - this is specified tree node DIV element
+		 */
+		remove : $X(removeNode),
+		/**
+		 * Pop-up specified branch node datas contains all descendants
+		 * <p>
+		 * args: nodeDIV - this is specified tree node DIV element
+		 */
+		pop : function(jq, nodeDIV) {
+			var branchNode = jq.tree("getBranch", nodeDIV);
+			removeNode(jq[0], nodeDIV);
+			return branchNode;
+		},
+		/**
+		 * Update tree node with node data specified by argument "node"
+		 * <p>
+		 * args: node - this is new node JSON data
+		 */
+		update : $X(updateNode),
+		/**
+		 * Enable drag tree node
+		 */
+		enableDnd : $X(enableDnd),
+		/**
+		 * Disable drag tree node
+		 */
+		disableDnd : $X(disableDnd),
+		/**
+		 * Begin edit tree node title specified by argument "nodeDIV"
+		 * <p>
+		 * args: nodeDIV - this is node DIV element
+		 */
+		beginEdit : $X(beginEdit),
+		/**
+		 * End edit tree node title
+		 * <p>
+		 * args: nodeDIV - this is node DIV element
+		 */
+		endEdit : $X(endEdit),
+		/**
+		 * Cancel edit tree node title
+		 * <p>
+		 * args: nodeDIV - this is node DIV element
+		 */
+		cancelEdit : $X(cancelEdit)
 	};
 
 	/**
@@ -2453,7 +2985,7 @@
 		/**
 		 * this is class name means that the checkbox on the left side of icon
 		 */
-		checkLeftCls : "",//Tr-CL
+		checkLeftCls : "",// Tr-CL
 		/**
 		 * true means that the all children will be cascade checked/unchecked after the folder checkbox is checked/unchecked
 		 * <p>
@@ -2522,6 +3054,14 @@
 		 * auto load asyn folder from remote when doing query
 		 */
 		loadOnQuery : true,
+		/**
+		 * editable is true means that the tree node title can be edit.
+		 */
+		editable : false,
+		/**
+		 * dnd is true means that the tree node can be drag.
+		 */
+		dnd : false,
 
 		loader : function(folderNode, queryData, onLoadSuccess, onLoadError) {
 			var opts = $(this).tree("options");
@@ -2757,6 +3297,98 @@
 
 				expandNode(this, $list[i], null, true);
 			}
-		}
+		},
+		/**
+		 * This call-back function will be invoked before dragging is started
+		 * <p>
+		 * args: node - this is dragging source node
+		 */
+		onBeforeDrag : $n,
+		/**
+		 * This call-back function will be invoked after dragging is started
+		 * <p>
+		 * args: node - this is dragging source node
+		 */
+		onStartDrag : $n,
+		/**
+		 * This call-back function will be invoked after dragging is stoped
+		 * <p>
+		 * args: node - this is dragging source node
+		 */
+		onStopDrag : $n,
+		/**
+		 * This call-back function will be invoked after mouse enter source node.
+		 * <p>
+		 * <B>args: </B>
+		 * <UL>
+		 * <LI>droppingNodeDIV: this is target node.
+		 * <LI>draggingNode: this is dragging source node that will be moved into target node
+		 */
+		onDragEnter : $n,
+		/**
+		 * This call-back function will be invoked after mouse over source node.
+		 * <p>
+		 * <B>args: </B>
+		 * <UL>
+		 * <LI>droppingNodeDIV: this is target node.
+		 * <LI>draggingNode: this is dragging source node that will be moved into target node
+		 */
+		onDragOver : $n,
+		/**
+		 * This call-back function will be invoked when mouse leave source node.
+		 * <p>
+		 * <B>args: </B>
+		 * <UL>
+		 * <LI>droppingNodeDIV: this is target node.
+		 * <LI>draggingNode: this is dragging source node that will be moved into target node
+		 */
+		onDragLeave : $n,
+		/**
+		 * This call-back function will be invoked after tree node be dropped into other node.
+		 * <p>
+		 * <B>args: </B>
+		 * <UL>
+		 * <LI>droppingNodeDiv: this is dropping node div.
+		 * <LI>draggingNode: this is dragging node that will be moved into target node.
+		 * <LI>position: options value are "append/after/before"
+		 * </UL>
+		 */
+		onDrop : $n,
+		/**
+		 * This call-back function will be invoked before tree node start edit.
+		 * <p>
+		 * args: node - this is tree node JSON data.
+		 */
+		onBeforeEdit : $n,
+		/**
+		 * This call-back function will be invoked when tree node end edit.
+		 * <p>
+		 * args: node - this is tree node JSON data.
+		 */
+		onEdit : $n,
+		/**
+		 * This call-back function will be invoked after tree node end edit.
+		 * <p>
+		 * args: node - this is tree node JSON data.
+		 */
+		onAfterEdit : $n,
+		/**
+		 * This call-back function will be invoked after tree node be cancel edit.
+		 * <p>
+		 * args: node - this is tree node JSON data.
+		 */
+		onCancelEdit : $n,
+		/**
+		 * This call-back function will be invoked when tree node remove.
+		 * <p>
+		 * args: node - this is tree node JSON data.
+		 */
+		onRemove : $n,
+		/**
+		 * This call-back function will be invoked after tree node removed.
+		 * <p>
+		 * args: node - this is tree node JSON data.
+		 */
+		onAfterRemove : $n,
 	};
 })(jQuery, jCocit);

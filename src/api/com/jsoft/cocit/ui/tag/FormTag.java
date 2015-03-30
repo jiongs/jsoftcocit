@@ -297,6 +297,7 @@ public class FormTag extends TagSupport {
 		renderAttribute(results, "onsubmit", getOnsubmit());
 		renderAttribute(results, "style", getStyle());
 		renderAttribute(results, "target", getTarget());
+		renderAttribute(results, "id", getId());
 		if (!isXhtml()) {
 			renderAttribute(results, "autocomplete", getAutocomplete());
 		}

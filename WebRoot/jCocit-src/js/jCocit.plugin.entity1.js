@@ -14,11 +14,6 @@
 	}
 	jCocit.entity = {
 		doAction : function(opts) {
-			// opts is button
-			if (!opts.opCode) {
-				opts = $.parseOptions(opts);
-			}
-
 			var opCode = opts.opCode;
 			// 校验：
 			if (opCode == 101) {
@@ -222,10 +217,10 @@
 			} else {
 				opts = btn;
 			}
-
+			
 			var $grid = $("#" + opts.resultUI[0]);
 			var options = $grid.datagrid("options");
-			if (typeof options.singleEditable != "undefined" && options.singleEditable == true) {
+			if(typeof options.singleEditable != "undefined" && options.singleEditable == true){
 				if (typeof options.editRowIndex == "undefined") {
 					var rowIndex = 0;
 					$grid.datagrid("insertRow", {
@@ -237,10 +232,10 @@
 
 					var options = $grid.datagrid("options");
 					options.editRowIndex = rowIndex;
-				} else {
+				}else{
 					$.messager.showMsg(jCocit.entity.defaults.promptSave);
 				}
-			} else {
+			}else{
 				var rowIndex = 0;
 				$grid.datagrid("insertRow", {
 					index : rowIndex,
@@ -275,14 +270,14 @@
 
 			var options = $grid.datagrid("options");
 			if (options.editUrl) {
-				if (typeof options.singleEditable != "undefined" && options.singleEditable == true) {
+				if(typeof options.singleEditable != "undefined" && options.singleEditable == true){
 					if (typeof options.editRowIndex == "undefined") {
 						$grid.datagrid('selectRow', rowIndex);
 						$grid.datagrid('beginEdit', rowIndex);
-					} else {
+					}else{
 						$.messager.showMsg(jCocit.entity.defaults.promptSave);
 					}
-				} else {
+				}else{
 					$grid.datagrid('selectRow', rowIndex);
 					$grid.datagrid('beginEdit', rowIndex);
 				}
@@ -612,33 +607,33 @@
 		}
 		var params = jQuery.param(data);
 		/*
-		 * 
+		 *
 		 */
-		var griddataarray = new Array();
-		$form.find(".jCocit-datagrid").each(function() {
+		var griddataarray =  new Array();
+		$form.find(".jCocit-datagrid").each(function(){
 			$grid = $(this);
 			var gridname = $grid.attr("name");
 			var options = $grid.datagrid("options");
 			var defaultFieldValues = options.defaultFieldValues;
-			if (typeof gridname != "undefined" && gridname != null && gridname.length > 0) {
+			if(typeof gridname != "undefined" && gridname != null && gridname.length > 0){
 				var changedrows = $grid.datagrid("getChangeDatas");
-				if (changedrows.length > 0) {
+				if(changedrows.length > 0){
 					var _datastr = "";
 					var _dataarray = [];
-					for ( var i = 0; i < changedrows.length; i++) {
-						if (typeof defaultFieldValues == "object") {
-							for ( var def in defaultFieldValues) {
-								if (typeof changedrows[i][def] == "undefined") {
+					for(var i=0; i < changedrows.length; i++){
+						if(typeof defaultFieldValues == "object"){
+							for(var def in defaultFieldValues){
+								if(typeof changedrows[i][def] == "undefined"){
 									changedrows[i][def] = defaultFieldValues[def];
 								}
 							}
 						}
-						for ( var fn in changedrows[i]) {
-							if ("_row_buttons_" !== fn) {
-								if (typeof changedrows[i][fn] == "object") {
-									_datastr = gridname + "[" + i + "]." + fn + "=" + encodeURI(changedrows[i][fn].value);
-								} else {
-									_datastr = gridname + "[" + i + "]." + fn + "=" + encodeURI(changedrows[i][fn]);
+						for(var fn in changedrows[i]){
+							if("_row_buttons_" !== fn){
+								if(typeof changedrows[i][fn] == "object"){
+									_datastr = gridname + "[" + i + "]." + fn + "=" +encodeURI(changedrows[i][fn].value);
+								}else{
+									_datastr = gridname + "[" + i + "]." + fn + "=" +encodeURI(changedrows[i][fn]);
 								}
 								_dataarray.push(_datastr);
 							}
@@ -1227,26 +1222,11 @@
 				$tabs.tabs("select", title);
 			}
 		},
-		closeWindow : function(btn) {
-			/*
-			 * 计算BUTTON按钮和BUTTON选项
-			 */
-			var opts;
-			if (btn.eventTarget) {
-				opts = btn;
-				btn = btn.eventTarget;
-			} else {
-				opts = $.parseOptions(btn);
-			}
-			var $btn = $(btn);
-
-			/*
-			 * 关闭窗口、DIALOG或Tab项
-			 */
+		closeWindow : function(btn, token) {
 			if (window.opener) {
 				window.close();
 			} else {
-				var dialog = $btn.closest(".Wd");
+				var dialog = $(btn).closest(".Wd");
 				if (dialog.length > 0) {
 					$(".PnBC:eq(0)", dialog).dialog("close");
 				} else {
@@ -1255,37 +1235,10 @@
 			}
 		},
 		getForm : function(btn) {
-			/*
-			 * 计算BUTTON按钮和BUTTON选项
-			 */
-			var opts;
-			if (btn.eventTarget) {
-				opts = btn;
-				btn = btn.eventTarget;
-			} else {
-				opts = $.parseOptions(btn);
-			}
-
-			var $btn = $(btn);
-
-			/*
-			 * 如果btn是<BUTTON>元素，则直接获取按钮所属的 FORM
-			 */
 			if (btn.form) {
 				return btn.form;
 			}
 
-			/*
-			 * 如果btn是<A>元素，则获取按钮所在的 FORM
-			 */
-			var $form = $btn.closest("form");
-			if ($form.length == 1) {
-				return $form.get(0);
-			}
-
-			/*
-			 * 如果btn在窗口上，则通过窗口查找FORM
-			 */
 			var win = $(btn).closest(".Wd");
 			if (win.length > 0) {
 				var $form = win.find("form");
@@ -1297,38 +1250,33 @@
 			return null;
 		},
 		submitForm : function(btn, resultUI, data, callback) {
-			/*
-			 * 计算BUTTON按钮和BUTTON选项
-			 */
-			var opts;
-			if (btn.eventTarget) {
-				opts = btn;
-				btn = btn.eventTarget;
-			} else {
-				opts = $.parseOptions(btn);
-			}
-			var $btn = $(btn);
-			$btn.attr("disabled", true);
-
-			/*
-			 * 计算其他参数
-			 */
-			if (!resultUI) {
-				resultUI = opts.resultUI || [];
-			}
+			var $btn = $(btn).attr("disabled", true);
+			var opts = $.parseOptions(btn);
 			if ($.type(data) == "function") {
 				callback = data;
 				data = {};
 			}
 
 			var $body = $btn.closest(".WdB");
-			var form = jCocit.util.getForm(btn);
+			var form;
+			if (btn.form) {
+				form = btn.form;
+			} else {
+				form = $("form", $body);
+				if (form.length > 0) {
+					form = form.get(0);
+				}
+			}
 
 			var url;
 			if (opts.opUrl) {
 				url = opts.opUrl;
 			} else if (form) {
 				url = form.action;
+			}
+
+			if (!resultUI) {
+				resultUI = opts.resultUI || [];
 			}
 
 			if (url) {
@@ -1361,18 +1309,12 @@
 			}
 		},
 		resetForm : function(btn) {
-			/*
-			 * 计算BUTTON按钮和BUTTON选项
-			 */
-			var opts;
-			if (btn.eventTarget) {
-				opts = btn;
-				btn = btn.eventTarget;
+			var $btn;
+			if (btn && btn.tagName) {
+				$btn = $(btn);
 			} else {
-				opts = $.parseOptions(btn);
+				$btn = $(this);
 			}
-			var $btn = $(btn);
-
 			var $form = $btn.closest("form");
 			if ($form.length > 0) {
 				$form.get(0).reset();

@@ -36,12 +36,11 @@ span.TrD,span.TrH,span.TrI,span.TrC,span.TrT {
  */
 .TrN {
 	position: relative; /* specified position, context menu can be shown correctly when scroll tree. */
-	height: 22px;
-	padding: 1px;
+	height: 20px;
+	padding: 3px 1px 1px 1px;
 	border: 1px solid transparent;
 	white-space: nowrap;
 	cursor: pointer;
-	padding: 0;
 	margin: 0;
 	color: #000000;
 }
@@ -209,8 +208,8 @@ span.TrT {
 	height: 14px !important;
 	height: 18px;
 	line-height: 14px;
-	padding: 1px 2px;
-	width: 80px;
+	padding: 3px 1px;
+	width: 100px;
 	position: absolute;
 	top: 0;
 }

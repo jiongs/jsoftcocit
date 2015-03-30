@@ -16,7 +16,7 @@ import org.lilystudio.smarty4j.TemplateException;
 
 import com.jsoft.cocimpl.ui.UIView;
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.ui.model.SmartyModel;
 import com.jsoft.cocit.util.FileUtil;
@@ -27,7 +27,7 @@ public class SmartyView implements UIView<SmartyModel> {
 
 	private Map<String, Engine> engineMap;
 
-	private ICommonConfig commonConfig;
+	private ICocConfig commonConfig;
 
 	public SmartyView() {
 		engineMap = new HashMap();

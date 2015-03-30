@@ -7,6 +7,7 @@ package com.jsoft.cocit.entity.log;
  * 
  */
 public interface IUploadLog {
+	String getKey();
 
 	/**
 	 * 获取上传时的本地文件名
@@ -37,5 +38,12 @@ public interface IUploadLog {
 	 * @return
 	 */
 	String getContentType();
+
+	/**
+	 * 获取文件绝对路径
+	 * 
+	 * @return
+	 */
+	String getAbstractPath();
 
 }

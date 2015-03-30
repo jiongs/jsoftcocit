@@ -74,7 +74,7 @@ public class UploadLog extends DataEntity implements IExtUploadLog {
 	}
 
 	public String getAbstractPath() {
-		return Cocit.me().getContextDir() + key;
+		return Cocit.me().getContextDir() + this.getFilePath();
 	}
 
 	public String getFilePath() {

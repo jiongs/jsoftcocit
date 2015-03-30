@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.config.ICommonConfig;
+import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.PrincipalTypes;
 import com.jsoft.cocit.entity.impl.security.AuthorityImpl;
 import com.jsoft.cocit.entity.impl.security.SystemUser;
@@ -25,15 +25,20 @@ public abstract class AuthorityPlugins {
 		public void beforeSubmit(BizEvent event) {
 			Orm orm = event.getOrm();
 
-			ICommonConfig config = Cocit.me().getConfig();
+			ICocConfig config = Cocit.me().getConfig();
 
 			Map<String, AuthorityImpl> oldMap = null;
 			List<AuthorityImpl> list = (List<AuthorityImpl>) event.getDataObject();
-			String userKey, groupKey, menuKey, systemKey, dataRows;
+			String userKey, groupKey, roleKey, menuKey, systemKey, dataRows;
 			String cocSystem = config.getCocitSystemKey();
 			for (AuthorityImpl auth : list) {
 				userKey = auth.getUserKey();
 				groupKey = auth.getGroupKey();
+				roleKey = auth.getRoleKey();
+
+				if (StringUtil.isBlank(userKey) || StringUtil.isBlank(groupKey) || StringUtil.isBlank(roleKey)) {
+					throw new CocException("请先选择授权对象（用户、群组、角色）！");
+				}
 
 				menuKey = auth.getMenuKey();
 				systemKey = auth.getSystemKey();
@@ -49,10 +54,14 @@ public abstract class AuthorityPlugins {
 						oldList = orm.query(AuthorityImpl.class, Expr.eq("userKey", userKey).and(Expr.eq("systemKey", systemKey)));
 					} else if (StringUtil.hasContent(groupKey)) {
 						oldList = orm.query(AuthorityImpl.class, Expr.eq("groupKey", groupKey).and(Expr.eq("systemKey", systemKey)));
+					} else if (StringUtil.hasContent(roleKey)) {
+						oldList = orm.query(AuthorityImpl.class, Expr.eq("roleKey", groupKey).and(Expr.eq("systemKey", systemKey)));
 					}
-					oldMap = new HashMap();
-					for (AuthorityImpl old : oldList) {
-						oldMap.put(old.getMenuKey(), old);
+					if (oldList != null) {
+						oldMap = new HashMap();
+						for (AuthorityImpl old : oldList) {
+							oldMap.put(old.getMenuKey(), old);
+						}
 					}
 				}
 				AuthorityImpl oldAuth = oldMap.get(menuKey);
