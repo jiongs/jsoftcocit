@@ -1805,6 +1805,7 @@
 		if (opts.onBeforeEdit.call(gridTable, rowIndex, row) == false) {
 			return;
 		}
+
 		$ac("datagrid-row-editing", tr);
 		_addRowCellEditor(gridTable, rowIndex);
 		resizeEditorWidth(gridTable);
@@ -1968,7 +1969,7 @@
 					});
 					$d(cell[0], "datagrid.editor", {
 						actions : editor,
-						target : editor.init($f("td", cell), editorOptions),
+						target : editor.init($f("td", cell), editorOptions, opts),
 						field : field,
 						type : editorType,
 						oldHtml : oldHtml
@@ -2037,9 +2038,9 @@
 		}
 		return [];
 	}
-	
-	function getChangedDatas(gridTable){
-		
+
+	function getChangedDatas(gridTable) {
+
 		function _getRowIndex(tr) {
 			if (tr.attr("datagrid-row-index")) {
 				return parseInt(tr.attr("datagrid-row-index"));
@@ -2047,13 +2048,13 @@
 				return tr.attr("node-id");
 			}
 		}
-		
+
 		var state = $d(gridTable, "datagrid");
 		var opts = state.options;
 		var changedDatas = [];
 
 		var panel = $(gridTable).datagrid("getPanel");
-		
+
 		panel.find(".datagrid-view2").find("tr.datagrid-row-editing").each(function() {
 			var rowIndex = _getRowIndex($(this));
 			var row = opts.finder.getRow(gridTable, rowIndex);
@@ -2067,7 +2068,7 @@
 			});
 			changedDatas.push(row);
 		});
-		//alert($.toJsonString(changedDatas));
+		// alert($.toJsonString(changedDatas));
 		return changedDatas;
 	}
 
@@ -2321,11 +2322,12 @@
 				return $(input).combobox("getValue");
 			},
 			setValue : function(input, value) {
-				if(typeof value == "object"){
-					$(input).combobox("setValue", value.value);
-					$(input).combobox("setText", value.text);
-				}else{
-					$(input).combobox("setValue", value);
+				var $input = $(input);
+				if (typeof value == "object") {
+					$input.combobox("setValue", value.value || "");
+					$input.combobox("setText", value.text || "");
+				} else {
+					$input.combobox("setValue", value);
 				}
 			},
 			resize : function(input, width) {
@@ -2345,35 +2347,25 @@
 				return $(input).combotree("getValue");
 			},
 			setValue : function(input, value) {
-				$(input).combotree("setValue", value);
+				var $input = $(input);
+				if (typeof value == "object") {
+					$input.combotree("setValue", value.value || "");
+					$input.combotree("setText", value.text || "");
+				} else {
+					$input.combotree("setValue", value);
+				}
 			},
 			resize : function(input, width) {
 				$(input).combotree("resize", width);
 			}
 		},
 		buttons : {
-			init : function(td, options) {
-				var $editor = $(
-						'<a href="javascript: void(0)" class="datagrid-edit-btn datagrid-edit-save">' + $.fn.datagrid.defaults.editSaveButton
-								+ '</a>&nbsp;<a href="javascript: void(0)" class="datagrid-edit-btn datagrid-edit-cancel">' + $.fn.datagrid.defaults.editCancelButton
-								+ '</a>').appendTo(td);
-				return $editor;
-			},
-			destroy : function(input) {
-			},
-			getValue : function(input) {
-				return null;
-			},
-			setValue : function(input, value) {
-			},
-			resize : function(input, width) {
-			}
-		},
-		none : {
-			init : function(td, options) {
-				var $editor = $(
-						'<a href="javascript: void(0)" class="datagrid-edit-btn datagrid-edit-cancel">' + $.fn.datagrid.defaults.editCancelButton
-								+ '</a>').appendTo(td);
+			init : function(td, options, gridOptions) {
+				var html = '<a href="javascript: void(0)" class="datagrid-edit-btn datagrid-edit-cancel">' + $.fn.datagrid.defaults.editCancelButton + '</a>';
+				if (gridOptions.editUrl || gridOptions.addUrl) {
+					html = '<a href="javascript: void(0)" class="datagrid-edit-btn datagrid-edit-save">' + $.fn.datagrid.defaults.editSaveButton + '</a>&nbsp;' + html;
+				}
+				var $editor = $(html).appendTo(td);
 				return $editor;
 			},
 			destroy : function(input) {
@@ -2860,9 +2852,9 @@
 						if (col.formatter) {
 							cc.push(col.formatter(fieldValue, row, rowIndex));
 						} else {
-							if(typeof fieldValue == "object"){
+							if (typeof fieldValue == "object") {
 								cc.push(fieldValue.text);
-							}else{
+							} else {
 								cc.push(fieldValue);
 							}
 						}

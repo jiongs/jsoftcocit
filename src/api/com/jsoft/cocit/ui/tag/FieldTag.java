@@ -15,6 +15,7 @@ import com.jsoft.cocit.config.IMessageConfig;
 import com.jsoft.cocit.constant.FieldModes;
 import com.jsoft.cocit.constant.ViewKeys;
 import com.jsoft.cocit.entityengine.service.CocFieldService;
+import com.jsoft.cocit.ui.model.UIModel;
 import com.jsoft.cocit.ui.model.control.UIField;
 import com.jsoft.cocit.ui.model.control.UIForm;
 import com.jsoft.cocit.ui.view.UIFieldView;
@@ -340,7 +341,12 @@ public class FieldTag extends BodyTagSupport {
 	 */
 	public int doStartTag() throws JspException {
 
-		UIForm uiForm = (UIForm) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
+		UIForm uiForm = null;
+		UIModel baseModel = (UIModel) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
+		if (baseModel != null && baseModel instanceof UIForm) {
+			uiForm = (UIForm) baseModel;
+		}
+		
 		UIField field = null;
 		if (uiForm != null) {
 			field = uiForm.getField(this.property);

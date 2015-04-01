@@ -142,6 +142,8 @@ class BeanFactory {
 			views.addView(new UIActionsButtonView());
 			views.addView(new UIEntityView());
 			views.addView(new UIFormViews.UIFormView());
+			views.addView(new UIFormViews.UIFormButtonsView());
+			views.addView(new UIFormViews.UIFormFieldsView());
 			views.addView(new UIFormViews.UISubFormView());
 			views.addView(new UIFormViews.UIFormDataView());
 			views.addView(new UIGridViews.UIGridView());

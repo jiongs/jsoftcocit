@@ -15,6 +15,8 @@ import com.jsoft.cocit.constant.FieldTypes;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.entityengine.service.CocFieldService;
 import com.jsoft.cocit.exception.CocException;
+import com.jsoft.cocit.log.Log;
+import com.jsoft.cocit.log.Logs;
 import com.jsoft.cocit.ui.model.UIFieldModel;
 import com.jsoft.cocit.ui.model.control.UIActions;
 import com.jsoft.cocit.ui.model.control.UIField;
@@ -29,6 +31,7 @@ import com.jsoft.cocit.util.SortUtil;
 import com.jsoft.cocit.util.StringUtil;
 
 public abstract class UIGridViews {
+	private static final Log log = Logs.getLog(UIGridViews.class);
 
 	public static class UIGridView extends BaseModelView<UIGrid> {
 		public String getName() {
@@ -417,6 +420,8 @@ public abstract class UIGridViews {
 					UIField uiFld = (UIField) col;
 					CocFieldService fldService = uiFld.getFieldService();
 
+					log.debugf("UIGridViews: uiField=%s, fldService=%s", uiFld.getPropName(), fldService);
+
 					field = col.getPropName();
 					fieldValue = ObjectUtil.getValue(row, field);
 
@@ -429,7 +434,7 @@ public abstract class UIGridViews {
 
 						sb.append(String.format(",\"%s\": %s", field, JsonUtil.toJson(strFieldValue)));
 					} else {
-						if (fldService.isFkField()) {
+						if (fldService != null && fldService.isFkField()) {
 							String value = StringUtil.escapeHtml(fieldValue == null ? "" : fieldValue.toString());
 							String text = StringUtil.escapeHtml(col.format(fieldValue));
 							sb.append(String.format(",\"%s\": {\"value\": %s, \"text\": %s}", field, JsonUtil.toJson(value), JsonUtil.toJson(text)));

@@ -1,7 +1,7 @@
 package com.jsoft.cocit.ui.tag;
 
-import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,36 +18,38 @@ import com.jsoft.cocit.constant.ViewKeys;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.ui.model.UIModel;
-import com.jsoft.cocit.ui.model.control.UIEntity;
+import com.jsoft.cocit.ui.model.control.UIForm;
 import com.jsoft.cocit.util.ExceptionUtil;
 import com.jsoft.cocit.util.StringUtil;
 
-public class EntityTag extends BodyTagSupport {
+public class FieldsTag extends BodyTagSupport {
 
-	private static final long serialVersionUID = 5808247656189119577L;
+	private static final long serialVersionUID = 3902335085986034089L;
 
-	protected String modelName;
-	protected String viewName;
+	protected String fields = null;
+	protected String modelName = null;
 	protected String funcExpr = null;
-	protected boolean usedToSubEntity = false;
 
 	public int doStartTag() throws JspException {
 
-		UIEntity mainModel = null;
-
+		UIForm uiForm = null;
 		if (StringUtil.isBlank(modelName)) {
 			modelName = ViewKeys.UI_MODEL_KEY;
 		}
-		UIModel uiModel = (UIModel) pageContext.getAttribute(modelName, PageContext.REQUEST_SCOPE);
-		if (uiModel != null && uiModel instanceof UIEntity) {
-			mainModel = (UIEntity) uiModel;
+		UIModel baseModel = (UIModel) pageContext.getAttribute(modelName, PageContext.REQUEST_SCOPE);
+		if (baseModel != null && baseModel instanceof UIForm) {
+			uiForm = (UIForm) baseModel;
 		}
+
+		List<String> fieldList = StringUtil.toList(fields);
 
 		Writer out = null;
 		try {
 			out = pageContext.getOut();
 
-			if (mainModel == null && StringUtil.hasContent(funcExpr)) {
+			UIForm formFields = uiForm;
+
+			if (formFields == null && StringUtil.hasContent(funcExpr)) {
 
 				HttpContext httpContext = Cocit.me().getHttpContext();
 				if (httpContext == null) {
@@ -55,60 +57,47 @@ public class EntityTag extends BodyTagSupport {
 				}
 
 				OpContext opContext = OpContext.make(funcExpr, null, null);
-				mainModel = opContext.getUiModelFactory().getMain(opContext.getSystemMenu(), opContext.getCocEntity(), usedToSubEntity);
+				formFields = opContext.getUiModelFactory().getForm(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getCocAction(), null);
 				if (opContext.getException() != null) {
 					throw new JspException(opContext.getException());
 				}
 			}
 
-			if (mainModel == null) {
-				throw new CocException("标记库(coc:entity)用法错误！请参见相关文档。");
+			if (fieldList != null && fieldList.size() > 0) {
+				OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.OPCONTEXT_REQUEST_KEY, PageContext.REQUEST_SCOPE);
+				formFields = opContext.getUiModelFactory().getForm(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getCocAction(), opContext.getDataObject(), fieldList);
 			}
 
-			if (StringUtil.isBlank(viewName)) {
-				viewName = ViewNames.VIEW_MAIN;
-			}
+			if (formFields == null)
+				throw new CocException("标记库(coc:fields)用法错误！请参见相关文档。");
+
 			UIViews views = Cocit.me().getViews();
-			UIView view = views.getView(viewName);
-			if (view == null) {
-				throw new CocException("UI视图不存在！viewName = %s", viewName);
-			}
-
-			view.render(out, mainModel);
+			UIView view = views.getView(ViewNames.VIEW_FORM_FIELDS);
+			view.render(out, formFields);
 
 			return EVAL_BODY_INCLUDE;
 
 		} catch (Throwable e) {
 			try {
 				out.write(ExceptionUtil.msg(e));
-			} catch (IOException e1) {
+			} catch (Exception ex) {
+				throw new JspException(e);
 			}
 
 			return SKIP_BODY;
-
 		}
-
 	}
 
 	public void release() {
 		super.release();
-		funcExpr = null;
 	}
 
-	public String getFuncExpr() {
-		return funcExpr;
+	public String getFields() {
+		return fields;
 	}
 
-	public void setFuncExpr(String funcExpr) {
-		this.funcExpr = funcExpr;
-	}
-
-	public String getViewName() {
-		return viewName;
-	}
-
-	public void setViewName(String viewName) {
-		this.viewName = viewName;
+	public void setFields(String actions) {
+		this.fields = actions;
 	}
 
 	public String getModelName() {
@@ -117,5 +106,13 @@ public class EntityTag extends BodyTagSupport {
 
 	public void setModelName(String modelName) {
 		this.modelName = modelName;
+	}
+
+	public String getFuncExpr() {
+		return funcExpr;
+	}
+
+	public void setFuncExpr(String funcExpr) {
+		this.funcExpr = funcExpr;
 	}
 }

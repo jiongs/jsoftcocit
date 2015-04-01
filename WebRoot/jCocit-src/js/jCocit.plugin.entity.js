@@ -225,21 +225,9 @@
 
 			var $grid = $("#" + opts.resultUI[0]);
 			var options = $grid.datagrid("options");
-			if (typeof options.singleEditable != "undefined" && options.singleEditable == true) {
-				if (typeof options.editRowIndex == "undefined") {
-					var rowIndex = 0;
-					$grid.datagrid("insertRow", {
-						index : rowIndex,
-						row : {}
-					});
-					$grid.datagrid('selectRow', rowIndex);
-					$grid.datagrid('beginEdit', rowIndex);
-
-					var options = $grid.datagrid("options");
-					options.editRowIndex = rowIndex;
-				} else {
-					$.messager.showMsg(jCocit.entity.defaults.promptSave);
-				}
+			
+			if (options.onEdit != $n && typeof options.editRowIndex != "undefined") {
+				$.messager.showMsg(jCocit.entity.defaults.promptSave);
 			} else {
 				var rowIndex = 0;
 				$grid.datagrid("insertRow", {
@@ -249,7 +237,6 @@
 				$grid.datagrid('selectRow', rowIndex);
 				$grid.datagrid('beginEdit', rowIndex);
 
-				var options = $grid.datagrid("options");
 				options.editRowIndex = rowIndex;
 			}
 		},
@@ -274,18 +261,14 @@
 			}
 
 			var options = $grid.datagrid("options");
-			if (options.editUrl) {
-				if (typeof options.singleEditable != "undefined" && options.singleEditable == true) {
-					if (typeof options.editRowIndex == "undefined") {
-						$grid.datagrid('selectRow', rowIndex);
-						$grid.datagrid('beginEdit', rowIndex);
-					} else {
-						$.messager.showMsg(jCocit.entity.defaults.promptSave);
-					}
-				} else {
-					$grid.datagrid('selectRow', rowIndex);
-					$grid.datagrid('beginEdit', rowIndex);
-				}
+			
+			if (options.onEdit != $n  && typeof options.editRowIndex != "undefined") {
+				$.messager.showMsg(jCocit.entity.defaults.promptSave);
+			} else {
+				$grid.datagrid('selectRow', rowIndex);
+				$grid.datagrid('beginEdit', rowIndex);
+				
+				options.editRowIndex = rowIndex;
 			}
 		},
 		doEditGrid : function(rowIndex, oldRow, changedRow) {

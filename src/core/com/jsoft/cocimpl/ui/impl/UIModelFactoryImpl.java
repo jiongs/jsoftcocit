@@ -1191,7 +1191,16 @@ public class UIModelFactoryImpl implements UIModelFactory {
 
 	@Override
 	public UIForm getForm(SystemMenuService menuService, CocEntityService entityService, CocActionService entityAction, Object dataObject) {
+		return this.getForm(menuService, entityService, entityAction, dataObject, null);
+	}
+
+	@Override
+	public UIForm getForm(SystemMenuService menuService, CocEntityService entityService, CocActionService entityAction, Object dataObject, List<String> fieldList) {
 		UIForm form = new UIForm();
+
+		if (fieldList != null && fieldList.size() == 0) {
+			fieldList = null;
+		}
 
 		if (entityAction == null) {
 			throw new CocException("操作不存在！");
@@ -1226,13 +1235,13 @@ public class UIModelFactoryImpl implements UIModelFactory {
 				form.setViewName(cuiFormKey);
 			}
 
-			evalUIFormField(form, entityService, entityAction.getKey(), dataObject);
+			evalUIFormFields(form, entityService, entityAction.getKey(), dataObject, fieldList);
 		} else {
-			evalUIFormField(form, menuService, entityService, entityAction.getKey(), dataObject, cuiFormService);
+			evalUIFormFields(form, menuService, entityService, entityAction.getKey(), dataObject, cuiFormService, fieldList);
 
 			List<String> batchFields = cuiFormService.getBatchFieldsList();
 			form.setBatchFields(batchFields);
-			this.evalUIFormField(form, menuService, entityService, entityAction.getKey(), dataObject, cuiFormService, batchFields);
+			this.evalUIFormFields(form, menuService, entityService, entityAction.getKey(), dataObject, cuiFormService, batchFields, fieldList);
 
 			/*
 			 * 计算表单UI属性
@@ -1270,7 +1279,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		return form;
 	}
 
-	private void evalUIFormField(UIForm form, SystemMenuService menuService, CocEntityService entityService, String opID, Object dataObject, CuiFormService cuiFormService) {
+	private void evalUIFormFields(UIForm form, SystemMenuService menuService, CocEntityService entityService, String opID, Object dataObject, CuiFormService cuiFormService, List<String> fieldList) {
 		List<List<String>> fields = cuiFormService.getFieldsList();
 		form.setFields(fields);
 
@@ -1280,14 +1289,14 @@ public class UIModelFactoryImpl implements UIModelFactory {
 				fieldRowSize = fieldRow.size();
 			}
 
-			this.evalUIFormField(form, menuService, entityService, opID, dataObject, cuiFormService, fieldRow);
+			this.evalUIFormFields(form, menuService, entityService, opID, dataObject, cuiFormService, fieldRow, fieldList);
 		}
 
 		form.setRowFieldsSize(fieldRowSize);
 
 	}
 
-	private void evalUIFormField(UIForm form, SystemMenuService menuService, CocEntityService entityService, String opID, Object dataObject, CuiFormService cuiFormService, List<String> fields) {
+	private void evalUIFormFields(UIForm form, SystemMenuService menuService, CocEntityService entityService, String opID, Object dataObject, CuiFormService cuiFormService, List<String> fields, List<String> allowFields) {
 		if (fields == null || fields.size() == 0)
 			return;
 
@@ -1304,6 +1313,11 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		Option[] dicOptions;
 
 		for (String field : fields) {
+
+			if (allowFields != null && !allowFields.contains(field)) {
+				continue;
+			}
+
 			fieldAttributes = new Properties();
 			title = null;
 			uiView = null;
@@ -1549,7 +1563,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		return uiField;
 	}
 
-	private void evalUIFormField(UIForm form, CocEntityService entityService, String opID, Object dataObject) {
+	private void evalUIFormFields(UIForm form, CocEntityService entityService, String opID, Object dataObject, List<String> fieldList) {
 
 		List<CocGroupService> groups = entityService.getGroups();
 		UIFieldGroup fieldGroup;
@@ -1564,11 +1578,16 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			}
 
 			for (CocFieldService fld : fields) {
-				if (fld.isDisabled())
+				if (fld.isDisabled()) {
 					continue;
+				}
+
+				String propName = fld.getFieldName();
+				if (fieldList != null && !fieldList.contains(propName)) {
+					continue;
+				}
 
 				int mode = fld.getMode(opID, dataObject);
-				String propName = fld.getFieldName();
 
 				/*
 				 * 计算字段模式

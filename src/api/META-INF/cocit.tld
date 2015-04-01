@@ -111,6 +111,11 @@
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
+		<attribute>
+			<name>funcExpr</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
 	</tag>
 	<tag>
 		<name>label</name>
@@ -344,6 +349,11 @@
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>
+			<name>modelName</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
 			<name>viewName</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
@@ -369,6 +379,25 @@
 		</attribute>
 		<attribute>
 			<name>keys</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+	<tag>
+		<name>fields</name>
+		<tag-class>com.jsoft.cocit.ui.tag.FieldsTag</tag-class>
+		<attribute>
+			<name>fields</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>modelName</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>funcExpr</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>

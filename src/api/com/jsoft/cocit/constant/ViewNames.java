@@ -17,6 +17,8 @@ public interface ViewNames {
 	String VIEW_MAINS = "mains";
 	String VIEW_MAIN = "main";
 	String VIEW_FORM = "form";
+	String VIEW_FORM_BUTTONS = "formbuttons";
+	String VIEW_FORM_FIELDS = "formfields";
 	String VIEW_SUBFORM = "subform";
 	String VIEW_FORMDATA = "formdata";
 	String VIEW_GRID = "grid";

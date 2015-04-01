@@ -6,6 +6,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jsoft.cocimpl.ui.UIView;
 import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocimpl.ui.view.BaseModelView;
 import com.jsoft.cocit.Cocit;
@@ -30,39 +31,21 @@ import com.jsoft.cocit.util.StringUtil;
 import com.jsoft.cocit.util.Tree.Node;
 
 public abstract class UIFormViews {
-	public static class UIFormView extends BaseModelView<UIForm> {
+	public static class UIFormButtonsView extends BaseModelView<UIForm> {
 		public String getName() {
-			return ViewNames.VIEW_FORM;
+			return ViewNames.VIEW_FORM_BUTTONS;
 		}
 
-		public void render(Writer out, UIForm model) throws Exception {
+		public void render(Writer out, UIForm model) throws IOException {
 			String resultUI = Cocit.me().getHttpContext().getClientResultUI();
 			String uiToken = Cocit.me().getHttpContext().getClientUIToken();
 
-			/*
-			 * 创建 FORM 标签
-			 */
-			write(out, "<form class=\"entityForm\" action=\"%s\" onsubmit=\"return false;\">", model.getSubmitUrl());
-
-			/*
-			 * ID字段
-			 */
-			// write(out, "<input name=\"%s.id\" type=\"hidden\" value=\"%s\">", model.getBeanName(), ObjectUtil.idOrtoString(model.getDataObject()));
-
-			List<List<String>> fields = model.getFields();
-			List<String> batchFields = model.getBatchFields();
-			if ((fields == null || fields.size() == 0) && (batchFields == null || batchFields.size() == 0)) {
-				renderAutoLayoutFields(out, model);
-			} else {
-				renderFieldsWithLeftLabel(out, model, fields);
-				renderFieldsWithTopLabel(out, model, model.getBeanName(), batchFields);
-			}
+			UIActions actions = model.getActions();
 
 			// if (!model.isAjax()) {
 			String formButtonsCSS = Cocit.me().getConfig().getViewConfig().getFormButtonsCSS();
 			write(out, "<div class=\"%s\"><div>", formButtonsCSS);
 			// write(out, "<div class=\"entityButtons\">");
-			UIActions actions = model.getActions();
 			String buttonStyle = Cocit.me().getConfig().getViewConfig().getButtonStyle();
 			if (actions != null && actions.getData() != null && actions.getData().getChildren().size() > 0) {
 				List<Node> nodes = actions.getData().getChildren();
@@ -138,7 +121,50 @@ public abstract class UIFormViews {
 			}
 
 			write(out, "</div></div>");
+		}
+	}
+
+	public static class UIFormFieldsView extends BaseModelView<UIForm> {
+		public String getName() {
+			return ViewNames.VIEW_FORM_FIELDS;
+		}
+
+		public void render(Writer out, UIForm model) throws Exception {
+			renderAutoLayoutFields(out, model);
+		}
+	}
+
+	public static class UIFormView extends BaseModelView<UIForm> {
+		public String getName() {
+			return ViewNames.VIEW_FORM;
+		}
+
+		public void render(Writer out, UIForm model) throws Exception {
+
+			UIView buttonsView = Cocit.me().getViews().getView(ViewNames.VIEW_FORM_BUTTONS);
+
+			/*
+			 * 创建 FORM 标签
+			 */
+			write(out, "<form class=\"entityForm\" action=\"%s\" onsubmit=\"return false;\">", model.getSubmitUrl());
+
+			/*
+			 * ID字段
+			 */
+			// write(out, "<input name=\"%s.id\" type=\"hidden\" value=\"%s\">", model.getBeanName(), ObjectUtil.idOrtoString(model.getDataObject()));
+
+			List<List<String>> fields = model.getFields();
+			List<String> batchFields = model.getBatchFields();
+			if ((fields == null || fields.size() == 0) && (batchFields == null || batchFields.size() == 0)) {
+				renderAutoLayoutFields(out, model);
+			} else {
+				renderFieldsWithLeftLabel(out, model, fields);
+				renderFieldsWithTopLabel(out, model, model.getBeanName(), batchFields);
+			}
+
 			// }
+
+			buttonsView.render(out, model);
 
 			write(out, "</form>");
 		}
@@ -240,92 +266,6 @@ public abstract class UIFormViews {
 		write(out, StringUtil.escapeHtml(rowTemplate.toString()));
 		write(out, "</textarea>");
 	}
-
-	// private void renderFieldsWithUpLabel(Writer out, UIForm model, List<List<String>> fieldRows) throws Exception {
-	// UIViews views = Cocit.me().getViews();
-	// Object dataObject = model.getDataObject();
-	//
-	// /*
-	// * 定义临时变量
-	// */
-	// UIField uiField;
-	// UIFieldView view;
-	// Object fieldValue;
-	// String fieldName;
-	// int fieldCount, colspan;
-	// int fieldRowMaxSize = model.getRowFieldsSize();
-	//
-	// write(out, "<table class=\"entityTableUp\" valign=\"top\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">");
-	//
-	// for (List<String> fieldRow : fieldRows) {
-	// fieldCount = 0;
-	// colspan = 0;
-	//
-	// /*
-	// * 字段分组
-	// */
-	// String groupNameWithProp = fieldRow.get(0);
-	// int idx = groupNameWithProp.indexOf(":");
-	// if (idx > -1) {
-	// String groupName = groupNameWithProp.substring(0, idx);
-	// groupNameWithProp = groupNameWithProp.substring(idx + 1);
-	//
-	// UIFieldGroup group = model.getFieldGroup(groupName);
-	// if (group != null) {
-	// write(out, "</tr><td class=\"entityGroup\" colspan=\"%s\"><div class=\"entityGroupHeader\">%s</div></td><tr>", //
-	// group.getTitle(),//
-	// fieldRowMaxSize//
-	// );
-	// }
-	// }
-	//
-	// /*
-	// * 字段行
-	// */
-	// StringWriter header = new StringWriter();
-	// StringWriter box = new StringWriter();
-	// for (String propName : fieldRow) {
-	// fieldCount++;
-	//
-	// if (fieldCount == 1) {
-	// idx = propName.indexOf(":");
-	// if (idx > -1) {
-	// propName = propName.substring(idx + 1);
-	// }
-	// }
-	//
-	// uiField = model.getField(propName);
-	// fieldName = model.getBeanName() + "." + propName;
-	// fieldValue = ObjectUtil.getValue(dataObject, propName);
-	// colspan = uiField.getColspan();
-	// if (colspan <= 1 && fieldCount == fieldRow.size()) {
-	// colspan = (fieldRowMaxSize - fieldCount) + 1;
-	// }
-	//
-	// /*
-	// * 字段输入框TD
-	// */
-	// if (colspan > 1) {
-	// write(header, "<th class=\"entityFieldHeader\" colspan=\"%s\">%s</th>", colspan, uiField.getTitle());
-	// write(box, "<td class=\"entityFieldBox\" colspan=\"%s\">", colspan);
-	// } else {
-	// write(header, "<th class=\"entityFieldHeader\">%s</th>", uiField.getTitle());
-	// write(box, "<td class=\"entityFieldBox\">");
-	// }
-	// view = views.getFieldView(uiField.getViewName());
-	// view.render(box, uiField, dataObject, fieldName, fieldValue);
-	// write(box, "</td>");
-	// }
-	//
-	// write(out, "<tr>");
-	// write(out, header.toString());
-	// write(out, "</tr>");
-	// write(out, "<tr>");
-	// write(out, box.toString());
-	// write(out, "</tr>");
-	// }
-	// write(out, "</table>");
-	// }
 
 	private static void renderFieldsWithLeftLabel(Writer out, UIForm model, List<List<String>> fields) throws Exception {
 		if (fields == null || fields.size() == 0)

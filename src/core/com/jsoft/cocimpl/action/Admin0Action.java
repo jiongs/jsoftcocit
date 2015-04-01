@@ -24,6 +24,8 @@ import com.jsoft.cocit.config.IMessageConfig;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.UrlAPI;
 import com.jsoft.cocit.entityengine.EntityEngine;
+import com.jsoft.cocit.entityengine.EntityServiceFactory;
+import com.jsoft.cocit.entityengine.service.CocEntityService;
 import com.jsoft.cocit.exception.CocConfigException;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.exception.CocSecurityException;
@@ -39,9 +41,11 @@ import com.jsoft.cocit.ui.model.UIModel;
 import com.jsoft.cocit.ui.model.control.UITree;
 import com.jsoft.cocit.ui.model.datamodel.AlertModel;
 import com.jsoft.cocit.ui.model.datamodel.JSONModel;
+import com.jsoft.cocit.util.DateUtil;
 import com.jsoft.cocit.util.ExceptionUtil;
 import com.jsoft.cocit.util.LogUtil;
 import com.jsoft.cocit.util.MVCUtil;
+import com.jsoft.cocit.util.StringUtil;
 import com.jsoft.cocit.util.Tree;
 
 @Ok(UIModelView.VIEW_TYPE)
@@ -434,6 +438,39 @@ public class Admin0Action extends BaseAdminAction {
 			LogUtil.error("从Excel导入实体模块模块出错：", e);
 
 			return AlertModel.makeError("从Excel导入实体模块出错：" + ExceptionUtil.msg(e));
+		}
+	}
+
+	@At(ADMIN_URL + "/exportToJson")
+	public synchronized UIModel exportToJson(@Param("cocentity") String entityKeys) {
+		Cocit coc = Cocit.me();
+		LoginSession login = coc.getHttpContext().getLoginSession();
+		EntityServiceFactory entityServiceFactory = coc.getEntityServiceFactory();
+
+		try {
+			SecurityEngine securityEngine = coc.getSecurityEngine();
+			securityEngine.checkLoginUserType(Const.USER_ROOT);
+		} catch (Throwable e) {
+			return AlertModel.makeError("操作失败：" + ExceptionUtil.msg(e));
+		}
+
+		try {
+			String tenantKey = login.getTenant().getKey();
+			String folder = coc.getContextDir() + "/WEB-INF/tmp/" + DateUtil.getNowDate();
+			EntityEngine entityEngine = coc.getEntityEngine();
+
+			List<String> keyList = StringUtil.toList(entityKeys);
+			for (String key : keyList) {
+				CocEntityService cocEntity = entityServiceFactory.getEntity(key);
+				entityEngine.exportToJson(tenantKey, folder, null, cocEntity);
+			}
+
+			LogUtil.debug("导出数据到JSON成功.");
+			return AlertModel.makeSuccess("导出数据到JSON成功，数据所在目录\n" + folder);
+		} catch (Throwable e) {
+			LogUtil.error("导出数据到JSON出错：", e);
+
+			return AlertModel.makeError("导出数据到JSON：" + ExceptionUtil.msg(e));
 		}
 	}
 }

@@ -18,7 +18,7 @@ import com.jsoft.cocit.action.OpContext;
 import com.jsoft.cocit.config.IMessageConfig;
 import com.jsoft.cocit.constant.UrlAPI;
 import com.jsoft.cocit.constant.ViewKeys;
-import com.jsoft.cocit.ui.model.UIFormModel;
+import com.jsoft.cocit.ui.model.UIModel;
 import com.jsoft.cocit.ui.model.control.UIForm;
 import com.jsoft.cocit.util.MVCUtil;
 import com.jsoft.cocit.util.StringUtil;
@@ -171,7 +171,7 @@ public class FormTag extends TagSupport {
 	 * <LI>
 	 * </UL>
 	 */
-	private UIFormModel uiModel;
+	private UIForm uiModel;
 
 	private boolean makedHttpContext = false;
 
@@ -229,8 +229,10 @@ public class FormTag extends TagSupport {
 		/*
 		 * 从Request中获取UIForm
 		 */
-
-		uiModel = (UIFormModel) this.pageContext.getRequest().getAttribute(ViewKeys.UI_MODEL_KEY);
+		UIModel baseModel = (UIModel) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
+		if (baseModel != null && baseModel instanceof UIForm) {
+			uiModel = (UIForm) baseModel;
+		}
 
 		/*
 		 * Request中获取UIForm失败：从“操作表达式”解析UIForm
@@ -667,6 +669,14 @@ public class FormTag extends TagSupport {
 		this.opExpr = opExpr;
 	}
 
+	public String getFuncExpr() {
+		return opExpr;
+	}
+
+	public void setFuncExpr(String opExpr) {
+		this.opExpr = opExpr;
+	}
+
 	public String getDataID() {
 		return dataID;
 	}
@@ -686,4 +696,5 @@ public class FormTag extends TagSupport {
 	public void setBeanScope(String beanScope) {
 		this.beanScope = beanScope;
 	}
+
 }

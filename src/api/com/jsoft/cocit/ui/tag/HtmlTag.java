@@ -10,11 +10,9 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
 
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
-import com.jsoft.cocit.action.OpContext;
 import com.jsoft.cocit.constant.ViewKeys;
 import com.jsoft.cocit.ui.model.UIModel;
 import com.jsoft.cocit.util.HttpUtil;
-import com.jsoft.cocit.util.StringUtil;
 
 /**
  * COC HTML标签：用来输出HTML头信息、COC平台公共的CSS、JS等
@@ -31,10 +29,10 @@ public class HtmlTag extends BodyTagSupport {
 	public int doStartTag() throws JspException {
 
 		UIModel uiModel = (UIModel) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
-		
+
 		String title = "";
 		boolean isAjax = false;
-		
+
 		if (uiModel == null) {
 
 			HttpContext httpContext = Cocit.me().getHttpContext();
@@ -48,7 +46,7 @@ public class HtmlTag extends BodyTagSupport {
 			isAjax = uiModel.isAjax();
 			title = uiModel.getTitle();
 		}
-		
+
 		if (!isAjax) {
 			try {
 				HttpUtil.renderHTMLHeader(pageContext.getOut(), Cocit.me().getContextPath(), title);

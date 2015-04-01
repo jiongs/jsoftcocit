@@ -13,6 +13,7 @@ import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.action.OpContext;
 import com.jsoft.cocit.constant.ViewKeys;
+import com.jsoft.cocit.ui.model.UIModel;
 import com.jsoft.cocit.ui.model.control.UIActions;
 import com.jsoft.cocit.ui.model.control.UIEntity;
 import com.jsoft.cocit.util.ExceptionUtil;
@@ -22,6 +23,7 @@ public class ActionsTag extends BodyTagSupport {
 
 	private static final long serialVersionUID = 3902335085986034089L;
 
+	protected String modelName;
 	protected String keys = null;
 	protected String funcExpr = null;
 	protected String resultUI = null;
@@ -29,8 +31,19 @@ public class ActionsTag extends BodyTagSupport {
 	public int doStartTag() throws JspException {
 
 		UIActions model = null;
+		UIEntity mainModel = null;
 
-		UIEntity mainModel = (UIEntity) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
+		if (modelName == null) {
+			modelName = ViewKeys.UI_MODEL_KEY;
+		}
+		UIModel uiModel = (UIModel) pageContext.getAttribute(modelName, PageContext.REQUEST_SCOPE);
+		if (uiModel != null) {
+			if (uiModel instanceof UIEntity) {
+				mainModel = (UIEntity) uiModel;
+			} else if (uiModel instanceof UIActions) {
+				model = (UIActions) uiModel;
+			}
+		}
 
 		List<String> actionsList = StringUtil.toList(keys);
 
@@ -135,5 +148,13 @@ public class ActionsTag extends BodyTagSupport {
 
 	public void setKeys(String actions) {
 		this.keys = actions;
+	}
+
+	public String getModelName() {
+		return modelName;
+	}
+
+	public void setModelName(String modelName) {
+		this.modelName = modelName;
 	}
 }

@@ -7,6 +7,7 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
 import com.jsoft.cocimpl.ui.tag.TagUtils;
 import com.jsoft.cocit.constant.FieldModes;
 import com.jsoft.cocit.constant.ViewKeys;
+import com.jsoft.cocit.ui.model.UIModel;
 import com.jsoft.cocit.ui.model.control.UIField;
 import com.jsoft.cocit.ui.model.control.UIForm;
 
@@ -21,7 +22,12 @@ public class LabelTag extends BodyTagSupport {
 
 	public int doStartTag() throws JspException {
 
-		UIForm uiForm = (UIForm) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
+		UIForm uiForm = null;
+		UIModel baseModel = (UIModel) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
+		if (baseModel != null && baseModel instanceof UIForm) {
+			uiForm = (UIForm) baseModel;
+		}
+
 		UIField field = null;
 		if (uiForm != null) {
 			field = uiForm.getField(this.property);

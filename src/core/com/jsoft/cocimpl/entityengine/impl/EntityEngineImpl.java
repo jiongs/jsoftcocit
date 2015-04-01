@@ -27,7 +27,6 @@ import javax.persistence.OneToOne;
 
 import org.nutz.castor.Castors;
 import org.nutz.json.Json;
-import org.nutz.json.JsonFormat;
 import org.nutz.lang.Files;
 import org.nutz.lang.Mirror;
 import org.nutz.lang.Strings;
@@ -36,8 +35,6 @@ import org.nutz.trans.Atom;
 import org.nutz.trans.Trans;
 
 import com.jsoft.cocimpl.CocitImpl;
-import com.jsoft.cocimpl.orm.Pager;
-import com.jsoft.cocimpl.util.json.JsonImpl;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.Const;
@@ -50,6 +47,7 @@ import com.jsoft.cocit.entity.IDataEntity;
 import com.jsoft.cocit.entity.IExtTree2Entity;
 import com.jsoft.cocit.entity.IExtTreeEntity;
 import com.jsoft.cocit.entity.INamedEntity;
+import com.jsoft.cocit.entity.ITenantOwnerEntity;
 import com.jsoft.cocit.entity.ITreeEntity;
 import com.jsoft.cocit.entity.coc.ICocAction;
 import com.jsoft.cocit.entity.coc.ICocCatalog;
@@ -86,6 +84,7 @@ import com.jsoft.cocit.entityengine.annotation.CuiGridField;
 import com.jsoft.cocit.entityengine.bizplugin.IBizPlugin;
 import com.jsoft.cocit.entityengine.field.IExtField;
 import com.jsoft.cocit.entityengine.service.CocEntityService;
+import com.jsoft.cocit.entityengine.service.CocFieldService;
 import com.jsoft.cocit.entityengine.service.SystemService;
 import com.jsoft.cocit.entityengine.service.TenantService;
 import com.jsoft.cocit.exception.CocException;
@@ -1077,7 +1076,7 @@ public class EntityEngineImpl implements EntityEngine {
 		/*
 		 * 解析 @CocAction
 		 */
-		LogUtil.info("EntityEngine..parseCocEntityFromClass: 解析实体操作... [classOfEntity: %s]", classOfEntity.getSimpleName());
+		LogUtil.info("解析实体操作... [classOfEntity: %s]", classOfEntity.getSimpleName());
 
 		List<ICocAction> newCocActionList = new LinkedList();
 		CocAction[] $CocActions = $CocEntity.actions();
@@ -1144,7 +1143,7 @@ public class EntityEngineImpl implements EntityEngine {
 							propNames.add(field.getFieldName());
 							newCocFieldList.add(field);
 						} catch (Throwable e) {
-							throw new CocException("EntityEngine..parseCocEntityFromClass: 解析字段定义出错：%s {%s.%s}", e, classOfEntity.getSimpleName(), $CocColumn.field());
+							throw new CocException("解析字段(%s.%s)定义出错：%s ", classOfEntity.getSimpleName(), $CocColumn.field(), e);
 						}
 					}
 				}
@@ -1159,31 +1158,31 @@ public class EntityEngineImpl implements EntityEngine {
 		boolean isTreeEntity = ITreeEntity.class.isAssignableFrom(classOfEntity);
 		if (isDataEntity) {
 			if (!propNames.contains(Const.F_KEY)) {
-				throw new CocException("EntityEngine..parseCocEntityFromClass: 没有找到“逻辑主键”字段注解“@CocColumn(propName=\"%s\")”！[classOfEntity: %s]", Const.F_KEY, classOfEntity.getName());
+				throw new CocException("没有找到“逻辑主键”字段注解“@CocColumn(propName=\"%s\")”！[classOfEntity: %s]", Const.F_KEY, classOfEntity.getName());
 			}
 			try {
 				Field fld = classOfEntity.getField(Const.F_KEY);
 				if (fld != null) {
-					throw new CocException("EntityEngine..parseCocEntityFromClass: “逻辑主键”字段注解是公共字段，不应该重复声明！[%s]", fld);
+					throw new CocException("“逻辑主键”字段注解是公共字段，不应该重复声明！[%s]", fld);
 				}
 			} catch (Exception e) {
 			}
 		}
 		if (isNamedEntity) {
 			if (!propNames.contains(Const.F_NAME)) {
-				throw new CocException("EntityEngine.parseCocEntityFromClass: 没有找到“名称”字段注解“@CocColumn(propName=\"%s\")”！[classOfEntity: %s]", Const.F_NAME, classOfEntity.getName());
+				throw new CocException("没有找到“名称”字段注解“@CocColumn(propName=\"%s\")”！[classOfEntity: %s]", Const.F_NAME, classOfEntity.getName());
 			}
 			try {
 				Field fld = classOfEntity.getField(Const.F_NAME);
 				if (fld != null) {
-					throw new CocException("EntityEngine.parseCocEntityFromClass: “名称”字段注解是公共字段，不应该重复声明！[%s]", fld);
+					throw new CocException("“名称”字段注解是公共字段，不应该重复声明！[%s]", fld);
 				}
 			} catch (Exception e) {
 			}
 		}
 		if (isTreeEntity) {
 			if (!propNames.contains(Const.F_PARENT_KEY)) {
-				throw new CocException("EntityEngine.parseCocEntityFromClass: 没有找到“父节点”字段注解“@CocColumn(propName=\"%s\")”！[classOfEntity: %s]", Const.F_PARENT_KEY, classOfEntity.getName());
+				throw new CocException("没有找到“父节点”字段注解“@CocColumn(propName=\"%s\")”！[classOfEntity: %s]", Const.F_PARENT_KEY, classOfEntity.getName());
 			}
 			try {
 				Field fld = classOfEntity.getField(Const.F_PARENT_KEY);
@@ -1249,7 +1248,7 @@ public class EntityEngineImpl implements EntityEngine {
 				IExtCuiEntity ui = this.parseCuiEntityFromClass(orm, classOfEntity, cocEntity, $CuiEntity, sn);
 				newCuiList.add(ui);
 			} catch (Throwable e) {
-				throw new CocException("EntityEngine..parseCocEntityFromClass: 解析实体界面定义出错：%s {%s}", e, classOfEntity.getSimpleName());
+				throw new CocException("解析实体界面定义出错：%s {%s}", e, classOfEntity.getSimpleName());
 			}
 		}
 		Cui $Cui = (Cui) classOfEntity.getAnnotation(Cui.class);
@@ -1261,7 +1260,7 @@ public class EntityEngineImpl implements EntityEngine {
 					IExtCuiEntity ui = this.parseCuiEntityFromClass(orm, classOfEntity, cocEntity, ann, sn);
 					newCuiList.add(ui);
 				} catch (Throwable e) {
-					throw new CocException("EntityEngine..parseCocEntityFromClass: 解析实体界面定义出错：%s {%s}", e, classOfEntity.getSimpleName());
+					throw new CocException("解析实体界面定义出错：%s {%s}", e, classOfEntity.getSimpleName());
 				}
 			}
 		}
@@ -1453,7 +1452,7 @@ public class EntityEngineImpl implements EntityEngine {
 			}
 		}
 		if (fieldType == null)
-			throw new CocException("EntityEngine.parseCocField： @CocColumn(propName=\"%s\") 字段[%s.%s]不存在！", propName, entityMirror.getType().getSimpleName(), propName);
+			throw new CocException(" @CocColumn(propName=\"%s\") 字段[%s.%s]不存在！", propName, entityMirror.getType().getSimpleName(), propName);
 
 		/*
 		 * 加载或创建实体字段对象
@@ -1573,7 +1572,7 @@ public class EntityEngineImpl implements EntityEngine {
 			fieldTypeCode = Const.FIELD_TYPE_FK;
 		}
 		if (fieldTypeCode == 0) {
-			throw new CocException("EntityEngine.parseCocField： @CocColumn(propName=\"%s\") 不支持的字段类型！[classOfEntity: %s, fieldType: %s]", propName, entityMirror.getType().getSimpleName(), fieldType.getSimpleName());
+			throw new CocException("@CocColumn(propName=\"%s\") 不支持的字段类型！[classOfEntity: %s, fieldType: %s]", propName, entityMirror.getType().getSimpleName(), fieldType.getSimpleName());
 		}
 
 		/*
@@ -1932,7 +1931,7 @@ public class EntityEngineImpl implements EntityEngine {
 				try {
 					mirror.getGetter(fld);
 				} catch (Throwable e1) {
-					throw new CocException(" %s.%s 字段不存在！@CuiEntity(filterFields=\"%s\")", classOfEntity.getSimpleName(), fld, $CuiEntity.filterFields());
+					throw new CocException("%s.%s 字段不存在！@CuiEntity(filterFields=\"%s\")", classOfEntity.getSimpleName(), fld, $CuiEntity.filterFields());
 				}
 			}
 		}
@@ -1943,7 +1942,7 @@ public class EntityEngineImpl implements EntityEngine {
 				try {
 					mirror.getGetter(fld);
 				} catch (Throwable e1) {
-					throw new CocException(" %s.%s 字段不存在！@CuiEntity(queryFields=\"%s\")", classOfEntity.getSimpleName(), fld, $CuiEntity.queryFields());
+					throw new CocException("%s.%s 字段不存在！@CuiEntity(queryFields=\"%s\")", classOfEntity.getSimpleName(), fld, $CuiEntity.queryFields());
 				}
 			}
 		}
@@ -2060,7 +2059,7 @@ public class EntityEngineImpl implements EntityEngine {
 				try {
 					mirror.getGetter(fld);
 				} catch (Throwable e1) {
-					throw new CocException(" %s.%s 字段不存在！@CuiForm(batchFields=\"%s\")", typeOfClass.getSimpleName(), fld, $CuiForm.batchFields());
+					throw new CocException("%s.%s 字段不存在！@CuiForm(batchFields=\"%s\")", typeOfClass.getSimpleName(), fld, $CuiForm.batchFields());
 				}
 			}
 		}
@@ -2071,7 +2070,7 @@ public class EntityEngineImpl implements EntityEngine {
 				try {
 					mirror.getGetter(fld);
 				} catch (Throwable e1) {
-					throw new CocException(" %s.%s 字段不存在！@CuiForm(fields=\"%s\")", typeOfClass.getSimpleName(), fld, $CuiForm.fields());
+					throw new CocException("%s.%s 字段不存在！@CuiForm(fields=\"%s\")", typeOfClass.getSimpleName(), fld, $CuiForm.fields());
 				}
 			}
 		}
@@ -2227,7 +2226,7 @@ public class EntityEngineImpl implements EntityEngine {
 			try {
 				mirror.getGetter($CuiFormField.field());
 			} catch (Throwable e1) {
-				throw new CocException(" %s.%s 字段不存在！@CuiFormField(field=\"%s\")", typeOfClass.getSimpleName(), $CuiFormField.field(), $CuiFormField.field());
+				throw new CocException("字段(%s.%s)不存在！@CuiFormField(field=\"%s\")", typeOfClass.getSimpleName(), $CuiFormField.field(), $CuiFormField.field());
 			}
 		}
 
@@ -2298,7 +2297,7 @@ public class EntityEngineImpl implements EntityEngine {
 				try {
 					mirror.getGetter(fld);
 				} catch (Throwable e1) {
-					throw new CocException(" %s.%s 字段不存在！@CuiGrid(fields=\"%s\")", typeOfClass.getSimpleName(), fld, ann.fields());
+					throw new CocException("字段(%s.%s)不存在！@CuiGrid(fields=\"%s\")", typeOfClass.getSimpleName(), fld, ann.fields());
 				}
 			}
 		}
@@ -2309,7 +2308,7 @@ public class EntityEngineImpl implements EntityEngine {
 				try {
 					mirror.getGetter(fld);
 				} catch (Throwable e1) {
-					throw new CocException(" %s.%s 字段不存在！@CuiGrid(frozenFields=\"%s\")", typeOfClass.getSimpleName(), fld, ann.frozenFields());
+					throw new CocException("字段(%s.%s)不存在！@CuiGrid(frozenFields=\"%s\")", typeOfClass.getSimpleName(), fld, ann.frozenFields());
 				}
 			}
 		}
@@ -2320,7 +2319,7 @@ public class EntityEngineImpl implements EntityEngine {
 				try {
 					mirror.getGetter(fld);
 				} catch (Throwable e1) {
-					throw new CocException(" %s.%s 字段不存在！@CuiGrid(treeField=\"%s\")", typeOfClass.getSimpleName(), fld, ann.treeField());
+					throw new CocException("字段(%s.%s)不存在！@CuiGrid(treeField=\"%s\")", typeOfClass.getSimpleName(), fld, ann.treeField());
 				}
 			}
 		}
@@ -2421,7 +2420,7 @@ public class EntityEngineImpl implements EntityEngine {
 			try {
 				mirror.getGetter(ann.field());
 			} catch (Throwable e1) {
-				throw new CocException(" %s.%s 字段不存在！@CuiGridField(field=\"%s\")", typeOfClass.getSimpleName(), ann.field(), ann.field());
+				throw new CocException("字段(%s.%s)不存在！@CuiGridField(field=\"%s\")", typeOfClass.getSimpleName(), ann.field(), ann.field());
 			}
 		}
 
@@ -4395,79 +4394,107 @@ public class EntityEngineImpl implements EntityEngine {
 			throw new CocException("未指定应用软件!");
 		}
 
-		List<? extends ICocEntity> systems = getModules();
-		if (expr == null) {
-			expr = ExprUtil.tenantIs(tenantKey);
-		} else {
-			expr = expr.and(ExprUtil.tenantIs(tenantKey));
+		// List<? extends ICocEntity> systems = getModules();
+		// for (ICocEntity sys : systems) {
+		// ret += this.exportToJson(tenantKey, folder, expr, sys);
+		// }
+
+		LogUtil.debug("导出业务数据结束. [ret: %s]", ret);
+
+		return ret;
+	}
+
+	public int exportToJson(String tenantKey, String folder, CndExpr expr, CocEntityService cocEntity) throws IOException {
+		LogUtil.debug("导出JSON数据... [tenantKey: %s, folder: %s]", tenantKey, folder);
+
+		int ret = 0;
+
+		Class type = null;
+		try {
+			type = cocEntity.getClassOfEntity();
+		} catch (Throwable e) {
+			LogUtil.warn("加载实体类出错! [entity: %s] %s", cocEntity, e);
 		}
-		for (ICocEntity sys : systems) {
-			Class type = null;
+		if (type == null) {
+			LogUtil.warn("实体类不存在! [entity: %s]", cocEntity);
+			return 0;
+		}
+
+		if (ITenantOwnerEntity.class.isAssignableFrom(type)) {
+			if (expr == null) {
+				expr = ExprUtil.tenantIs(tenantKey);
+			} else {
+				expr = expr.and(ExprUtil.tenantIs(tenantKey));
+			}
+		}
+
+		int pageIndex = 0;
+		while (true) {
+			pageIndex++;
+
+			if (expr == null) {
+				expr = Expr.page(pageIndex, 1000);
+			} else {
+				expr.setPager(pageIndex, 1000);
+			}
+
+			List<IDataEntity> datas = null;
 			try {
-				type = getTypeOfEntity(sys);
-				if (Mirror.me(type).getField(Const.F_UPDATED_DATE) == null)
-					continue;
+				datas = orm().query(type, expr);
 			} catch (Throwable e) {
-				LogUtil.warn("加载业务类出错! [module: %s] %s", sys, e);
-				continue;
+				LogUtil.warn("查询数据出错![%s] %s", cocEntity, e);
+				break;
 			}
-			if (type == null) {
-				LogUtil.warn("业务类不存在! [module: %s]", sys);
-				continue;
+			if (datas == null || datas.size() == 0) {
+				break;
 			}
 
-			int pageIndex = 0;
-			while (true) {
-				pageIndex++;
-				Pager pager = new Pager(type);
-				pager.setQueryExpr(expr.setPager(pageIndex, 200));
+			String filePost = "" + pageIndex;
+			if (pageIndex < 10) {
+				filePost = "000" + filePost;
+			} else if (pageIndex < 100) {
+				filePost = "00" + filePost;
+			} else if (pageIndex < 1000) {
+				filePost = "0" + filePost;
+			}
 
-				List<IDataEntity> datas = null;
-				try {
-					datas = orm().query(pager);
-				} catch (Throwable e) {
-					LogUtil.warn("查询数据出错![%s] %s", sys, e);
-					break;
-				}
-				LogUtil.trace("查询业务数据 [module: %s, pageIndex:%s, data.size: %s]", sys, pageIndex, datas == null ? 0 : datas.size());
-				if (datas == null || datas.size() == 0) {
-					break;
-				}
-				String filePost = "" + pageIndex;
-				if (pageIndex < 10) {
-					filePost = "000" + filePost;
-				} else if (pageIndex < 100) {
-					filePost = "00" + filePost;
-				} else if (pageIndex < 1000) {
-					filePost = "0" + filePost;
-				}
+			ret = datas.size();
+			Writer writer = null;
+			try {
+				File file = new File(folder + "/" + type.getSimpleName() + "-" + filePost + ".data.json");
+				file.getParentFile().mkdirs();
+				file.createNewFile();
 
-				ret += datas.size();
-				Writer writer = null;
-				try {
-					File file = new File(folder + "/" + type.getName() + "-" + filePost + ".json");
-					file.getParentFile().mkdirs();
-					file.createNewFile();
+				LogUtil.trace("写业务数据到文件... [%s]", file.getName());
 
-					LogUtil.trace("写业务数据到文件... [%s]", file.getName());
+				OutputStream os = new FileOutputStream(file);
+				writer = new OutputStreamWriter(os, "UTF-8");
 
-					OutputStream os = new FileOutputStream(file);
-					writer = new OutputStreamWriter(os, "UTF-8");
-
-					writer.write("[");
-					int len = datas.size();
-					for (int i = 0; i < len; i++) {
-						if (i != 0) {
-							writer.write(",");
-						}
-						new JsonImpl(writer, JsonFormat.nice()).render(datas.get(i));
+				writer.write("[");
+				int len = datas.size();
+				for (int i = 0; i < len; i++) {
+					Object obj = datas.get(i);
+					if (i != 0) {
+						writer.write(",");
 					}
-					writer.write("]");
-					writer.flush();
-				} finally {
-					if (writer != null)
-						writer.close();
+					StringBuffer sb = new StringBuffer();
+					for (CocFieldService fld : cocEntity.getFields()) {
+						String fldName = fld.getKey();
+						Object fldValue = ObjectUtil.getValue(obj, fldName);
+						if (fldValue != null) {
+							if (fldValue instanceof String && StringUtil.isBlank(fldValue.toString())) {
+								continue;
+							}
+							sb.append(", " + fldName + ":").append(JsonUtil.toJson(fldValue));
+						}
+					}
+					writer.write("{" + sb.substring(1) + "}");
 				}
+				writer.write("]");
+				writer.flush();
+			} finally {
+				if (writer != null)
+					writer.close();
 			}
 		}
 

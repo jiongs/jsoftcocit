@@ -55,6 +55,8 @@ public interface EntityEngine {
 
 	int exportToJson(String tenantKey, String folder, CndExpr expr) throws IOException;
 
+	int exportToJson(String tenantKey, String folder, CndExpr expr, CocEntityService sys) throws IOException;
+
 	List<? extends ICocEntity> getModules();
 
 	ICocEntity getModule(Long moduleID);

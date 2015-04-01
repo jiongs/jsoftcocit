@@ -42,6 +42,8 @@ public interface UIModelFactory {
 
 	UIForm getForm(SystemMenuService menuService, CocEntityService entityService, CocActionService entityAction, Object dataObject);
 
+	UIForm getForm(SystemMenuService menuService, CocEntityService entityService, CocActionService entityAction, Object dataObject, List<String> fieldList);
+
 	UIGrid getGrid(SystemMenuService menuService, CocEntityService entityService);
 
 	UIGrid getGrid(SystemMenuService menuService, CocEntityService entityService, List<String> fieldList, List<String> rowActionList);

@@ -13,6 +13,7 @@ import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.action.OpContext;
 import com.jsoft.cocit.constant.ViewKeys;
+import com.jsoft.cocit.ui.model.UIModel;
 import com.jsoft.cocit.ui.model.control.UIEntity;
 import com.jsoft.cocit.ui.model.control.UITree;
 import com.jsoft.cocit.util.ExceptionUtil;
@@ -31,9 +32,13 @@ public class FilterTreeTag extends BodyTagSupport {
 	public int doStartTag() throws JspException {
 
 		UITree model = null;
+		UIEntity mainModel = null;
 
-		UIEntity mainModel = (UIEntity) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
-
+		UIModel uiModel = (UIModel) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
+		if (uiModel != null && uiModel instanceof UIEntity) {
+			mainModel = (UIEntity) uiModel;
+		}
+		
 		// List<String> fieldList = StringUtil.toList(fields);
 		Writer out = null;
 		try {

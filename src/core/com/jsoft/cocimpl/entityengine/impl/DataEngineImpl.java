@@ -1,9 +1,14 @@
 package com.jsoft.cocimpl.entityengine.impl;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
+import javax.persistence.CascadeType;
+import javax.persistence.OneToMany;
+
+import org.nutz.lang.Mirror;
 import org.nutz.trans.Atom;
 import org.nutz.trans.Trans;
 
@@ -25,6 +30,7 @@ import com.jsoft.cocit.orm.expr.CndExpr;
 import com.jsoft.cocit.orm.expr.NullCndExpr;
 import com.jsoft.cocit.util.ExceptionUtil;
 import com.jsoft.cocit.util.LogUtil;
+import com.jsoft.cocit.util.ObjectUtil;
 
 /**
  * 实体引擎
@@ -121,12 +127,58 @@ public class DataEngineImpl implements DataEngine {
 
 				fireBeforeEvent(plugins, event);
 
-				event.setReturnValue(orm.save(event.getDataObject(), null));
+				Object dataObject = event.getDataObject();
+
+				event.setReturnValue(orm.save(dataObject, null));
+
+				if (dataObject instanceof List) {
+					for (Object obj : (List) dataObject) {
+						saveOneToMany(obj.getClass(), obj);
+					}
+				} else {
+					saveOneToMany(dataObject.getClass(), dataObject);
+				}
 
 				fireAfterEvent(plugins, event);
 			}
 		});
 		return (Integer) event.getReturnValue();
+	}
+
+	public void saveOneToMany(Class type, Object parentObj) {
+		Mirror me = Mirror.me(type);
+		for (Field fld : me.getFields()) {
+			OneToMany many = fld.getAnnotation(OneToMany.class);
+			if (many != null) {
+				String mappedBy = many.mappedBy();
+				CascadeType[] cascade = many.cascade();
+
+				boolean cascadeSaved = false;
+				if (cascade != null) {
+					for (CascadeType t : cascade) {
+						if (t == CascadeType.PERSIST || t == CascadeType.MERGE || t == CascadeType.ALL) {
+							cascadeSaved = true;
+							break;
+						}
+					}
+				}
+
+				if (!cascadeSaved) {
+					continue;
+				}
+
+				String fldName = fld.getName();
+				List children = ObjectUtil.getValue(parentObj, fldName);
+				if (children != null) {
+					for (Object child : children) {
+						ObjectUtil.setValue(child, mappedBy, parentObj);
+					}
+
+					orm.save(children);
+				}
+			}
+		}
+
 	}
 
 	public int updateMore(final Object obj, final CndExpr expr, final IBizPlugin... plugins) {
@@ -153,7 +205,7 @@ public class DataEngineImpl implements DataEngine {
 				event.setDataObject(entity);
 
 				fireBeforeEvent(plugins, event);
-				
+
 				event.setReturnValue(orm.delete(entity));
 
 				fireAfterEvent(plugins, event);

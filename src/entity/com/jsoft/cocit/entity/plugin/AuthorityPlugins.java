@@ -36,7 +36,7 @@ public abstract class AuthorityPlugins {
 				groupKey = auth.getGroupKey();
 				roleKey = auth.getRoleKey();
 
-				if (StringUtil.isBlank(userKey) || StringUtil.isBlank(groupKey) || StringUtil.isBlank(roleKey)) {
+				if (StringUtil.isBlank(userKey) && StringUtil.isBlank(groupKey) && StringUtil.isBlank(roleKey)) {
 					throw new CocException("请先选择授权对象（用户、群组、角色）！");
 				}
 

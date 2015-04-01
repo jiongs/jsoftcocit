@@ -43,7 +43,7 @@ public class DataManagerImpl implements DataManager {
 		this.checkPermission(menuService, entityService, entity, actionMode);
 
 		entityService.validateDataObject(actionMode, entity);
-
+		
 		return dataEngine.save(entity, this.buildCndExpr(menuService, entityService, null, actionMode), getPlugins(menuService, entityService, actionMode));
 	}
 

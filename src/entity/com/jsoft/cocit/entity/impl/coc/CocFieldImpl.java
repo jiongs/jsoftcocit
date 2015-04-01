@@ -60,7 +60,7 @@ import com.jsoft.cocit.entityengine.annotation.CocGroup;
            //
            @CocGroup(name = "基本信息", key = "basic", fields = {
                    //
-                   @CocColumn(name = "实体对象", field = "cocEntityKey", fkTargetEntity = Const.TBL_COC_ENTITY, fkTargetAsParent = true, asFilterNode = true),//
+                   @CocColumn(name = "实体对象", field = "cocEntityKey", fkTargetEntity = Const.TBL_COC_ENTITY, fkTargetAsParent = true, uiView = "combotree", asFilterNode = true),//
                    @CocColumn(name = "字段名称", field = "name"),//
                    @CocColumn(name = "JAVA属性", field = "key"),//
                    @CocColumn(name = "数据表列名", field = "dbColumnName"),//
