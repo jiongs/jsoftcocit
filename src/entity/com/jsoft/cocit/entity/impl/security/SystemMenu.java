@@ -10,6 +10,7 @@ import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.OpCodes;
 import com.jsoft.cocit.entity.IExtSystemOwnerEntity;
 import com.jsoft.cocit.entity.TreeEntity;
+import com.jsoft.cocit.entity.plugin.SystemMenuPlugins;
 import com.jsoft.cocit.entity.security.IExtSystemMenu;
 import com.jsoft.cocit.entityengine.annotation.CocAction;
 import com.jsoft.cocit.entityengine.annotation.CocColumn;
@@ -26,7 +27,7 @@ import com.jsoft.cocit.entityengine.annotation.CuiGrid;
 @CocEntity(name = "系统菜单管理", key = Const.TBL_SEC_SYSMENU, sn = 3, uniqueFields = "systemKey,key", indexFields = "systemKey,key",//
            actions = {
                    //
-                   @CocAction(name = "添加", opCode = OpCodes.OP_INSERT_FORM_DATA, key = "c"), //
+                   @CocAction(name = "添加", opCode = OpCodes.OP_INSERT_FORM_DATA, key = "c", plugin = SystemMenuPlugins.c1.class), //
                    @CocAction(name = "修改", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "e"), //
                    @CocAction(name = "查看", opCode = OpCodes.OP_UPDATE_FORM_DATA, key = "v"), //
                    @CocAction(name = "删除", opCode = OpCodes.OP_REMOVE_ROWS, key = "r"), //
