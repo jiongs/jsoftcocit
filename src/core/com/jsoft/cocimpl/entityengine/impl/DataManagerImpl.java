@@ -43,7 +43,7 @@ public class DataManagerImpl implements DataManager {
 		this.checkPermission(menuService, entityService, entity, actionMode);
 
 		entityService.validateDataObject(actionMode, entity);
-		
+
 		return dataEngine.save(entity, this.buildCndExpr(menuService, entityService, null, actionMode), getPlugins(menuService, entityService, actionMode));
 	}
 
@@ -99,7 +99,14 @@ public class DataManagerImpl implements DataManager {
 				String fkTargetField = fld.getFkTargetFieldKey();
 				if (FieldNames.F_KEY.equals(fkTargetField)) {
 					String key = obj.getKey();
-					if (orm.count(refEntity.getClassOfEntity(), Expr.eq(fld.getFieldName(), key)) > 0) {
+					int count = 0;
+					String fldname = fld.getFieldName();
+					if (fld.isMultiSelect()) {
+						count = orm.count(refEntity.getClassOfEntity(), Expr.eq(fldname, key).or(Expr.contains(fldname, key + ",")).or(Expr.contains(fldname, "," + key)));
+					} else {
+						count = orm.count(refEntity.getClassOfEntity(), Expr.eq(fldname, key));
+					}
+					if (count > 0) {
 						throw new CocException(msgs.getMsg("10013", obj, refEntity.getName()));
 					}
 				} else if (FieldNames.F_ID.equals(fkTargetField)) {

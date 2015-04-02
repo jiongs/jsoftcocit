@@ -170,6 +170,17 @@ public @interface CuiGrid {
 	String uiView() default "";
 
 	/**
+	 * 行编辑功能：是否单行编辑？
+	 * <p>
+	 * false: 多行编辑
+	 * <p>
+	 * true: 单行编辑
+	 * 
+	 * @return
+	 */
+	boolean singleRowEdit() default false;
+
+	/**
 	 * 字段列表：用来对Grid字段进行详细说明，如宽度、对齐方式等，是对{@link #fields()}的补充。详情请参见{@link CuiGridField}
 	 * 
 	 * @return

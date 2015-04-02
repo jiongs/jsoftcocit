@@ -198,4 +198,9 @@ public class CuiGridServiceImpl extends DataEntityServiceImpl<ICuiGrid> implemen
 		return entityData.getUiView();
 	}
 
+	@Override
+	public boolean isSingleRowEdit() {
+		return entityData.isSingleRowEdit();
+	}
+
 }

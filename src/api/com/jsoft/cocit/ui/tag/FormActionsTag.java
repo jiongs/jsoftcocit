@@ -1,7 +1,6 @@
 package com.jsoft.cocit.ui.tag;
 
 import java.io.Writer;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,11 +21,10 @@ import com.jsoft.cocit.ui.model.control.UIForm;
 import com.jsoft.cocit.util.ExceptionUtil;
 import com.jsoft.cocit.util.StringUtil;
 
-public class FieldsTag extends BodyTagSupport {
+public class FormActionsTag extends BodyTagSupport {
 
 	private static final long serialVersionUID = 3902335085986034089L;
 
-	protected String fields = null;
 	protected String modelName = null;
 	protected String funcExpr = null;
 
@@ -41,15 +39,13 @@ public class FieldsTag extends BodyTagSupport {
 			uiForm = (UIForm) baseModel;
 		}
 
-		List<String> fieldList = StringUtil.toList(fields);
-
 		Writer out = null;
 		try {
 			out = pageContext.getOut();
 
-			UIForm formFields = uiForm;
+			UIForm formActions = uiForm;
 
-			if (formFields == null && StringUtil.hasContent(funcExpr)) {
+			if (formActions == null && StringUtil.hasContent(funcExpr)) {
 
 				HttpContext httpContext = Cocit.me().getHttpContext();
 				if (httpContext == null) {
@@ -57,23 +53,18 @@ public class FieldsTag extends BodyTagSupport {
 				}
 
 				OpContext opContext = OpContext.make(funcExpr, null, null);
-				formFields = opContext.getUiModelFactory().getForm(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getCocAction(), null);
+				formActions = opContext.getUiModelFactory().getForm(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getCocAction(), null);
 				if (opContext.getException() != null) {
 					throw new JspException(opContext.getException());
 				}
 			}
 
-			if (fieldList != null && fieldList.size() > 0) {
-				OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.REQUEST_KEY_OPCONTEXT, PageContext.REQUEST_SCOPE);
-				formFields = opContext.getUiModelFactory().getForm(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getCocAction(), opContext.getDataObject(), fieldList);
-			}
-
-			if (formFields == null)
+			if (formActions == null)
 				throw new CocException("标记库(coc:fields)用法错误！请参见相关文档。");
 
 			UIViews views = Cocit.me().getViews();
-			UIView view = views.getView(ViewNames.VIEW_FORM_FIELDS);
-			view.render(out, formFields);
+			UIView view = views.getView(ViewNames.VIEW_FORM_BUTTONS);
+			view.render(out, formActions);
 
 			return EVAL_BODY_INCLUDE;
 
@@ -90,14 +81,6 @@ public class FieldsTag extends BodyTagSupport {
 
 	public void release() {
 		super.release();
-	}
-
-	public String getFields() {
-		return fields;
-	}
-
-	public void setFields(String actions) {
-		this.fields = actions;
 	}
 
 	public String getModelName() {

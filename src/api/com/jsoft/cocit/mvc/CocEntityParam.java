@@ -330,7 +330,7 @@ public class CocEntityParam {
 					if (Number.class.isAssignableFrom(type)) {
 						values[0] = values[0].replace(",", "");
 					}
-					in.inject(obj, pc.convert(new String[] { values[0] }));
+					in.inject(obj, pc.convert(values));
 					// }
 				} catch (RuntimeException e) {
 					LogUtil.debug(ExceptionUtil.msg(e));

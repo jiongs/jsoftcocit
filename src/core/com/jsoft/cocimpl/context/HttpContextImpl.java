@@ -10,9 +10,9 @@ import org.nutz.mvc.ActionContext;
 import org.nutz.mvc.Mvcs;
 import org.nutz.mvc.impl.ActionInvoker;
 
-import com.jsoft.cocimpl.ExtHttpContext;
 import com.jsoft.cocimpl.mvc.nutz.CocUrlMappingImpl;
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.ExtHttpContext;
 import com.jsoft.cocit.config.IDSConfig;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.entity.security.IUser;

@@ -9,8 +9,8 @@ import org.nutz.mvc.NutConfig;
 import org.nutz.mvc.UrlMapping;
 import org.nutz.mvc.impl.ActionInvoker;
 
-import com.jsoft.cocimpl.ExtHttpContext;
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.ExtHttpContext;
 import com.jsoft.cocit.util.LogUtil;
 
 /**

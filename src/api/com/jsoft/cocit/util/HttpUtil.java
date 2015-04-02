@@ -18,8 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.jsoft.cocimpl.ExtHttpContext;
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.ExtHttpContext;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.entityengine.service.SystemService;

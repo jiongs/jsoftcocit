@@ -619,7 +619,11 @@
 						for ( var fn in changedrows[i]) {
 							if ("_row_buttons_" !== fn) {
 								if (typeof changedrows[i][fn] == "object") {
-									_datastr = gridname + "[" + i + "]." + fn + "=" + encodeURI(changedrows[i][fn].value);
+									if(typeof changedrows[i][fn].value != "undefined"){
+										_datastr = gridname + "[" + i + "]." + fn + "=" + encodeURI(changedrows[i][fn].value);
+									}else{
+										_datastr = gridname + "[" + i + "]." + fn + "= ";
+									}
 								} else {
 									_datastr = gridname + "[" + i + "]." + fn + "=" + encodeURI(changedrows[i][fn]);
 								}

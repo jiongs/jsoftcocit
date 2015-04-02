@@ -46,13 +46,22 @@ public class ComboTreeFieldView extends BaseFieldView {
 			cssClass += " jCocit-dosearch";
 		}
 
-		write(out, "textFieldName=\"%s\" class=\"jCocit-ui jCocit-combotree %s\" data-options=\"value:'%s', text:'%s', dataURL: '%s' %s %s %s %s\" style=\"width:%spx;\"", //
+		boolean multiSelect = fieldModel.isMultiple();
+		if (multiSelect) {
+			idValue = StringUtil.toJSArray(StringUtil.toList(idValue));
+			textValue = StringUtil.toJSArray(StringUtil.toList(textValue));
+		} else {
+			idValue = "'" + idValue + "'";
+			textValue = "'" + textValue + "'";
+		}
+
+		write(out, "textFieldName=\"%s\" class=\"jCocit-ui jCocit-combotree %s\" data-options=\"value:%s, text:%s, dataURL: '%s' %s %s %s %s\" style=\"width:%spx;\"", //
 		        textFieldName, //
 		        cssClass == null ? "" : cssClass,//
 		        idValue,//
 		        textValue,//
 		        fieldModel.getFkComboTreeUrl(),//
-		        (fieldModel.isMultiple() ? ", multiple: true" : ""),//
+		        (multiSelect ? ", multiple: true" : ""),//
 		        (checkOnSelect ? ", checkOnSelect: true" : ""),//
 		        (selectOnCheck ? ", selectOnCheck: true" : ""),//
 		        (StringUtil.hasContent(onCheck) ? (", onCheck: " + onCheck) : ""),//

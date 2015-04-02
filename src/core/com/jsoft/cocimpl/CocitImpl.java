@@ -38,6 +38,7 @@ import com.jsoft.cocimpl.securityengine.impl.SecurityEngineImpl;
 import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocimpl.ui.impl.UIModelFactoryImpl;
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.ExtHttpContext;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.config.IBeansConfig;
 import com.jsoft.cocit.config.ICocConfig;

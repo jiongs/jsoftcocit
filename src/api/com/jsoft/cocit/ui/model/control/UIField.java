@@ -186,6 +186,7 @@ public class UIField extends UIControlModel implements UIFieldModel {
 			this.patternName = adapter.getName();
 			this.pattern = adapter.getPattern();
 		}
+		this.setMultiple(fieldService.isMultiSelect());
 
 		return this;
 	}

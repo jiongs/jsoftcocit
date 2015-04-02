@@ -6,10 +6,10 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.jsoft.cocimpl.ExtHttpContext;
 import com.jsoft.cocimpl.securityengine.RootUserFactory;
 import com.jsoft.cocimpl.securityengine.impl.RootUserService;
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.ExtHttpContext;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.config.IMessageConfig;
 import com.jsoft.cocit.constant.Const;

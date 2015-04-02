@@ -49,8 +49,9 @@ public class UIGrid extends UIControlModel implements UIGridModel {
 	private StyleRule[] rowStyles;
 	private String sortExpr;
 	private String treeField;
-	
+
 	private String entityKey;
+	private boolean singleRowEdit;
 
 	public UIGrid() {
 		super();
@@ -242,11 +243,19 @@ public class UIGrid extends UIControlModel implements UIGridModel {
 	}
 
 	public String getEntityKey() {
-    	return entityKey;
-    }
+		return entityKey;
+	}
 
 	public void setEntityKey(String entityKey) {
-    	this.entityKey = entityKey;
-    }
+		this.entityKey = entityKey;
+	}
+
+	public boolean isSingleRowEdit() {
+		return singleRowEdit;
+	}
+
+	public void setSingleRowEdit(boolean singleRowEdit) {
+		this.singleRowEdit = singleRowEdit;
+	}
 
 }

@@ -31,6 +31,32 @@ import com.jsoft.cocit.util.StringUtil;
 import com.jsoft.cocit.util.Tree.Node;
 
 public abstract class UIFormViews {
+
+	/**
+	 * 生成工作流新建表单
+	 * 
+	 * @author Ji Yongshan
+	 * 
+	 */
+	public static class WorkflowNewFormView extends BaseModelView<UIForm> {
+		public String getName() {
+			return ViewNames.VIEW_FORM_WF_NEW;
+		}
+
+		public void render(Writer out, UIForm model) throws Exception {
+			Cocit coc = Cocit.me();
+			UIViews views = coc.getViews();
+			
+			write(out, "<div class=\"jCocit-ui jCocit-tabs tabs2\" style=\"\">");
+			write(out, "<div title=\"表单数据\" style=\"padding:10px\">");
+			
+			write(out, "</div>");
+			write(out, "<div title=\"流程日志\" style=\"padding:10px\"></div>");
+			write(out, "<div title=\"流程图\" style=\"padding:10px\"></div>");
+			write(out, "</div>");
+		}
+	}
+
 	public static class UIFormButtonsView extends BaseModelView<UIForm> {
 		public String getName() {
 			return ViewNames.VIEW_FORM_BUTTONS;

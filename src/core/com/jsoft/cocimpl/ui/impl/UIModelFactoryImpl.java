@@ -331,9 +331,9 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		CuiGridService cuiGrid = null;
 		List<String> frozenFieldNames = null;
 		List<String> fieldNames = null;
-		if (cui != null && (fieldList == null || fieldList.size() == 0)) {
+		if (cui != null) {
 			cuiGrid = cui.getCuiGrid();
-			if (cuiGrid != null) {
+			if (cuiGrid != null && (fieldList == null || fieldList.size() == 0)) {
 				fieldList = new ArrayList();
 				frozenFieldNames = cuiGrid.getFrozenFieldsList();
 				fieldList.addAll(frozenFieldNames);
@@ -387,6 +387,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			model.setSortExpr(cuiGrid.getSortExpr());
 			model.setTreeField(cuiGrid.getTreeField());
 			model.setViewName(cuiGrid.getUiView());
+			model.setSingleRowEdit(cuiGrid.isSingleRowEdit());
 
 			if (rowActionList == null || rowActionList.size() == 0) {
 				String rowActions = cuiGrid.getRowActions();
@@ -607,7 +608,9 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		UITree model = new UITree();
 		model.setDataLoadUrl(url);
 		model.setId(makeHtmlID(UITree.class, entityService.getId()));
-		// model.set("checkbox", false);
+		// if(fkFieldService.isMultiSelect()){
+		// model.set("checkbox", true);
+		// }
 		// model.set("onlyLeafCheck", false);
 		// model.set("onlyLeafValue", false);
 		// model.set("cascadeCheck", false);

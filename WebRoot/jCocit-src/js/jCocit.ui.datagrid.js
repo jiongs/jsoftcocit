@@ -1962,7 +1962,27 @@
 						} else {
 							var isEditCancelButton = tt.hasClass("datagrid-edit-cancel");
 							if (isEditCancelButton) {
-								$(gridTable).datagrid("reload");
+								var options = $(gridTable).datagrid("options");
+								if (options.onEdit != $n) {
+									$(gridTable).datagrid("reload");
+								}else{
+									var rowIndex;
+									var tr = tt.closest("tr.datagrid-row");
+									if (tr.length) {
+										rowIndex = tr.attr("datagrid-row-index");
+									} else {
+										var row = $(gridTable).datagrid("getSelected");
+										rowIndex = $(gridTable).datagrid("getRowIndex", row);
+										tr = $d(gridTable, "datagrid").options.finder.getTr(gridTable, rowIndex);
+									}
+									
+									if(tr.hasClass("datagrid-row-alt")){
+										endEdit(gridTable, rowIndex, true);
+									}else{
+										deleteRow(gridTable, rowIndex);
+									}
+									resetRowIndex(gridTable);
+								}
 							}
 						}
 						e.stopPropagation();
@@ -2070,6 +2090,22 @@
 		});
 		// alert($.toJsonString(changedDatas));
 		return changedDatas;
+	}
+	
+	function resetRowIndex(gridTable){
+		var $grid = $(gridTable);
+		var panel = $(gridTable).datagrid("getPanel");
+		var i = 0;
+		panel.find(".datagrid-view1").find("tr.datagrid-row").each(function() {
+			$(this).attr("datagrid-row-index",i);
+			$f("div.datagrid-cell-rownumber", $(this)).text(i+1);
+			i++;
+		});
+		i = 0;
+		panel.find(".datagrid-view2").find("tr.datagrid-row").each(function() {
+			$(this).attr("datagrid-row-index","" + i);
+			i++;
+		});
 	}
 
 	function insertRow(gridTable, rowConfig) {
@@ -2362,7 +2398,7 @@
 		buttons : {
 			init : function(td, options, gridOptions) {
 				var html = '<a href="javascript: void(0)" class="datagrid-edit-btn datagrid-edit-cancel">' + $.fn.datagrid.defaults.editCancelButton + '</a>';
-				if (gridOptions.editUrl || gridOptions.addUrl) {
+				if (gridOptions.onEdit != $n) {
 					html = '<a href="javascript: void(0)" class="datagrid-edit-btn datagrid-edit-save">' + $.fn.datagrid.defaults.editSaveButton + '</a>&nbsp;' + html;
 				}
 				var $editor = $(html).appendTo(td);

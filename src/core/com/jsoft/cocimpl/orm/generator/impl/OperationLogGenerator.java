@@ -11,8 +11,8 @@ import static com.jsoft.cocit.constant.FieldNames.F_UPDATED_USER;
 import java.io.Serializable;
 import java.util.Date;
 
-import com.jsoft.cocimpl.ExtHttpContext;
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.ExtHttpContext;
 import com.jsoft.cocit.entity.IExtDataEntity;
 import com.jsoft.cocit.orm.ExtDao;
 import com.jsoft.cocit.orm.generator.Generator;

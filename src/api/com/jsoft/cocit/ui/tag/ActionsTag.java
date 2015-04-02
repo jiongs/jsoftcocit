@@ -24,7 +24,7 @@ public class ActionsTag extends BodyTagSupport {
 	private static final long serialVersionUID = 3902335085986034089L;
 
 	protected String modelName;
-	protected String keys = null;
+	protected String actions = null;
 	protected String funcExpr = null;
 	protected String resultUI = null;
 
@@ -45,7 +45,7 @@ public class ActionsTag extends BodyTagSupport {
 			}
 		}
 
-		List<String> actionsList = StringUtil.toList(keys);
+		List<String> actionsList = StringUtil.toList(actions);
 
 		Writer out = null;
 		try {
@@ -71,7 +71,7 @@ public class ActionsTag extends BodyTagSupport {
 			} else {
 				if (actionsList != null && actionsList.size() > 0) {
 
-					OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.OPCONTEXT_REQUEST_KEY, PageContext.REQUEST_SCOPE);
+					OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.REQUEST_KEY_OPCONTEXT, PageContext.REQUEST_SCOPE);
 					model = Cocit.me().getUiModelFactory().getActions(opContext.getSystemMenu(), opContext.getCocEntity(), actionsList);
 
 				} else {
@@ -142,12 +142,12 @@ public class ActionsTag extends BodyTagSupport {
 		this.resultUI = resultUI;
 	}
 
-	public String getKeys() {
-		return keys;
+	public String getActions() {
+		return actions;
 	}
 
-	public void setKeys(String actions) {
-		this.keys = actions;
+	public void setActions(String actions) {
+		this.actions = actions;
 	}
 
 	public String getModelName() {

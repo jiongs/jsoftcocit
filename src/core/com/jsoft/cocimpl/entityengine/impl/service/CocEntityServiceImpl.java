@@ -1401,4 +1401,9 @@ public class CocEntityServiceImpl extends NamedEntityServiceImpl<ICocEntity> imp
 	public String getDataAuthFields() {
 		return this.entityData.getDataAuthFields();
 	}
+
+	@Override
+	public boolean isWorkflow() {
+		return entityData.isWorkflow();
+	}
 }

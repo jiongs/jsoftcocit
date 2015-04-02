@@ -108,4 +108,14 @@ public interface ICocEntity extends INamedEntity {
 	String getIndexFields();
 
 	String getDataAuthFields();
+
+	/**
+	 * 检查该业务模块是否需要走工作流引擎？
+	 * <p>
+	 * true: 该业务模块需要走工作流引擎 <br/>
+	 * false: 该业务模块无需走工作流引擎
+	 * 
+	 * @return
+	 */
+	boolean isWorkflow();
 }

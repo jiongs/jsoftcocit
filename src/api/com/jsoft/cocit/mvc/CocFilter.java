@@ -17,10 +17,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.jsoft.cocimpl.ExtHttpContext;
 import com.jsoft.cocimpl.mvc.nutz.CocActionHandler;
 import com.jsoft.cocimpl.mvc.servlet.StaticResourceFilter;
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.ExtHttpContext;
 import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.UrlAPI;
 import com.jsoft.cocit.exception.CocConfigException;

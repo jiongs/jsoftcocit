@@ -47,4 +47,6 @@ public interface IExtCuiGrid extends IExtDataEntity, ICuiGrid {
 	public void setRowStyleRule(String rowStyle);
 
 	public void setUiView(String uiView);
+
+	public void setSingleRowEdit(boolean singleRowEdit);
 }

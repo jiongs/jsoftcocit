@@ -2,6 +2,7 @@ package com.jsoft.cocimpl.ui.view;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 import java.util.Properties;
 
 import com.jsoft.cocimpl.ui.view.jcocitfield.CKEditorFieldView;
@@ -96,14 +97,25 @@ public abstract class BaseFieldView implements UIFieldView {
 					}
 				} else if (StringUtil.hasContent(idValue)) {
 
-					CocEntityService targetModule = entityFieldService.getFkTargetEntity();
-					Class targetClassOfEntity = targetModule.getClassOfEntity();
+					if (nameField != null) {
+						textValue = ObjectUtil.getStringValue(entityObject, nameField.getFieldName());
+					} else {
+						CocEntityService targetModule = entityFieldService.getFkTargetEntity();
+						Class targetClassOfEntity = targetModule.getClassOfEntity();
 
-					Object fkObject = Cocit.me().orm().get(targetClassOfEntity, Expr.fieldRexpr(targetIdField + "|" + targetTextField).and(Expr.eq(targetIdField, idValue)));
-					if (fkObject != null) {
-						Object targetTextValue = ObjectUtil.getValue(fkObject, targetTextField);
-						if (targetTextValue != null) {
-							textValue = targetTextValue.toString();
+						List<String> idList = StringUtil.toList(idValue);
+
+						List<Object> fkObjectList = Cocit.me().orm().query(targetClassOfEntity, Expr.fieldRexpr(targetIdField + "|" + targetTextField).and(Expr.in(targetIdField, idList)));
+						if (fkObjectList != null) {
+							for (Object fkObject : fkObjectList) {
+								Object targetTextValue = ObjectUtil.getValue(fkObject, targetTextField);
+								if (targetTextValue != null) {
+									textValue += "," + targetTextValue.toString();
+								}
+							}
+							if (textValue.length() > 0) {
+								textValue = textValue.substring(1);
+							}
 						}
 					}
 

@@ -39,6 +39,7 @@ import com.jsoft.cocit.entityengine.annotation.CocGroup;
                    @CocColumn(name = "实体数据表", field = "tableName"),//
                    @CocColumn(name = "排序表达式", field = "sortExpr"), //
                    @CocColumn(name = "模块UI", field = "uiView"), //
+                   @CocColumn(name = "流程业务", field = "workflow"), //
                    @CocColumn(name = "序号", field = "sn"), //
            }) // end group
            }// end groups
@@ -69,6 +70,7 @@ public class CocEntityImpl extends NamedEntity implements IExtCocEntity {
 	protected String indexFields;
 	@Column(length = 256)
 	protected String dataAuthFields;
+	private boolean workflow;
 
 	protected void toJson(StringBuffer sb) {
 		super.toJson(sb);
@@ -201,11 +203,19 @@ public class CocEntityImpl extends NamedEntity implements IExtCocEntity {
 	}
 
 	public String getDataAuthFields() {
-    	return dataAuthFields;
-    }
+		return dataAuthFields;
+	}
 
 	public void setDataAuthFields(String dataAuthFields) {
-    	this.dataAuthFields = dataAuthFields;
-    }
+		this.dataAuthFields = dataAuthFields;
+	}
+
+	public boolean isWorkflow() {
+		return workflow;
+	}
+
+	public void setWorkflow(boolean workflow) {
+		this.workflow = workflow;
+	}
 
 }

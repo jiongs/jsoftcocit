@@ -75,6 +75,7 @@ public class CuiGridImpl extends DataEntity implements IExtCuiGrid {
 	private String rowStyleRule;
 	private String treeField;
 	private String uiView;
+	private boolean singleRowEdit;
 
 	public void release() {
 		super.release();
@@ -274,5 +275,13 @@ public class CuiGridImpl extends DataEntity implements IExtCuiGrid {
 
 	public void setUiView(String uiView) {
 		this.uiView = uiView;
+	}
+
+	public boolean isSingleRowEdit() {
+		return singleRowEdit;
+	}
+
+	public void setSingleRowEdit(boolean singleRowEdit) {
+		this.singleRowEdit = singleRowEdit;
 	}
 }

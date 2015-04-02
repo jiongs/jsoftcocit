@@ -13,6 +13,8 @@ import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.action.OpContext;
 import com.jsoft.cocit.constant.ViewKeys;
+import com.jsoft.cocit.exception.CocException;
+import com.jsoft.cocit.ui.UIModelFactory;
 import com.jsoft.cocit.ui.model.UIModel;
 import com.jsoft.cocit.ui.model.control.UIEntity;
 import com.jsoft.cocit.ui.model.control.UIGrid;
@@ -31,97 +33,110 @@ public class DataGridTag extends BodyTagSupport {
 	protected String resultUI = null;
 	protected String paramUI = null;
 	protected String dataUrl = null;
+	protected String modelName;
 
 	public int doStartTag() throws JspException {
 
+		Cocit coc = Cocit.me();
 		UIGrid model = null;
-		UIEntity mainModel = null;
 
-		UIModel uiModel = (UIModel) pageContext.getAttribute(ViewKeys.UI_MODEL_KEY, PageContext.REQUEST_SCOPE);
-		if (uiModel != null && uiModel instanceof UIEntity) {
-			mainModel = (UIEntity) uiModel;
+		/*
+		 * 准备参数
+		 */
+		if (StringUtil.isBlank(modelName)) {
+			modelName = ViewKeys.UI_MODEL_KEY;
 		}
-
 		List<String> fieldList = StringUtil.toList(fields);
 		List<String> actionList = StringUtil.toList(rowActions);
 
+		/*
+		 * 准备 HttpContext
+		 */
+		HttpContext httpContext = coc.getHttpContext();
+		if (httpContext == null) {
+			coc.makeHttpContext((HttpServletRequest) pageContext.getRequest(), (HttpServletResponse) pageContext.getResponse());
+		}
+
+		/*
+		 * 获取 UIGrid
+		 */
+		UIModel uiModel = (UIModel) pageContext.getAttribute(modelName, PageContext.REQUEST_SCOPE);
+		if (uiModel != null) {
+			if (uiModel instanceof UIEntity) {
+				model = ((UIEntity) uiModel).getGrid();
+			} else if (uiModel instanceof UIGrid) {
+				model = (UIGrid) uiModel;
+			}
+		}
+
+		/*
+		 * 准备 OpContext
+		 */
+		OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.REQUEST_KEY_OPCONTEXT, PageContext.REQUEST_SCOPE);
+		if (opContext == null && StringUtil.hasContent(funcExpr)) {
+			opContext = OpContext.make(funcExpr, null, null);
+		}
+		if (opContext != null) {
+			UIModelFactory uiFactory = coc.getUiModelFactory();
+			if ((fieldList != null && fieldList.size() > 0) || (actionList != null && actionList.size() > 0)) {
+				model = uiFactory.getGrid(opContext.getSystemMenu(), opContext.getCocEntity(), fieldList, actionList);
+			}
+
+			if (model == null) {
+				model = uiFactory.getGrid(opContext.getSystemMenu(), opContext.getCocEntity());
+			}
+		}
+
+		/*
+		 * 
+		 */
 		Writer out = null;
 		try {
+			if (model == null) {
+				throw new CocException("标记库(coc:datagrid)用法错误！请参见相关文档。");
+			}
+
 			out = pageContext.getOut();
 
-			if (mainModel == null && StringUtil.hasContent(funcExpr)) {
-
-				HttpContext httpContext = Cocit.me().getHttpContext();
-				if (httpContext == null) {
-					Cocit.me().makeHttpContext((HttpServletRequest) pageContext.getRequest(), (HttpServletResponse) pageContext.getResponse());
-				}
-
-				OpContext opContext = OpContext.make(funcExpr, null, null);
-				if (opContext.getException() != null) {
-					throw new JspException(opContext.getException());
-				}
-
-				if ((fieldList != null && fieldList.size() > 0) || (actionList != null && actionList.size() > 0)) {
-					model = opContext.getUiModelFactory().getGrid(opContext.getSystemMenu(), opContext.getCocEntity(), fieldList, actionList);
-				} else {
-					model = opContext.getUiModelFactory().getGrid(opContext.getSystemMenu(), opContext.getCocEntity());
-				}
-
-			} else {
-
-				if ((fieldList != null && fieldList.size() > 0) || (actionList != null && actionList.size() > 0)) {
-
-					OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.OPCONTEXT_REQUEST_KEY, PageContext.REQUEST_SCOPE);
-					model = Cocit.me().getUiModelFactory().getGrid(opContext.getSystemMenu(), opContext.getCocEntity(), fieldList, actionList);
-
-				} else {
-					model = mainModel.getGrid();
-				}
-
+			/*
+			 * 准备UIGrid参数
+			 */
+			if (width != 0)
+				model.set("width", width);
+			if (height != 0)
+				model.set("height", height);
+			if (StringUtil.hasContent(id)) {
+				model.setId(id);
+			}
+			if (StringUtil.hasContent(dataUrl)) {
+				model.setDataLoadUrl(dataUrl);
 			}
 
-			if (model != null) {
-				if (width != 0)
-					model.set("width", width);
-				if (height != 0)
-					model.set("height", height);
-				if (StringUtil.hasContent(id)) {
-					model.setId(id);
-				}
-				if (StringUtil.hasContent(dataUrl)) {
-					model.setDataLoadUrl(dataUrl);
-				}
+			/*
+			 * 处理 resultUI
+			 */
+			if (StringUtil.hasContent(resultUI)) {
+				model.getResultUI().clear();
 
-				/*
-				 * 处理 resultUI
-				 */
-				if (StringUtil.hasContent(resultUI)) {
-					model.getResultUI().clear();
-
-					List<String> list = StringUtil.toList(resultUI);
-					for (String str : list) {
-						model.addResultUI(str);
-					}
-				}
-
-				/*
-				 * 计算 paramUI
-				 */
-				if (StringUtil.hasContent(paramUI)) {
-					model.getParamUI().clear();
-
-					List<String> list = StringUtil.toList(paramUI);
-					for (String str : list) {
-						model.addParamUI(str);
-					}
-				}
-
-				try {
-					model.render(out);
-				} catch (Exception e) {
-					throw new JspException(e);
+				List<String> list = StringUtil.toList(resultUI);
+				for (String str : list) {
+					model.addResultUI(str);
 				}
 			}
+
+			/*
+			 * 计算 paramUI
+			 */
+			if (StringUtil.hasContent(paramUI)) {
+				model.getParamUI().clear();
+
+				List<String> list = StringUtil.toList(paramUI);
+				for (String str : list) {
+					model.addParamUI(str);
+				}
+			}
+
+			model.render(out);
 
 			return EVAL_BODY_INCLUDE;
 
@@ -205,6 +220,14 @@ public class DataGridTag extends BodyTagSupport {
 
 	public void setDataUrl(String dataUrl) {
 		this.dataUrl = dataUrl;
+	}
+
+	public String getModelName() {
+		return modelName;
+	}
+
+	public void setModelName(String modelName) {
+		this.modelName = modelName;
 	}
 
 }

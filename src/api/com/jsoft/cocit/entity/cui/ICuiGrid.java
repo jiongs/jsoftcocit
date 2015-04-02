@@ -47,4 +47,6 @@ public interface ICuiGrid extends IDataEntity {
 	public String getRowStyleRule();
 
 	public String getUiView();
+
+	public boolean isSingleRowEdit();
 }

@@ -195,34 +195,103 @@ form.entityForm .textarea, .coc-textarea,
 .tabs-wrap .tabs{
 	padding-top: 5px;
 }
-.tabs-header, .tabs-tool {
+
+.tabs-header, 
+.tabs-tool {
 	background-color: #DFDFDF;
 }
+
 .tabs-header-bottom .tabs-tool {
 	padding-top: 8px;
 }
+
 .tabs li{
-	background-color: #ffffff;
-	border-color: #999999;
 	padding: 1px;
 }
+
 .tabs li a.tabs-inner {
-	color: #000000;
 	background-color: #cccccc;
 }
+
+.tabs li a.tabs-inner,
 .tabs li a.tabs-inner:hover {
-	background-color: #95cdff;
 	color: #000000;
 }
+
+.tabs li,
 .tabs li.tabs-selected{
 	background-color: #ffffff;
-	border-color: #999999;
 }
+
+.tabs li a.tabs-inner:hover,
 .tabs li.tabs-selected a.tabs-inner {
 	background-color: #95cdff;
 }
-.tabs-scroller-left, .tabs-scroller-right, .tabs li a.tabs-close {
+
+.tabs-scroller-left, 
+.tabs-scroller-right, 
+.tabs li a.tabs-close {
 	background-image: url('../images/themesgray/ui_tabs.png');
+}
+
+.tabs-header,
+.tabs-scroller-left,
+.tabs-scroller-right,
+.tabs-tool,
+.tabs,
+.tabs-panels,
+.tabs li.tabs-selected,
+.tabs li {
+	border-color: #999999;
+}
+/**
+ * 表单内部的tabs样式
+ */
+.tabs2 .tabs-wrap .tabs{
+	padding-top: 5px;
+}
+
+.tabs2 .tabs-header, 
+.tabs2 .tabs-tool {
+	background-color: transparent;
+}
+
+.tabs2 .tabs-header{
+	border-width: 0;
+}
+
+.tabs2 .tabs li{
+	padding: 1px;
+}
+
+.tabs2 .tabs li,
+.tabs2 .tabs li a.tabs-inner{
+	background-color: #f1f1f1;
+}
+
+.tabs2 .tabs li:hover,
+.tabs2 .tabs li a.tabs-inner:hover,
+.tabs2 .tabs li a.tabs-inner，
+.tabs2 .tabs li.tabs-selected, 
+.tabs2 .tabs li a.tabs-inner:hover, 
+.tabs2 .tabs li.tabs-selected a.tabs-inner{
+	background-color: #cccccc;
+}
+
+.tabs2 .tabs-scroller-left, 
+.tabs2 .tabs-scroller-right, 
+.tabs2 .tabs li a.tabs-close {
+	background-image: url(none);
+}
+
+.tabs2 .tabs-header, 
+.tabs2 .tabs-scroller-left, 
+.tabs2 .tabs-scroller-right, 
+.tabs2 .tabs-tool, 
+.tabs2 .tabs, 
+.tabs2 .tabs-panels, 
+.tabs2 .tabs li {
+	border-color: #939393;
 }
 
 /*

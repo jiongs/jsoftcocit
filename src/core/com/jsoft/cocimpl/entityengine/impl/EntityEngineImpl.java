@@ -49,6 +49,7 @@ import com.jsoft.cocit.entity.IExtTreeEntity;
 import com.jsoft.cocit.entity.INamedEntity;
 import com.jsoft.cocit.entity.ITenantOwnerEntity;
 import com.jsoft.cocit.entity.ITreeEntity;
+import com.jsoft.cocit.entity.IWorkflowInstance;
 import com.jsoft.cocit.entity.coc.ICocAction;
 import com.jsoft.cocit.entity.coc.ICocCatalog;
 import com.jsoft.cocit.entity.coc.ICocEntity;
@@ -1295,6 +1296,11 @@ public class EntityEngineImpl implements EntityEngine {
 		cocEntity.setUiView(sysann.uiView());
 		cocEntity.setPathPrefix(sysann.urlPrefix());
 		cocEntity.setDataAuthFields(sysann.dataAuthFields());
+		if (IWorkflowInstance.class.isAssignableFrom(klass)) {
+			cocEntity.setWorkflow(true);
+		} else {
+			cocEntity.setWorkflow(false);
+		}
 		cocEntity.setClassName(klass.getName());
 		cocEntity.setExtendsClassName(klass.getSuperclass().getSimpleName());
 		if (StringUtil.isBlank(sysann.tableName())) {
@@ -1532,7 +1538,8 @@ public class EntityEngineImpl implements EntityEngine {
 		 * 外键字段关联到实体的哪个字段？
 		 */
 		String fkTargetField = null;
-		if (StringUtil.hasContent(fkTargetEntity)) {
+		String tmp = $CocColumnOnType.fkTargetField();
+		if (StringUtil.hasContent(fkTargetEntity) || (tmp != null && tmp.indexOf(".") > 0)) {
 			fkTargetField = $CocColumnOnType.fkTargetField();
 
 			if (StringUtil.isBlank(fkTargetField) && $CocColumnOnField != null) {
@@ -1547,6 +1554,13 @@ public class EntityEngineImpl implements EntityEngine {
 				} else {
 					fkTargetField = Const.F_KEY;
 				}
+			}
+		}
+		if (StringUtil.hasContent(fkTargetField)) {
+			int dot = fkTargetField.indexOf(".");
+			if (dot > 0) {
+				fkTargetEntity = fkTargetField.substring(0, dot);
+				fkTargetField = fkTargetField.substring(dot + 1);
 			}
 		}
 
@@ -1753,6 +1767,8 @@ public class EntityEngineImpl implements EntityEngine {
 
 		entityField.setAsFilterNode($CocColumnOnType.asFilterNode());
 		entityField.setTransient($CocColumnOnType.isTransient());
+
+		entityField.setMultiSelect($CocColumnOnType.multiSelect());
 
 		entityField.setStatusCode(Const.STATUS_CODE_BUILDIN);
 
@@ -2370,6 +2386,7 @@ public class EntityEngineImpl implements EntityEngine {
 		obj.setStatusCode(Const.STATUS_CODE_BUILDIN);
 		obj.setTreeField(ann.treeField());
 		obj.setUiView(ann.uiView());
+		obj.setSingleRowEdit(ann.singleRowEdit());
 
 		/*
 		 * 保存

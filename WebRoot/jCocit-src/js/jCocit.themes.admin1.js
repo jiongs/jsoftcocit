@@ -124,3 +124,11 @@ var doInitIndex = function(indexID) {
 	});
 
 }
+jCocit.admin1 = {
+	func1 : function() {
+
+	},
+	func2 : function() {
+
+	}
+}

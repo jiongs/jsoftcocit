@@ -1,9 +1,8 @@
-package com.jsoft.cocimpl;
+package com.jsoft.cocit;
 
 import org.nutz.mvc.ActionContext;
 import org.nutz.mvc.impl.ActionInvoker;
 
-import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.config.IDSConfig;
 
 public interface ExtHttpContext extends HttpContext {

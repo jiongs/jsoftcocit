@@ -65,7 +65,7 @@ public class QueryFormTag extends BodyTagSupport {
 
 				if (fieldList != null && fieldList.size() > 0) {
 
-					OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.OPCONTEXT_REQUEST_KEY, PageContext.REQUEST_SCOPE);
+					OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.REQUEST_KEY_OPCONTEXT, PageContext.REQUEST_SCOPE);
 					model = Cocit.me().getUiModelFactory().getSearchBox(opContext.getSystemMenu(), opContext.getCocEntity(), fieldList);
 
 				} else if (mainModel != null) {

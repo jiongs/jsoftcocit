@@ -192,11 +192,11 @@ public abstract class UIGridViews {
 			write(out, "token: '%s'", token);// 主表Grid通过该令牌获取子表Tabs对象，以便于选中主表记录后刷新Tabs中当前子表的Grid
 			write(out, ",url: '%s'", url);
 			boolean rowEditable = false;
-			if (StringUtil.hasContent(model.getDataAddUrl())) {
+			if (model.isSingleRowEdit() && StringUtil.hasContent(model.getDataAddUrl())) {
 				rowEditable = true;
 				write(out, ",addUrl: '%s'", model.getDataAddUrl());
 			}
-			if (StringUtil.hasContent(model.getDataEditUrl())) {
+			if (model.isSingleRowEdit() && StringUtil.hasContent(model.getDataEditUrl())) {
 				rowEditable = true;
 				write(out, ",editUrl: '%s'", model.getDataEditUrl());
 			}
@@ -285,54 +285,54 @@ public abstract class UIGridViews {
 				        col.getAlign(), //
 				        col.getHalign() //
 				);
-				if (rowEditable) {
-					String editorType = "text";
-					StringBuffer options = new StringBuffer();
-					String viewName = uiFld.getViewName();
-					switch (col.getFieldType()) {
-						case FieldTypes.FIELD_TYPE_BYTE:
-						case FieldTypes.FIELD_TYPE_SHORT:
-						case FieldTypes.FIELD_TYPE_INTEGER:
-						case FieldTypes.FIELD_TYPE_LONG:
-						case FieldTypes.FIELD_TYPE_NUMBER:
-						case FieldTypes.FIELD_TYPE_FLOAT:
-						case FieldTypes.FIELD_TYPE_DOUBLE:
-						case FieldTypes.FIELD_TYPE_DECIMAL:
-							editorType = "numberbox";
-							break;
-						case FieldTypes.FIELD_TYPE_DATE:
-							editorType = "combodate";
-							if (ViewNames.FIELD_VIEW_COMBODATETIME.equals(uiFld.getViewName())) {
-								editorType = "combodatetime";
+				// if (rowEditable) {
+				String editorType = "text";
+				StringBuffer options = new StringBuffer();
+				String viewName = uiFld.getViewName();
+				switch (col.getFieldType()) {
+					case FieldTypes.FIELD_TYPE_BYTE:
+					case FieldTypes.FIELD_TYPE_SHORT:
+					case FieldTypes.FIELD_TYPE_INTEGER:
+					case FieldTypes.FIELD_TYPE_LONG:
+					case FieldTypes.FIELD_TYPE_NUMBER:
+					case FieldTypes.FIELD_TYPE_FLOAT:
+					case FieldTypes.FIELD_TYPE_DOUBLE:
+					case FieldTypes.FIELD_TYPE_DECIMAL:
+						editorType = "numberbox";
+						break;
+					case FieldTypes.FIELD_TYPE_DATE:
+						editorType = "combodate";
+						if (ViewNames.FIELD_VIEW_COMBODATETIME.equals(uiFld.getViewName())) {
+							editorType = "combodatetime";
+						}
+						break;
+					default:
+						if (col.getDicOptions().length > 0) {
+							editorType = "combobox";
+							options.append("data:[");
+							int optCount = 0;
+							for (Option opt : col.getDicOptions()) {
+								if (optCount > 0) {
+									options.append(",");
+								}
+								options.append(String.format("{value: '%s', text: '%s'}", opt.getValue(), opt.getText()));
+
+								optCount++;
 							}
-							break;
-						default:
-							if (col.getDicOptions().length > 0) {
+							options.append("]");
+						} else if (fldService.isFkField()) {
+							if (ViewNames.FIELD_VIEW_COMBOTREE.equals(viewName)) {
+								editorType = "combotree";
+								options.append(String.format("dataURL: '%s'", uiFld.getFkComboTreeUrl()));
+							} else {
 								editorType = "combobox";
-								options.append("data:[");
-								int optCount = 0;
-								for (Option opt : col.getDicOptions()) {
-									if (optCount > 0) {
-										options.append(",");
-									}
-									options.append(String.format("{value: '%s', text: '%s'}", opt.getValue(), opt.getText()));
-
-									optCount++;
-								}
-								options.append("]");
-							} else if (fldService.isFkField()) {
-								if (ViewNames.FIELD_VIEW_COMBOTREE.equals(viewName)) {
-									editorType = "combotree";
-									options.append(String.format("dataURL: '%s'", uiFld.getFkComboTreeUrl()));
-								} else {
-									editorType = "combobox";
-									options.append(String.format("url: '%s'", uiFld.getFkComboListUrl()));
-								}
+								options.append(String.format("url: '%s'", uiFld.getFkComboListUrl()));
 							}
-					}
-
-					write(out, ", editor: {type: '%s', options: {height: 26, %s}}", editorType, options);
+						}
 				}
+
+				write(out, ", editor: {type: '%s', options: {height: 26, %s}}", editorType, options);
+				// }
 				if (styler != null) {
 					write(out, ", styler: %s", styler);
 				}
@@ -343,9 +343,7 @@ public abstract class UIGridViews {
 			}
 			if (rowActions != null || rowEditable) {
 				write(out, "<th data-options=\"field: '_row_buttons_', rowbuttons: true, width: %s, align: 'center'", rowActionsWidth);
-				if (rowEditable) {
-					write(out, ", editor: {type: 'buttons'}");
-				}
+				write(out, ", editor: {type: 'buttons'}");
 				write(out, "\">操作</th>");
 			}
 			write(out, "</tr>");

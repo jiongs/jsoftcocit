@@ -8,8 +8,8 @@ import java.util.Map;
 
 import org.nutz.lang.Mirror;
 
-import com.jsoft.cocimpl.ExtHttpContext;
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.ExtHttpContext;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.OpCodes;
@@ -44,7 +44,7 @@ import com.jsoft.cocit.util.StringUtil;
  */
 public class OpContext {
 
-	public static final String OPCONTEXT_REQUEST_KEY = "opcontext";
+	public static final String REQUEST_KEY_OPCONTEXT = "opcontext";
 
 	private ExtHttpContext httpContext;
 	private Throwable exception;
@@ -95,7 +95,7 @@ public class OpContext {
 		OpContext ret = new OpContext(funcExpr, null, null, false);
 
 		if (ret.httpContext != null) {
-			ret.httpContext.getRequest().setAttribute(OPCONTEXT_REQUEST_KEY, ret);
+			ret.httpContext.getRequest().setAttribute(REQUEST_KEY_OPCONTEXT, ret);
 		}
 
 		return ret;
@@ -124,7 +124,7 @@ public class OpContext {
 		OpContext ret = new OpContext(funcExpr, dataArgs, httpParams, false);
 
 		if (ret.httpContext != null) {
-			ret.httpContext.getRequest().setAttribute(OPCONTEXT_REQUEST_KEY, ret);
+			ret.httpContext.getRequest().setAttribute(REQUEST_KEY_OPCONTEXT, ret);
 		}
 
 		return ret;
@@ -154,7 +154,7 @@ public class OpContext {
 		OpContext ret = new OpContext(funcExpr, dataArgs, httpParams, fireLoadEvent);
 
 		if (ret.httpContext != null) {
-			ret.httpContext.getRequest().setAttribute(OPCONTEXT_REQUEST_KEY, ret);
+			ret.httpContext.getRequest().setAttribute(REQUEST_KEY_OPCONTEXT, ret);
 		}
 
 		return ret;
