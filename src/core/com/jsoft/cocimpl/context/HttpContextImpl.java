@@ -1,5 +1,7 @@
 package com.jsoft.cocimpl.context;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,15 +15,16 @@ import org.nutz.mvc.impl.ActionInvoker;
 import com.jsoft.cocimpl.mvc.nutz.CocUrlMappingImpl;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.ExtHttpContext;
+import com.jsoft.cocit.baseentity.security.IUserEntity;
 import com.jsoft.cocit.config.IDSConfig;
 import com.jsoft.cocit.constant.Const;
-import com.jsoft.cocit.entity.security.IUser;
-import com.jsoft.cocit.entityengine.service.SystemService;
-import com.jsoft.cocit.entityengine.service.TenantService;
+import com.jsoft.cocit.dmengine.info.ISystemInfo;
+import com.jsoft.cocit.dmengine.info.ITenantInfo;
 import com.jsoft.cocit.exception.CocConfigException;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.exception.CocSecurityException;
-import com.jsoft.cocit.securityengine.LoginSession;
+import com.jsoft.cocit.securityengine.SecurityVoter;
+import com.jsoft.cocit.securityengine.ILoginSession;
 import com.jsoft.cocit.util.LogUtil;
 import com.jsoft.cocit.util.StringUtil;
 
@@ -37,16 +40,19 @@ public class HttpContextImpl implements ExtHttpContext {
 
 	private ActionInvoker actionInvoker;
 
-	private LoginSession loginSession;
+	private ILoginSession loginSession;
 
-	private TenantService tenant;
+	private ITenantInfo tenant;
 
-	private SystemService system;
+	private ISystemInfo system;
 
 	private String url;
 
 	private Boolean isDevHost;
+
 	private Boolean isLAN;
+
+	private List<SecurityVoter> accessVoters;
 
 	public HttpContextImpl(HttpServletRequest req, HttpServletResponse res) {
 		if (Cocit.me().isUpgradding()) {
@@ -62,13 +68,15 @@ public class HttpContextImpl implements ExtHttpContext {
 		initInvoker();
 
 		// String domain = request.getServerName();
-		// EntityProxyFactory entityProxyFactory = Cocit.me().getEntityProxyFactory();
+		// EntityProxyFactory entityProxyFactory =
+		// Cocit.me().getEntityProxyFactory();
 		//
 		// tenantProxy = entityProxyFactory.getTenant("");
 		// if (tenantProxy == null) {
 		// tenantProxy = entityProxyFactory.getTenant("");
 		// }
 
+		accessVoters = new ArrayList();
 	}
 
 	public void release() {
@@ -91,7 +99,7 @@ public class HttpContextImpl implements ExtHttpContext {
 		return response;
 	}
 
-	public TenantService getLoginTenant() {
+	public ITenantInfo getLoginTenant() {
 		if (tenant == null) {
 			if (loginSession != null)
 				tenant = loginSession.getTenant();
@@ -104,8 +112,8 @@ public class HttpContextImpl implements ExtHttpContext {
 	}
 
 	//
-	// public <T> T getConfigItem(String configKey, T defaultReturn) {
-	// return (T) tenant.getConfigItem(configKey, defaultReturn);
+	// public <T> T getConfigItem(String configCode, T defaultReturn) {
+	// return (T) tenant.getConfigItem(configCode, defaultReturn);
 	// }
 
 	public String[] getParameterValues(String key) {
@@ -124,7 +132,7 @@ public class HttpContextImpl implements ExtHttpContext {
 		/*
 		 * 试图将URI的第一个节点作为租户编号
 		 */
-		String tenantKey = "";
+		String tenantCode = "";
 		if (!StringUtil.isBlank(url)) {
 			actionInvoker = urlMapping.get(actionContext, url);
 			if (actionInvoker == null) {
@@ -139,7 +147,7 @@ public class HttpContextImpl implements ExtHttpContext {
 					url1 = url1.substring(idx);
 					actionInvoker = urlMapping.get(actionContext, url1);
 					if (actionInvoker != null) {// 路径的第一组斜杠(/.../)之间的部分为租户编号
-						tenantKey = url.substring(appIdxFrom, idx + appIdxFrom);
+						tenantCode = url.substring(appIdxFrom, idx + appIdxFrom);
 					}
 				}
 			}
@@ -149,17 +157,21 @@ public class HttpContextImpl implements ExtHttpContext {
 		 * 路径的第一个节点不是应用编号
 		 */
 		try {
-			tenant = Cocit.me().getEntityServiceFactory().getTenant(tenantKey);
+			tenant = Cocit.me().getEntityServiceFactory().getTenant(tenantCode);
 
 			// if (tenant == null) {
 			// throw new CocConfigException("未知应用系统!");
 			// }
 
-			// if (!StringUtil.isEmpty(domain) && !StringUtil.isEmpty(tenant.getDomain()) && !domain.equals(tenant.getDomain())) {
+			// if (!StringUtil.isEmpty(domain) &&
+			// !StringUtil.isEmpty(tenant.getDomain()) &&
+			// !domain.equals(tenant.getDomain())) {
 			// throw new CocSecurityException(404);
 			// }
 
-			// if (!StringUtil.isEmpty(appcode) && !StringUtil.isEmpty(tenant.getKey()) && !appcode.equals(tenant.getKey())) {
+			// if (!StringUtil.isEmpty(appcode) &&
+			// !StringUtil.isEmpty(tenant.getCode()) &&
+			// !appcode.equals(tenant.getCode())) {
 			// throw new CocSecurityException(404);
 			// }
 		} catch (CocConfigException e) {
@@ -239,7 +251,8 @@ public class HttpContextImpl implements ExtHttpContext {
 	// try {
 	// if (!StringUtil.isBlank(w))
 	// if (w.endsWith("%"))
-	// ret = browserWidth * Integer.parseInt(w.substring(0, w.length() - 1)) / 100;
+	// ret = browserWidth * Integer.parseInt(w.substring(0, w.length() - 1)) /
+	// 100;
 	// else
 	// ret = Integer.parseInt(w);
 	// } catch (Throwable e) {
@@ -260,7 +273,8 @@ public class HttpContextImpl implements ExtHttpContext {
 	// try {
 	// if (!StringUtil.isBlank(w)) {
 	// if (w.endsWith("%"))
-	// ret = browserWidth * Integer.parseInt(w.substring(0, w.length() - 1)) / 100;
+	// ret = browserWidth * Integer.parseInt(w.substring(0, w.length() - 1)) /
+	// 100;
 	// else
 	// ret = Integer.parseInt(w);
 	// } else {
@@ -295,7 +309,25 @@ public class HttpContextImpl implements ExtHttpContext {
 			resultUI = StringUtil.toJSArray(StringUtil.toList(resultUI));
 			this.setRequestAttribute("resultUI", resultUI);
 		}
+
 		return resultUI;
+	}
+
+	public List<String> getClientResultUIList() {
+		String paramUi = this.getParameterValue("_resultUI");
+		if (paramUi == null) {
+			return null;
+		}
+		return StringUtil.toList(paramUi);
+	}
+
+	@Override
+	public List<String> getClientParamUIList() {
+		String paramUi = this.getParameterValue("_paramUI");
+		if (paramUi == null) {
+			return null;
+		}
+		return StringUtil.toList(paramUi);
 	}
 
 	public int getClientUIHeight() {
@@ -342,18 +374,18 @@ public class HttpContextImpl implements ExtHttpContext {
 		return this.getBrowserWidth();
 	}
 
-	public String getLoginTenantKey() {
-		TenantService tenant = getLoginTenant();
-		if (tenant != null && tenant.getKey() != null)
-			return tenant.getKey();
+	public String getLoginTenantCode() {
+		ITenantInfo tenant = getLoginTenant();
+		if (tenant != null && tenant.getCode() != null)
+			return tenant.getCode();
 
 		return "";
 	}
 
-	public String getLoginSystemKey() {
-		SystemService system = getLoginSystem();
-		if (system != null && system.getKey() != null)
-			return system.getKey();
+	public String getLoginSystemCode() {
+		ISystemInfo system = getLoginSystem();
+		if (system != null && system.getCode() != null)
+			return system.getCode();
 
 		return "";
 	}
@@ -369,12 +401,12 @@ public class HttpContextImpl implements ExtHttpContext {
 		return (T) Castors.me().castTo(v, classOfParameter);
 	}
 
-	public LoginSession getLoginSession() {
+	public ILoginSession getLoginSession() {
 		return Cocit.me().getSecurityEngine().getLoginSession(request);
 	}
 
-	public IUser getLoginUser() throws CocSecurityException {
-		LoginSession login = this.getLoginSession();
+	public IUserEntity getLoginUser() throws CocSecurityException {
+		ILoginSession login = this.getLoginSession();
 		if (login != null)
 			return login.getUser();
 
@@ -419,7 +451,7 @@ public class HttpContextImpl implements ExtHttpContext {
 	}
 
 	public IDSConfig getLoginTenantDataSource() {
-		TenantService tenant = this.getLoginTenant();
+		ITenantInfo tenant = this.getLoginTenant();
 		if (tenant != null) {
 			return tenant.getDataSource();
 		}
@@ -434,7 +466,7 @@ public class HttpContextImpl implements ExtHttpContext {
 		return "";
 	}
 
-	public SystemService getLoginSystem() {
+	public ISystemInfo getLoginSystem() {
 		if (system == null) {
 			if (loginSession != null)
 				system = loginSession.getSystem();
@@ -449,12 +481,12 @@ public class HttpContextImpl implements ExtHttpContext {
 	public <T> T getConfigItem(String key, T defaultValue) {
 		T ret = null;
 
-		TenantService tenant = this.getLoginTenant();
+		ITenantInfo tenant = this.getLoginTenant();
 		if (tenant != null) {
 			ret = tenant.getConfigItem(key, defaultValue);
 		}
 		if (defaultValue.equals(ret)) {
-			SystemService system = this.getLoginSystem();
+			ISystemInfo system = this.getLoginSystem();
 			if (system != null) {
 				ret = system.getConfigItem(key, defaultValue);
 			}
@@ -463,11 +495,21 @@ public class HttpContextImpl implements ExtHttpContext {
 		return ret == null ? defaultValue : ret;
 	}
 
-	public String getLoginLogKey() {
-		LoginSession login = this.getLoginSession();
+	public String getLoginLogCode() {
+		ILoginSession login = this.getLoginSession();
 		if (login != null)
-			return login.getLoginLogKey();
+			return login.getLoginLogCode();
 
 		return null;
+	}
+
+	@Override
+	public void addAccessVoter(SecurityVoter voter) {
+		this.accessVoters.add(voter);
+	}
+
+	@Override
+	public List<SecurityVoter> getAccessVoters() {
+		return accessVoters;
 	}
 }

@@ -14,10 +14,10 @@ import org.lilystudio.smarty4j.Engine;
 import org.lilystudio.smarty4j.Template;
 import org.lilystudio.smarty4j.TemplateException;
 
-import com.jsoft.cocimpl.ui.UIView;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.ViewNames;
+import com.jsoft.cocit.ui.UIView;
 import com.jsoft.cocit.ui.model.SmartyModel;
 import com.jsoft.cocit.util.FileUtil;
 import com.jsoft.cocit.util.LogUtil;

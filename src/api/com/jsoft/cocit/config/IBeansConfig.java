@@ -2,14 +2,14 @@ package com.jsoft.cocit.config;
 
 import java.util.List;
 
-import com.jsoft.cocimpl.ui.UIViews;
-import com.jsoft.cocit.entityengine.EntityEngine;
-import com.jsoft.cocit.entityengine.PatternAdapters;
+import com.jsoft.cocit.dmengine.IDataModelEngine;
+import com.jsoft.cocit.dmengine.IPatternAdapters;
+import com.jsoft.cocit.ui.UIViews;
 
 public interface IBeansConfig {
 
 	/**
-	 * {@link EntityEngine}所需配置
+	 * {@link IDataModelEngine}所需配置
 	 * 
 	 * @return
 	 */
@@ -32,11 +32,13 @@ public interface IBeansConfig {
 	List<String> getCellViews();
 
 	/**
-	 * {@link PatternAdapters}所需配置
+	 * {@link IPatternAdapters}所需配置
 	 * 
 	 * @return
 	 */
 	List<String> getPatternAdapters();
+
+	List<String> getCommandInterceptors();
 
 	List<String> getEntityGenerators();
 

@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import com.jsoft.cocimpl.ui.UIView;
-import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.exception.CocException;
+import com.jsoft.cocit.ui.UIView;
+import com.jsoft.cocit.ui.UIViews;
 import com.jsoft.cocit.util.LogUtil;
 import com.jsoft.cocit.util.StringUtil;
 
@@ -82,19 +82,55 @@ public abstract class BaseUIModel implements UIModel {
 	}
 
 	public void addResultUI(String htmlID) {
-		this.resultUI.add(htmlID);
+		if (htmlID != null && !this.resultUI.contains(htmlID))
+			this.resultUI.add(htmlID);
+	}
+
+	public void addResultUI(List<String> htmlIDs) {
+		if (htmlIDs != null) {
+			for (String htmlID : htmlIDs) {
+				addResultUI(htmlID);
+			}
+		}
 	}
 
 	public void addParamUI(String htmlID) {
-		this.paramUI.add(htmlID);
+		if (htmlID != null && !this.paramUI.contains(htmlID))
+			this.paramUI.add(htmlID);
 	}
 
-	public void addRefTargetField(String field) {
-		this.fkTargetFields.add(field);
+	public void addParamUI(List<String> htmlIDs) {
+		if (htmlIDs != null) {
+			for (String htmlID : htmlIDs) {
+				addParamUI(htmlID);
+			}
+		}
 	}
 
-	public void addRefField(String field) {
-		this.fkFields.add(field);
+	public void addFkField(String htmlID) {
+		if (htmlID != null && !this.fkFields.contains(htmlID))
+			this.fkFields.add(htmlID);
+	}
+
+	public void addFkField(List<String> htmlIDs) {
+		if (htmlIDs != null) {
+			for (String htmlID : htmlIDs) {
+				addFkField(htmlID);
+			}
+		}
+	}
+
+	public void addFkTargetField(String htmlID) {
+		if (htmlID != null && !this.fkTargetFields.contains(htmlID))
+			this.fkTargetFields.add(htmlID);
+	}
+
+	public void addFkTargetField(List<String> htmlIDs) {
+		if (htmlIDs != null) {
+			for (String htmlID : htmlIDs) {
+				addFkTargetField(htmlID);
+			}
+		}
 	}
 
 	public String getContentType() {
@@ -254,6 +290,10 @@ public abstract class BaseUIModel implements UIModel {
 			this.attributes = attrs;
 	}
 
+	public Object getAttribute(String key) {
+		return this.attributes.getProperty(key);
+	}
+
 	public void putAttribute(String key, String value) {
 		this.attributes.setProperty(key, value);
 	}
@@ -282,8 +322,8 @@ public abstract class BaseUIModel implements UIModel {
 		return fkFields;
 	}
 
-	public void setResultUI(List<String> resultUI) {
-    	this.resultUI = resultUI;
-    }
+	// public void setResultUI(List<String> resultUI) {
+	// this.resultUI = resultUI;
+	// }
 
 }

@@ -45,6 +45,10 @@ public class HtmlTag extends BodyTagSupport {
 		if (uiModel != null) {
 			isAjax = uiModel.isAjax();
 			title = uiModel.getTitle();
+		} else {
+			Boolean isAjaxMode = (Boolean) pageContext.getRequest().getAttribute("_isAjaxMode");
+			if (isAjaxMode != null)
+				isAjax = isAjaxMode;
 		}
 
 		if (!isAjax) {

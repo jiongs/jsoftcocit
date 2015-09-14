@@ -7,14 +7,14 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocimpl.ui.tag.TagUtils;
 import com.jsoft.cocimpl.util.RequestUtil;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.config.IMessageConfig;
 import com.jsoft.cocit.constant.FieldModes;
 import com.jsoft.cocit.constant.ViewKeys;
-import com.jsoft.cocit.entityengine.service.CocFieldService;
+import com.jsoft.cocit.dmengine.info.ICocFieldInfo;
+import com.jsoft.cocit.ui.UIViews;
 import com.jsoft.cocit.ui.model.UIModel;
 import com.jsoft.cocit.ui.model.control.UIField;
 import com.jsoft.cocit.ui.model.control.UIForm;
@@ -362,7 +362,7 @@ public class FieldTag extends BodyTagSupport {
 				viewName = field.getViewName();
 			}
 			UIFieldView view = views.getFieldView(viewName);
-			CocFieldService fieldService = field.getFieldService();
+			ICocFieldInfo fieldService = field.getFieldService();
 			String propName = fieldService.getFieldName();
 			String fieldName = uiForm.getBeanName() + "." + propName;
 			Object fieldValue = ObjectUtil.getValue(bean, propName);

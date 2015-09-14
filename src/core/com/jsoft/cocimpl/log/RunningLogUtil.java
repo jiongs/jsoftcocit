@@ -10,9 +10,9 @@ import java.sql.Timestamp;
 import com.jsoft.cocimpl.orm.dialect.Dialect;
 import com.jsoft.cocimpl.orm.generator.INamingStrategy;
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.baseentity.log.ILogRunningEntity;
 import com.jsoft.cocit.constant.EntityTypes;
-import com.jsoft.cocit.entity.log.IRunningLog;
-import com.jsoft.cocit.orm.ExtOrm;
+import com.jsoft.cocit.orm.IExtOrm;
 import com.jsoft.cocit.orm.NoTransConnCallback;
 
 public class RunningLogUtil {
@@ -36,16 +36,16 @@ public class RunningLogUtil {
 	private RunningLogUtil() {
 	}
 
-	private ExtOrm orm() {
-		return (ExtOrm) Cocit.me().orm();
+	private IExtOrm orm() {
+		return (IExtOrm) Cocit.me().orm();
 	}
 
-	public synchronized void save(final IRunningLog log) throws SQLException {
+	public synchronized void save(final ILogRunningEntity log) throws SQLException {
 		if (dblogHasError) {
 			return;
 		}
 
-		final ExtOrm orm = orm();
+		final IExtOrm orm = orm();
 
 		if (orm != null)
 			orm.run(new NoTransConnCallback() {

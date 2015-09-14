@@ -13,36 +13,55 @@ import java.util.Date;
 
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.ExtHttpContext;
-import com.jsoft.cocit.entity.IExtDataEntity;
-import com.jsoft.cocit.orm.ExtDao;
+import com.jsoft.cocit.baseentity.IDataEntity;
+import com.jsoft.cocit.baseentity.IDataEntityExt;
+import com.jsoft.cocit.baseentity.INamedEntityExt;
+import com.jsoft.cocit.orm.IExtDao;
 import com.jsoft.cocit.orm.generator.Generator;
 import com.jsoft.cocit.orm.mapping.EnColumnMapping;
 import com.jsoft.cocit.orm.mapping.EnMapping;
 import com.jsoft.cocit.util.ClassUtil;
 import com.jsoft.cocit.util.ObjectUtil;
+import com.jsoft.cocit.util.StringUtil;
 
 public class OperationLogGenerator implements Generator {
 
-	public Serializable generate(ExtDao dao, EnMapping entity, EnColumnMapping column, Object dataObject, String... params) {
+	public Serializable generate(IExtDao dao, EnMapping entity, EnColumnMapping column, Object dataObject, String... params) {
+
+		if (!(dataObject instanceof IDataEntity)) {
+			return null;
+		}
 
 		ExtHttpContext ctx = (ExtHttpContext) Cocit.me().getHttpContext();
 
-		if (dataObject instanceof IExtDataEntity) {
-			IExtDataEntity data = (IExtDataEntity) dataObject;
+		if (dataObject instanceof IDataEntityExt) {
+			IDataEntityExt data = (IDataEntityExt) dataObject;
 			Long id = data.getId();
 			if (id == null || id <= 0) {
 				data.setCreatedDate(new Date());
 
 				if (ctx != null) {
 					data.setCreatedUser(ctx.getLoginUsername());
-					data.setCreatedOpLog(ctx.getLoginLogKey());
+					data.setCreatedOpLog(ctx.getLoginLogCode());
 				}
 			} else {
 
 				data.setUpdatedDate(new Date());
 				if (ctx != null) {
 					data.setUpdatedUser(ctx.getLoginUsername());
-					data.setUpdatedOpLog(ctx.getLoginLogKey());
+					data.setUpdatedOpLog(ctx.getLoginLogCode());
+				}
+			}
+
+			if (dataObject instanceof INamedEntityExt) {
+				INamedEntityExt namedData = (INamedEntityExt) data;
+				String name = namedData.getName();
+				if (StringUtil.hasContent(name)) {
+					namedData.setNamePinyin(StringUtil.toPinyinFirstChar(name).toUpperCase());
+				}
+				String nameAbbr = namedData.getNameAbbr();
+				if (StringUtil.hasContent(nameAbbr)) {
+					namedData.setNameAbbrPinyin(StringUtil.toPinyinFirstChar(nameAbbr).toUpperCase());
 				}
 			}
 

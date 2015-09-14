@@ -6,22 +6,23 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.jsoft.cocimpl.ui.UIView;
-import com.jsoft.cocimpl.ui.UIViews;
-import com.jsoft.cocimpl.ui.view.BaseModelView;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
+import com.jsoft.cocit.baseentity.IDataEntity;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.FieldModes;
 import com.jsoft.cocit.constant.ViewNames;
-import com.jsoft.cocit.entityengine.service.CocActionService;
-import com.jsoft.cocit.entityengine.service.CocFieldService;
+import com.jsoft.cocit.dmengine.info.ICocActionInfo;
+import com.jsoft.cocit.dmengine.info.ICocFieldInfo;
 import com.jsoft.cocit.exception.CocException;
+import com.jsoft.cocit.ui.UIView;
+import com.jsoft.cocit.ui.UIViews;
 import com.jsoft.cocit.ui.model.control.UIActions;
 import com.jsoft.cocit.ui.model.control.UIField;
 import com.jsoft.cocit.ui.model.control.UIFieldGroup;
 import com.jsoft.cocit.ui.model.control.UIForm;
 import com.jsoft.cocit.ui.model.datamodel.UIFormData;
+import com.jsoft.cocit.ui.view.BaseModelView;
 import com.jsoft.cocit.ui.view.UIFieldView;
 import com.jsoft.cocit.util.ExceptionUtil;
 import com.jsoft.cocit.util.ExprUtil;
@@ -32,31 +33,6 @@ import com.jsoft.cocit.util.Tree.Node;
 
 public abstract class UIFormViews {
 
-	/**
-	 * 生成工作流新建表单
-	 * 
-	 * @author Ji Yongshan
-	 * 
-	 */
-	public static class WorkflowNewFormView extends BaseModelView<UIForm> {
-		public String getName() {
-			return ViewNames.VIEW_FORM_WF_NEW;
-		}
-
-		public void render(Writer out, UIForm model) throws Exception {
-			Cocit coc = Cocit.me();
-			UIViews views = coc.getViews();
-			
-			write(out, "<div class=\"jCocit-ui jCocit-tabs tabs2\" style=\"\">");
-			write(out, "<div title=\"表单数据\" style=\"padding:10px\">");
-			
-			write(out, "</div>");
-			write(out, "<div title=\"流程日志\" style=\"padding:10px\"></div>");
-			write(out, "<div title=\"流程图\" style=\"padding:10px\"></div>");
-			write(out, "</div>");
-		}
-	}
-
 	public static class UIFormButtonsView extends BaseModelView<UIForm> {
 		public String getName() {
 			return ViewNames.VIEW_FORM_BUTTONS;
@@ -66,18 +42,24 @@ public abstract class UIFormViews {
 			String resultUI = Cocit.me().getHttpContext().getClientResultUI();
 			String uiToken = Cocit.me().getHttpContext().getClientUIToken();
 
+			Object obj = model.getDataObject();
+			Long id = null;
+			if (obj instanceof IDataEntity) {
+				id = ((IDataEntity) obj).getId();
+			}
 			UIActions actions = model.getActions();
 
 			// if (!model.isAjax()) {
 			String formButtonsCSS = Cocit.me().getConfig().getViewConfig().getFormButtonsCSS();
-			write(out, "<div class=\"%s\"><div>", formButtonsCSS);
 			// write(out, "<div class=\"entityButtons\">");
 			String buttonStyle = Cocit.me().getConfig().getViewConfig().getButtonStyle();
 			if (actions != null && actions.getData() != null && actions.getData().getChildren().size() > 0) {
+				write(out, "<div class=\"%s\"><div>", formButtonsCSS);
+
 				List<Node> nodes = actions.getData().getChildren();
 				for (Node node : nodes) {
 
-					CocActionService action = (CocActionService) node.getReferObj();
+					ICocActionInfo action = (ICocActionInfo) node.getReferObj();
 					if (!ExprUtil.match(model.getDataObject(), action.getWhere())) {
 						continue;
 					}
@@ -123,30 +105,59 @@ public abstract class UIFormViews {
 						append(options, ", warnMessage: '%s'", msg.replace("'", ""));
 
 					if ("button".equals(buttonStyle)) {
-						write(out, "<input type=\"submit\" data-options=\"%s\" onclick=\"jCocit.entity.doSubmitForm(this); return false;\" value=\"%s\" />", options, node.getName());
+						write(out, "<input type=\"submit\" data-options=\"%s\" onclick=\"jCocit.util.submitForm(this, %s, {}, function(){return %s;}); return false;\" value=\"%s\" />", //
+						        options, //
+						        resultUI, //
+						        ((id == null || id == 0) ? "false" : "true"), //
+						        node.getName()//
+						);
 					} else {
-						write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"%s, onClick:jCocit.entity.doSubmitForm\">%s</a>", options, node.getName());
+						write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"%s, onClick:jCocit.util.submitForm\">%s</a>", options, node.getName());
 					}
 				}
-			} else {
+
+				if (model.isAutoButtons()) {
+
+					if ("button".equals(buttonStyle)) {
+						if (model.getActionID().startsWith("v")) {
+							write(out, "<input type=\"submit\" onclick=\"jCocit.util.closeWindow(this, %s); return false;\" value=\"关闭\" />", resultUI);
+						} else {
+							write(out, "<input type=\"submit\" onclick=\"jCocit.util.submitForm(this, %s, {}, function(){return %s;});return false;\" value=\"提交\" />", resultUI, ((id == null || id == 0) ? "false" : "true"));
+							write(out, "<input type=\"submit\" onclick=\"jCocit.util.closeWindow(this, %s); return false;\" value=\"关闭\" />", resultUI);
+						}
+					} else {
+						if (model.getActionID().startsWith("v")) {
+							write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"resultUI: %s, onClick: jCocit.util.closeWindow\">关闭</a>", resultUI);
+						} else {
+							write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"resultUI: %s, onClick: jCocit.util.submitForm\">提交</a>", resultUI);
+							write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"resultUI: %s, onClick: jCocit.util.closeWindow\">关闭</a>", resultUI);
+						}
+					}
+
+				}
+
+				write(out, "</div></div>");
+			} else if (model.isAutoButtons()) {
+				write(out, "<div class=\"%s\"><div>", formButtonsCSS);
+
 				if ("button".equals(buttonStyle)) {
 					if (model.getActionID().startsWith("v")) {
 						write(out, "<input type=\"submit\" onclick=\"jCocit.util.closeWindow(this, %s); return false;\" value=\"关闭\" />", resultUI);
 					} else {
-						write(out, "<input type=\"submit\" onclick=\"jCocit.util.submitForm(this, %s);return false;\" value=\"提交\" />", resultUI);
-						write(out, "<input type=\"submit\" onclick=\"jCocit.util.closeWindow(this, %s); return false;\" value=\"取消\" />", resultUI);
+						write(out, "<input type=\"submit\" onclick=\"jCocit.util.submitForm(this, %s, {}, function(){return %s;});return false;\" value=\"提交\" />", resultUI, ((id == null || id == 0) ? "false" : "true"));
+						write(out, "<input type=\"submit\" onclick=\"jCocit.util.closeWindow(this, %s); return false;\" value=\"关闭\" />", resultUI);
 					}
 				} else {
 					if (model.getActionID().startsWith("v")) {
 						write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"resultUI: %s, onClick: jCocit.util.closeWindow\">关闭</a>", resultUI);
 					} else {
 						write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"resultUI: %s, onClick: jCocit.util.submitForm\">提交</a>", resultUI);
-						write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"resultUI: %s, onClick: jCocit.util.closeWindow\">取消</a>", resultUI);
+						write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-button\"  data-options=\"resultUI: %s, onClick: jCocit.util.closeWindow\">关闭</a>", resultUI);
 					}
 				}
-			}
 
-			write(out, "</div></div>");
+				write(out, "</div></div>");
+			}
 		}
 	}
 
@@ -172,7 +183,9 @@ public abstract class UIFormViews {
 			/*
 			 * 创建 FORM 标签
 			 */
-			write(out, "<form class=\"entityForm\" action=\"%s\" onsubmit=\"return false;\">", model.getSubmitUrl());
+			if (!model.isIgnoreFormTag()) {
+				write(out, "<form class=\"entityForm\" action=\"%s\" onsubmit=\"return false;\">", model.getSubmitUrl());
+			}
 
 			/*
 			 * ID字段
@@ -182,7 +195,34 @@ public abstract class UIFormViews {
 			List<List<String>> fields = model.getFields();
 			List<String> batchFields = model.getBatchFields();
 			if ((fields == null || fields.size() == 0) && (batchFields == null || batchFields.size() == 0)) {
-				renderAutoLayoutFields(out, model);
+
+				boolean autoLayout = true;
+
+				List<String> groupKeys = model.getFieldGroups();
+				if (groupKeys != null && groupKeys.size() > 0) {
+					for (String groupKey : groupKeys) {
+						UIFieldGroup group = model.getFieldGroup(groupKey);
+						if (group.getFields() != null && group.getFields().size() > 0) {
+							autoLayout = false;
+							break;
+						}
+					}
+
+					if (!autoLayout) {
+						for (String groupKey : groupKeys) {
+							UIFieldGroup group = model.getFieldGroup(groupKey);
+							write(out, "<div class=\"entityGroup\"><div class=\"entityGroupHeader\">%s</div>", group.getTitle());
+
+							renderFieldsWithLeftLabel(out, model, group.getFields());
+
+							write(out, "</div>");// end entityGroup
+						}
+					}
+				}
+
+				if (autoLayout)
+					renderAutoLayoutFields(out, model);
+
 			} else {
 				renderFieldsWithLeftLabel(out, model, fields);
 				renderFieldsWithTopLabel(out, model, model.getBeanName(), batchFields);
@@ -192,7 +232,9 @@ public abstract class UIFormViews {
 
 			buttonsView.render(out, model);
 
-			write(out, "</form>");
+			if (!model.isIgnoreFormTag()) {
+				write(out, "</form>");
+			}
 		}
 	}
 
@@ -297,6 +339,11 @@ public abstract class UIFormViews {
 		if (fields == null || fields.size() == 0)
 			return;
 
+		boolean hiddenLabel = false;
+		if (fields.size() == 1) {
+			hiddenLabel = true;
+		}
+
 		UIViews views = Cocit.me().getViews();
 		Object dataObject = model.getDataObject();
 
@@ -307,8 +354,14 @@ public abstract class UIFormViews {
 		UIFieldView view;
 		Object fieldValue;
 		String fieldName;
-		int fieldCount, colspan, rowspan, mode;
-		int fieldRowMaxSize = model.getRowFieldsSize();
+		int fieldCount, colspan, rowspan, mode, tmpSize;
+		int fieldRowMaxSize = 0;
+		for (List<String> rows : fields) {
+			tmpSize = rows.size();
+			if (fieldRowMaxSize < tmpSize) {
+				fieldRowMaxSize = tmpSize;
+			}
+		}
 
 		write(out, "<table valign=\"top\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">");
 
@@ -329,7 +382,7 @@ public abstract class UIFormViews {
 				UIFieldGroup group = model.getFieldGroup(groupName);
 				if (group != null) {
 					write(out, "</tr><td class=\"entityGroup\" colspan=\"%s\"><div class=\"entityGroupHeader\">%s</div></td><tr>", //
-					        group.getTitle(),//
+					        group.getTitle(), //
 					        fieldRowMaxSize * 2//
 					);
 				}
@@ -342,11 +395,9 @@ public abstract class UIFormViews {
 			for (String propName : rowFields) {
 				fieldCount++;
 
-				if (fieldCount == 1) {
-					idx = propName.indexOf(":");
-					if (idx > -1) {
-						propName = propName.substring(idx + 1);
-					}
+				idx = propName.indexOf(":");
+				if (idx > -1) {
+					propName = propName.substring(0, idx);
 				}
 
 				uiField = model.getField(propName);
@@ -365,18 +416,20 @@ public abstract class UIFormViews {
 				/*
 				 * 字段标签
 				 */
-				if (rowspan > 1) {
-					write(out, "<th class=\"entityFieldHeader\" rowspan=\"%s\">", rowspan);
-					if (FieldModes.isM(mode)) {
-						write(out, "<span class=\"icon-mode-M\"></span>");
+				if (!hiddenLabel) {
+					if (rowspan > 1) {
+						write(out, "<th class=\"entityFieldHeader\" rowspan=\"%s\">", rowspan);
+						if (FieldModes.isM(mode)) {
+							write(out, "<span class=\"icon-mode-M\"></span>");
+						}
+						write(out, "%s</th>", uiField.getTitle());
+					} else {
+						write(out, "<th class=\"entityFieldHeader\">");
+						if (FieldModes.isM(mode)) {
+							write(out, "<span class=\"icon-mode-M\"></span>");
+						}
+						write(out, "%s</th>", uiField.getTitle());
 					}
-					write(out, "%s</th>", uiField.getTitle());
-				} else {
-					write(out, "<th class=\"entityFieldHeader\">");
-					if (FieldModes.isM(mode)) {
-						write(out, "<span class=\"icon-mode-M\"></span>");
-					}
-					write(out, "%s</th>", uiField.getTitle());
 				}
 
 				/*
@@ -425,7 +478,7 @@ public abstract class UIFormViews {
 		 * 定义临时变量
 		 */
 		UIFieldView view;
-		CocFieldService fieldService;
+		ICocFieldInfo fieldService;
 		Object fieldValue;
 		String fieldName, propName;
 		int columnCount = 0, colspan, mode;
@@ -434,8 +487,8 @@ public abstract class UIFormViews {
 		/*
 		 * Render 隐藏字段
 		 */
-		for (String groupKey : model.getFieldGroups()) {
-			UIFieldGroup group = model.getFieldGroup(groupKey);
+		for (String groupCode : model.getFieldGroups()) {
+			UIFieldGroup group = model.getFieldGroup(groupCode);
 			for (UIField field : group.getHiddenFields()) {
 				fieldService = field.getFieldService();
 				propName = fieldService.getFieldName();
@@ -453,13 +506,15 @@ public abstract class UIFormViews {
 		 * 创建 FieldGroup
 		 */
 		write(out, "<div class=\"entityGroups\">");
-		for (String groupKey : model.getFieldGroups()) {
-			UIFieldGroup group = model.getFieldGroup(groupKey);
+		for (String groupCode : model.getFieldGroups()) {
+			UIFieldGroup group = model.getFieldGroup(groupCode);
 			List<UIField> visibleFields = group.getVisibleFields();
 
 			// 该分组中没有需要显示的字段
 			if (visibleFields.size() == 0)
 				continue;
+
+			columnCount = 0;
 
 			/*
 			 * FieldGroup Title；Table: for fields
@@ -469,7 +524,7 @@ public abstract class UIFormViews {
 
 			for (UIField field : visibleFields) {
 				fieldService = field.getFieldService();
-				if (StringUtil.hasContent(fieldService.getFkDependFieldKey())) {
+				if (StringUtil.hasContent(fieldService.getFkDependFieldCode())) {
 					continue;
 				}
 
@@ -575,14 +630,14 @@ public abstract class UIFormViews {
 			 */
 			StringBuffer data = new StringBuffer();
 			data.append('{');
-			CocFieldService entityField;
+			ICocFieldInfo entityField;
 			String propName;
 			Object fieldValue;
 			Object formData = model.getData();
 			String strFieldValue;
 			data.append("\"id\": ").append(ObjectUtil.getValue(formData, Const.F_ID));
-			for (String groupKey : model.getModel().getFieldGroups()) {
-				UIFieldGroup group = model.getModel().getFieldGroup(groupKey);
+			for (String groupCode : model.getModel().getFieldGroups()) {
+				UIFieldGroup group = model.getModel().getFieldGroup(groupCode);
 				List<UIField> fields = new ArrayList();
 				fields.addAll(group.getHiddenFields());
 				fields.addAll(group.getVisibleFields());

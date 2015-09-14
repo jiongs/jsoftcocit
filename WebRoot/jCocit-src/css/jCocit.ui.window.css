@@ -218,11 +218,11 @@
 }
 .window-simple .WdB > .PnBC {
 	border: 0;
-	margin: 8px;
+	margin: 4px 8px 8px 8px;
 	background-color: transparent;
 }
 
-.window-noheader .PnHL,.window-noheader .PnHT,.window-noheader .PnHB {
+.window-noheader .PnHL, .window-noheader .PnHT, .window-noheader .PnHB {
 	display: none;
 }
 .window-messager .WdB{

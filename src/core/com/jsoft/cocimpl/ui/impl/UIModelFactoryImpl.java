@@ -8,36 +8,39 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.HttpContext;
+import com.jsoft.cocit.baseentity.ITreeEntity;
+import com.jsoft.cocit.baseentity.ITreeObjectEntity;
 import com.jsoft.cocit.config.ICocConfig;
+import com.jsoft.cocit.constant.CocUrl;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.FieldModes;
 import com.jsoft.cocit.constant.OpCodes;
 import com.jsoft.cocit.constant.StatusCodes;
-import com.jsoft.cocit.constant.UrlAPI;
 import com.jsoft.cocit.constant.ViewNames;
-import com.jsoft.cocit.entityengine.service.CocActionService;
-import com.jsoft.cocit.entityengine.service.CocEntityService;
-import com.jsoft.cocit.entityengine.service.CocFieldService;
-import com.jsoft.cocit.entityengine.service.CocGroupService;
-import com.jsoft.cocit.entityengine.service.CuiEntityService;
-import com.jsoft.cocit.entityengine.service.CuiFormActionService;
-import com.jsoft.cocit.entityengine.service.CuiFormFieldService;
-import com.jsoft.cocit.entityengine.service.CuiFormService;
-import com.jsoft.cocit.entityengine.service.CuiGridFieldService;
-import com.jsoft.cocit.entityengine.service.CuiGridService;
-import com.jsoft.cocit.entityengine.service.SystemMenuService;
+import com.jsoft.cocit.dmengine.info.ICocActionInfo;
+import com.jsoft.cocit.dmengine.info.ICocEntityInfo;
+import com.jsoft.cocit.dmengine.info.ICocFieldInfo;
+import com.jsoft.cocit.dmengine.info.ICocGroupInfo;
+import com.jsoft.cocit.dmengine.info.ICuiEntityInfo;
+import com.jsoft.cocit.dmengine.info.ICuiFormActionInfo;
+import com.jsoft.cocit.dmengine.info.ICuiFormFieldInfo;
+import com.jsoft.cocit.dmengine.info.ICuiFormInfo;
+import com.jsoft.cocit.dmengine.info.ICuiGridFieldInfo;
+import com.jsoft.cocit.dmengine.info.ICuiGridInfo;
+import com.jsoft.cocit.dmengine.info.ISystemMenuInfo;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.orm.expr.CndExpr;
 import com.jsoft.cocit.ui.UIModelFactory;
 import com.jsoft.cocit.ui.model.control.UIActions;
 import com.jsoft.cocit.ui.model.control.UIEntities;
 import com.jsoft.cocit.ui.model.control.UIEntity;
-import com.jsoft.cocit.ui.model.control.UIEntityContainer;
 import com.jsoft.cocit.ui.model.control.UIField;
 import com.jsoft.cocit.ui.model.control.UIFieldGroup;
 import com.jsoft.cocit.ui.model.control.UIForm;
 import com.jsoft.cocit.ui.model.control.UIGrid;
 import com.jsoft.cocit.ui.model.control.UIList;
+import com.jsoft.cocit.ui.model.control.UIPanel;
 import com.jsoft.cocit.ui.model.control.UISearchBox;
 import com.jsoft.cocit.ui.model.control.UITree;
 import com.jsoft.cocit.ui.model.datamodel.UIGridData;
@@ -64,21 +67,21 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UIEntities getMains(SystemMenuService menuService) {
+	public UIEntities getMains(ISystemMenuInfo menuService) {
 		if (menuService == null)
 			throw new CocException("未知系统菜单！");
 
 		/*
 		 * 创建模块 Grid
 		 */
-		CocEntityService entityService = menuService.getCocEntity();
+		ICocEntityInfo mainEntityInfo = menuService.getCocEntity();
 
 		/*
 		 * 获取需要引用的主界面
 		 */
-		String cuiKey = menuService.getUiView();
-		if (StringUtil.isBlank(cuiKey)) {
-			cuiKey = entityService.getUiView();
+		String cuiCode = menuService.getUiView();
+		if (StringUtil.isBlank(cuiCode)) {
+			cuiCode = mainEntityInfo.getUiView();
 		}
 
 		/*
@@ -86,7 +89,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		 */
 		List<String> cols = null;
 		List<String> rows = null;
-		CuiEntityService cui = entityService.getCuiEntity(cuiKey);
+		ICuiEntityInfo cui = mainEntityInfo.getCuiEntity(cuiCode);
 		if (cui != null) {
 			cols = cui.getColsList();
 			rows = cui.getRowsList();
@@ -95,73 +98,85 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		/*
 		 * 计算实体UI
 		 */
-		UIEntity uiEntity = getMain(menuService, entityService, false);
+		UIEntity mainUiEntity = getMain(menuService, mainEntityInfo, false);
+		UIGrid mainGrid = mainUiEntity.getGrid();
 
 		/*
 		 * 创建模块 Panels
 		 */
-		UIEntities panels = new UIEntities()//
+		UIEntities subPanels = new UIEntities()//
 		        .setId(makeHtmlID(UIEntities.class, menuService.getId()));
-		panels.setRows(rows);
-		panels.setCols(cols);
+		subPanels.setRows(rows);
+		subPanels.setCols(cols);
 
 		/*
-		 * 创建主模块 Panel
+		 * 创建主模块 Panel：通过URL异步加载主表界面
 		 */
-		UIEntityContainer panel = UIEntityContainer.make(uiEntity)//
-		        .setPanelUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_GET_MAIN_UI, menuService, entityService) + "/1/1")//
-		        .setAjax(true)//
-		        .setId(makeHtmlID(UIEntityContainer.class, menuService.getId()))//
+		// UIPanel panel = UIPanel.make(mainUiEntity)//
+		// .setPanelUrl(MVCUtil.makeUrl(CocUrl.ENTITY_GET_MAIN_UI, menuService, mainEntityInfo) + "/1/1")//
+		// .setAjax(true)//
+		// .setId(makeHtmlID(UIPanel.class, menuService.getId()))//
+		// .setTitle(menuService.getName())//
+		// ;
+		UIPanel panel = UIPanel.make(mainUiEntity)//
+		        // .setPanelUrl(MVCUtil.makeUrl(CocUrl.ENTITY_GET_MAIN_UI, menuService, mainEntityInfo) + "/1/1")//
+		        // .setAjax(true)//
+		        .setId(makeHtmlID(UIPanel.class, menuService.getId()))//
 		        .setTitle(menuService.getName())//
-		;
+		        ;
 
 		/*
 		 * 添加主模块 Panel 到 Panels
 		 */
-		panels.addPanel(panel);
+		subPanels.addPanel(panel);
 
 		/*
 		 * 创建子模块 Panel
 		 */
-		List<CocEntityService> subModuleServices = entityService.getSubEntities();
-		if (subModuleServices != null) {
-			for (CocEntityService subModule : subModuleServices) {
+		List<ICocEntityInfo> subEntityInfos = mainEntityInfo.getSubEntities();
+		if (subEntityInfos != null) {
+			for (ICocEntityInfo subEntityInfo : subEntityInfos) {
 
-				CocFieldService subModuleFkField = entityService.getFkFieldOfSubEntity(subModule.getKey());
+				ICocFieldInfo subModuleFkField = mainEntityInfo.getFkFieldOfSubEntity(subEntityInfo.getCode());
 
 				/*
 				 * 创建子模块 Panel
 				 */
-				panel = UIEntityContainer.make(null)//
-				        .setPanelUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_GET_MAIN_UI, menuService, subModule) + "/1/1")//
+				panel = UIPanel.make(MVCUtil.makeUrl(CocUrl.ENTITY_GET_MAIN_UI, menuService, subEntityInfo) + "/1/1")//
 				        .set("fkField", subModuleFkField.getFieldName())//
-				        .set("fkTargetField", subModuleFkField.getFkTargetFieldKey())//
-				        .setId(makeHtmlID(UIEntityContainer.class, subModule.getId()))//
-				        .setTitle(subModule.getName())//
-				;
+				        .set("fkTargetField", subModuleFkField.getFkTargetFieldCode())//
+				        .setId(makeHtmlID(UIPanel.class, subEntityInfo.getId()))//
+				        .setTitle(subEntityInfo.getName())//
+				        ;
+
+				/*
+				 * 设置主从表之间的关系：即 paramUI 和 resultUI
+				 */
+				mainGrid.addResultUI(makeHtmlID(UIGrid.class, subEntityInfo.getId()));
+				panel.addParamUI(makeHtmlID(UIGrid.class, mainEntityInfo.getId()));
 
 				/*
 				 * 添加子模块 Panel 到 Panels
 				 */
-				panels.addPanel(panel);
+				subPanels.addPanel(panel);
 			}
 		}
 
 		/*
 		 * 返回
 		 */
-		return panels;
+		return subPanels;
 	}
 
 	@Override
-	public UIEntity getMain(SystemMenuService menuService, CocEntityService entityService, boolean usedToSubEntity) {
+	public UIEntity getMain(ISystemMenuInfo menuService, ICocEntityInfo entityService, boolean usedToSubEntity) {
 
 		/*
 		 * 获取需要引用的主界面
 		 */
-		String cuiKey = menuService.getUiView();
-		if (StringUtil.isBlank(cuiKey)) {
-			cuiKey = entityService.getUiView();
+		String cuiCode = menuService.getUiView();
+		if (StringUtil.isBlank(cuiCode)) {
+			cuiCode = entityService.getUiView();
 		}
 
 		/*
@@ -171,7 +186,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		byte actionsPos = 0;
 		byte searchBoxPos = 0;
 		String uiView = null;
-		CuiEntityService cui = entityService.getCuiEntity(cuiKey);
+		ICuiEntityInfo cui = entityService.getCuiEntity(cuiCode);
 		if (cui != null) {
 			title = cui.getName();
 			actionsPos = cui.getActionsPos();
@@ -213,7 +228,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		        .setSearchBox(searchBox)//
 		        .setId(makeHtmlID(UIEntity.class, entityService.getId()))//
 		        .setTitle(title == null ? entityService.getName() : title)//
-		;
+		        ;
 		model.setViewName(uiView);
 		model.setActionsPos(actionsPos);
 		if (searchBoxPos == 0) {
@@ -225,14 +240,33 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		/*
 		 * 检查当前GRID是否支持行编辑
 		 */
-		Node insertNode = actions.findAction("opCode", "" + OpCodes.OP_INSERT_GRID_ROW);
-		Node updateNode = actions.findAction("opCode", "" + OpCodes.OP_UPDATE_GRID_ROW);
-		if (insertNode != null) {
-			grid.setDataAddUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_SAVE, menuService, entityService, insertNode.getId()));
+		if (grid.isSingleRowEdit()) {
+			Node opAdd = actions.findNode("opCode", "" + OpCodes.OP_INSERT_GRID_ROW);
+			Node opEdit = actions.findNode("opCode", "" + OpCodes.OP_UPDATE_GRID_ROW);
+			if (opEdit == null) {
+				UIActions rowActions = grid.getRowActions();
+				if (rowActions != null) {
+					opEdit = rowActions.findNode("opCode", "" + OpCodes.OP_UPDATE_GRID_ROW);
+				}
+			}
+			if (opEdit != null) {
+				grid.setDataEditUrl(MVCUtil.makeUrl(CocUrl.ENTITY_SAVE, menuService, entityService, opEdit.getId()));
+			}
+			if (opAdd != null) {
+				grid.setDataAddUrl(MVCUtil.makeUrl(CocUrl.ENTITY_SAVE, menuService, entityService, opAdd.getId()));
+			}
 		}
-		if (updateNode != null) {
-			grid.setDataEditUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_SAVE, menuService, entityService, updateNode.getId()));
-			// updateNode.setStatusCode("" + StatusCodes.STATUS_CODE_DISABLED);
+
+		/*
+		 * 如果GRID支持行编辑，且支持多行编辑，则主界面即为表单
+		 */
+		Node opSave = actions.findNode("opCode", "" + OpCodes.OP_SAVE_GRID_ROWS);
+		if (opSave != null) {
+			model.setForm(true);
+			grid.putAttribute("name", "entity");
+			if (filter != null) {
+				filter.putAttribute("name", "entity");
+			}
 		}
 
 		/*
@@ -257,25 +291,25 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UISearchBox getSearchBox(SystemMenuService menuService, CocEntityService entityService) {
+	public UISearchBox getSearchBox(ISystemMenuInfo menuService, ICocEntityInfo entityService) {
 		return getSearchBox(menuService, entityService, null);
 	}
 
 	@Override
-	public UISearchBox getSearchBox(SystemMenuService menuService, CocEntityService entityService, List<String> queryFields) {
+	public UISearchBox getSearchBox(ISystemMenuInfo menuService, ICocEntityInfo entityService, List<String> queryFields) {
 
 		/*
 		 * 获取需要引用的主界面
 		 */
-		String cuiKey = menuService.getUiView();
-		if (StringUtil.isBlank(cuiKey)) {
-			cuiKey = entityService.getUiView();
+		String cuiCode = menuService.getUiView();
+		if (StringUtil.isBlank(cuiCode)) {
+			cuiCode = entityService.getUiView();
 		}
 
 		/*
 		 * 计算UI属性
 		 */
-		CuiEntityService cui = entityService.getCuiEntity(cuiKey);
+		ICuiEntityInfo cui = entityService.getCuiEntity(cuiCode);
 		if (queryFields == null && cui != null) {
 			queryFields = cui.getQueryFieldsList();
 		}
@@ -287,14 +321,14 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			UISearchBox model = new UISearchBox()//
 			        // .setData(options)//
 			        .setId(makeHtmlID(UISearchBox.class, entityService.getId()))//
-			;
+			        ;
 
 			/*
 			 * 创建检索框模型
 			 */
 			// List<Option> options = new ArrayList();
-			List<CocFieldService> fields = entityService.getFieldsOfGrid(queryFields);
-			for (CocFieldService fieldService : fields) {
+			List<ICocFieldInfo> fields = entityService.getFieldsOfGrid(queryFields);
+			for (ICocFieldInfo fieldService : fields) {
 				model.addField(this.makeField(menuService, fieldService, null));
 			}
 
@@ -308,37 +342,43 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UIGrid getGrid(SystemMenuService menuService, CocEntityService entityService) {
+	public UIGrid getGrid(ISystemMenuInfo menuService, ICocEntityInfo entityService) {
 		return getGrid(menuService, entityService, null, null);
 	}
 
 	@Override
-	public UIGrid getGrid(SystemMenuService menuService, CocEntityService entityService, List<String> fieldList, List<String> rowActionList) {
+	public UIGrid getGrid(ISystemMenuInfo menuService, ICocEntityInfo entityService, List<String> specifiedFieldList, List<String> specifiedRowActionList) {
 
 		/*
 		 * 获取需要引用的主界面
 		 */
-		String cuiKey = menuService.getUiView();
-		if (StringUtil.isBlank(cuiKey)) {
-			cuiKey = entityService.getUiView();
+		String cuiCode = menuService.getUiView();
+		if (StringUtil.isBlank(cuiCode)) {
+			cuiCode = entityService.getUiView();
 		}
 
 		/*
 		 * 计算UI属性
 		 */
-		CuiEntityService cui = entityService.getCuiEntity(cuiKey);
+		ICuiEntityInfo cui = entityService.getCuiEntity(cuiCode);
 
-		CuiGridService cuiGrid = null;
+		ICuiGridInfo cuiGrid = null;
 		List<String> frozenFieldNames = null;
 		List<String> fieldNames = null;
+		List<String> fieldList = null;
+		List<String> rowActionList = null;
 		if (cui != null) {
 			cuiGrid = cui.getCuiGrid();
-			if (cuiGrid != null && (fieldList == null || fieldList.size() == 0)) {
-				fieldList = new ArrayList();
-				frozenFieldNames = cuiGrid.getFrozenFieldsList();
-				fieldList.addAll(frozenFieldNames);
-				fieldNames = cuiGrid.getFieldsList();
-				fieldList.addAll(fieldNames);
+			if ((specifiedFieldList == null)) {
+				if (cuiGrid != null) {
+					fieldList = new ArrayList();
+					frozenFieldNames = cuiGrid.getFrozenFieldsList();
+					fieldList.addAll(frozenFieldNames);
+					fieldNames = cuiGrid.getFieldsList();
+					fieldList.addAll(fieldNames);
+				}
+			} else {
+				fieldList = specifiedFieldList;
 			}
 		}
 
@@ -348,7 +388,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		UIGrid model = new UIGrid()//
 		        .setId(makeHtmlID(UIGrid.class, entityService.getId()))//
 		        .setTitle(entityService.getName())//
-		;
+		        ;
 
 		/*
 		 * 计算 Grid 属性
@@ -389,16 +429,33 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			model.setViewName(cuiGrid.getUiView());
 			model.setSingleRowEdit(cuiGrid.isSingleRowEdit());
 
-			if (rowActionList == null || rowActionList.size() == 0) {
+			if (specifiedRowActionList == null) {
 				String rowActions = cuiGrid.getRowActions();
 				rowActionList = StringUtil.toList(rowActions, "|,， ");
+			} else {
+				rowActionList = specifiedRowActionList;
 			}
+		}
+
+		/*
+		 * 计算GRID行“添加、编辑”操作
+		 */
+		ICocActionInfo opAdd = entityService.getActionByOpCode(OpCodes.OP_INSERT_GRID_ROW);
+		ICocActionInfo opEdit = entityService.getActionByOpCode(OpCodes.OP_UPDATE_GRID_ROW);
+		String opAddGridRow = "";
+		String opEditGridRow = "";
+		if (opAdd != null) {
+			opAddGridRow = opAdd.getCode();
+			model.setDefaultValuesForAddRow(opAdd.getDefaultValues());
+		}
+		if (opEdit != null) {
+			opEditGridRow = opEdit.getCode();
 		}
 
 		/*
 		 * 计算行操作
 		 */
-		if (rowActionList != null && rowActionList.size() > 0) {
+		if (rowActionList != null) {
 			Tree data = getActionsData(menuService, entityService, null, null, rowActionList);
 			UIActions rowUIActions = new UIActions().setData(data).setId(makeHtmlID(UIActions.class, entityService.getId()));
 
@@ -408,13 +465,14 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			if (cuiGrid != null) {
 				model.setRowActionsPos(cuiGrid.getRowActionsPos());
 			}
+
 		}
 
 		/*
 		 * 创建 Grid 列
 		 */
-		List<CocFieldService> fields = entityService.getFieldsOfGrid(fieldList);
-		CuiGridFieldService cuiField = null;
+		List<ICocFieldInfo> fields = entityService.getFieldsOfGrid(fieldList);
+		ICuiGridFieldInfo cuiField = null;
 		int columnsTotalWidth = 0;
 		int width = -1;
 		boolean hidden = false, showCellTips = false;
@@ -423,7 +481,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		String linkTarget = null;
 		String align = null, halign = null;
 		StyleRule[] styleRules = null;
-		for (CocFieldService fld : fields) {
+		for (ICocFieldInfo fld : fields) {
 			width = -1;
 			title = null;
 			cellView = null;
@@ -436,7 +494,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			showCellTips = false;
 
 			if (cuiGrid != null) {
-				cuiField = cuiGrid.getField(fld.getKey());
+				cuiField = cuiGrid.getField(fld.getCode());
 				if (cuiField != null) {
 					width = cuiField.getWidth();
 					title = cuiField.getName();
@@ -484,8 +542,18 @@ public class UIModelFactoryImpl implements UIModelFactory {
 							width = 200;
 							break;
 						case Const.FIELD_TYPE_FK:
+							width = 120;
+							break;
 						default:
-							width = 150;
+							Integer len = fld.getLength();
+							if (len != null && len > 0) {
+								width = len * 8;
+							} else {
+								width = 150;
+							}
+							if (width > 200) {
+								width = 200;
+							}
 					}
 				}
 			}
@@ -506,8 +574,13 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			col.setCellStyles(styleRules);
 			col.setHidden(hidden);
 			col.setShowTips(showCellTips);
-
 			col.addResultUI(model.getId());
+			if (StringUtil.hasContent(opAddGridRow)) {
+				col.setModeToAddGridRow(fld.getMode(opAddGridRow, null));
+			}
+			if (StringUtil.hasContent(opEditGridRow)) {
+				col.setModeToEditGridRow(fld.getMode(opEditGridRow, null));
+			}
 
 			columnsTotalWidth += width;
 
@@ -515,9 +588,28 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		}
 
 		model.setColumnsTotalWidth(columnsTotalWidth);
-		model.setEntityKey(entityService.getKey());
+		model.setEntityCode(entityService.getCode());
+		String url = MVCUtil.makeUrl(CocUrl.ENTITY_GET_GRID_DATA, menuService, entityService);
+		if (specifiedFieldList != null) {
+			url += "/" + StringUtil.join(specifiedFieldList, null, "|");
+			if (specifiedRowActionList != null && specifiedRowActionList.size() > 0) {
+				url += "/" + StringUtil.join(specifiedRowActionList, null, "|");
+			}
+		} else if (specifiedRowActionList != null) {
+			url += "/" + CocUrl.PATH_PARAM_EMPTY + "/" + StringUtil.join(specifiedRowActionList, null, "|");
+		}
+		model.setDataLoadUrl(url);
 
-		model.setDataLoadUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_GET_GRID_DATA, menuService, entityService) + "/" + StringUtil.join(fieldList, null, "|") + "/" + StringUtil.join(rowActionList, null, "|"));
+		/*
+		 * 
+		 */
+		HttpContext httpCtx = Cocit.me().getHttpContext();
+		model.addResultUI(httpCtx.getClientResultUIList());
+		model.addParamUI(httpCtx.getClientParamUIList());
+		String params = httpCtx.getParameterValue("_fkField");
+		model.addFkField(StringUtil.toList(params));
+		params = httpCtx.getParameterValue("_fkTargetField");
+		model.addFkTargetField(StringUtil.toList(params));
 
 		/*
 		 * 返回
@@ -526,7 +618,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UIGrid getComboGrid(SystemMenuService targetMenuService, CocEntityService targetEntityService, CocFieldService fkFieldService) {
+	public UIGrid getComboGrid(ISystemMenuInfo targetMenuService, ICocEntityInfo targetEntityService, ICocFieldInfo fkFieldService) {
 
 		UIGrid model = new UIGrid();
 		model.setId(makeHtmlID(UIGrid.class, targetEntityService.getId()));
@@ -535,8 +627,8 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		if (targetMenuService == null)
 			targetMenuService = targetEntityService.getSystemMenu();
 		if (StringUtil.isBlank(url)) {
-			url = MVCUtil.makeUrl(UrlAPI.ENTITY_GET_COMBOGRID_DATA, targetMenuService, targetEntityService);
-			url += "/" + fkFieldService.getCocEntityKey() + ":" + fkFieldService.getFieldName();
+			url = MVCUtil.makeUrl(CocUrl.ENTITY_GET_COMBOGRID_DATA, targetMenuService, targetEntityService);
+			url += "/" + fkFieldService.getCocEntityCode() + ":" + fkFieldService.getFieldName();
 		} else {
 			url = MVCUtil.makeUrl(url);
 		}
@@ -548,7 +640,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		/*
 		 * Name字段
 		 */
-		CocFieldService nameField = targetEntityService.getField(Const.F_NAME);
+		ICocFieldInfo nameField = targetEntityService.getField(Const.F_NAME);
 		if (nameField == null) {
 			throw new CocException("实体模块字段不存在！%s.%s", targetEntityService.getClassOfEntity().getName(), Const.F_NAME);
 		}
@@ -559,9 +651,9 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		/*
 		 * KEY字段
 		 */
-		CocFieldService keyField = targetEntityService.getField(Const.F_KEY);
+		ICocFieldInfo keyField = targetEntityService.getField(Const.F_CODE);
 		if (keyField == null) {
-			throw new CocException("实体模块字段不存在！%s.%s", targetEntityService.getClassOfEntity().getName(), Const.F_KEY);
+			throw new CocException("实体模块字段不存在！%s.%s", targetEntityService.getClassOfEntity().getName(), Const.F_CODE);
 		}
 		col = new UIField().setFieldService(keyField).setWidth(100);
 		col.setHidden(true);
@@ -576,11 +668,11 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UIList getComboList(SystemMenuService menuService, CocEntityService entityService, CocFieldService fkFieldService) {
+	public UIList getComboList(ISystemMenuInfo menuService, ICocEntityInfo entityService, ICocFieldInfo fkFieldService) {
 		String url = fkFieldService.getFkComboUrl();
 		if (StringUtil.isBlank(url)) {
-			url = MVCUtil.makeUrl(UrlAPI.ENTITY_GET_COMBOLIST_DATA, menuService, entityService);
-			url += "/" + fkFieldService.getCocEntityKey() + ":" + fkFieldService.getFieldName();
+			url = MVCUtil.makeUrl(CocUrl.ENTITY_GET_COMBOLIST_DATA, menuService, entityService);
+			url += "/" + fkFieldService.getCocEntityCode() + ":" + fkFieldService.getFieldName();
 		} else {
 			url = MVCUtil.makeUrl(url);
 		}
@@ -588,7 +680,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		        .setDataLoadUrl(url)//
 		        .setId(makeHtmlID(UIList.class, entityService.getId()))//
 		        .setTitle(entityService.getName())//
-		;
+		        ;
 
 		/*
 		 * 返回
@@ -597,11 +689,11 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UITree getComboTree(SystemMenuService menuService, CocEntityService entityService, CocFieldService fkFieldService) {
+	public UITree getComboTree(ISystemMenuInfo menuService, ICocEntityInfo entityService, ICocFieldInfo fkFieldService) {
 		String url = fkFieldService.getFkComboUrl();
 		if (StringUtil.isBlank(url)) {
-			url = MVCUtil.makeUrl(UrlAPI.ENTITY_GET_COMBOTREE_DATA, menuService, entityService);
-			url += "/" + fkFieldService.getCocEntityKey() + ":" + fkFieldService.getFieldName();
+			url = MVCUtil.makeUrl(CocUrl.ENTITY_GET_COMBOTREE_DATA, menuService, entityService);
+			url += "/" + fkFieldService.getCocEntityCode() + ":" + fkFieldService.getFieldName();
 		} else {
 			url = MVCUtil.makeUrl(url);
 		}
@@ -622,7 +714,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UITreeData getComboTreeData(SystemMenuService menuService, CocEntityService entityService, CndExpr expr) {
+	public UITreeData getComboTreeData(ISystemMenuInfo menuService, ICocEntityInfo entityService, CndExpr expr) {
 		// if (entityService.getFieldOfTree() == null)
 		// return null;
 
@@ -651,35 +743,39 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UIActions getActions(SystemMenuService menuService, CocEntityService entityService) {
+	public UIActions getActions(ISystemMenuInfo menuService, ICocEntityInfo entityService) {
 		return getActions(menuService, entityService, null);
 	}
 
 	@Override
-	public UIActions getActions(SystemMenuService menuService, CocEntityService entityService, List<String> actionIDList) {
+	public UIActions getActions(ISystemMenuInfo menuService, ICocEntityInfo entityService, List<String> actionIDList) {
 		ICocConfig config = Cocit.me().getConfig();
 
 		if (actionIDList == null || actionIDList.size() == 0)
-			actionIDList = menuService.getActionKeysWithoutRow();
+			actionIDList = menuService.getActionCodesWithoutRow();
 
 		/*
 		 * 获取需要引用的主界面
 		 */
-		String cuiKey = menuService.getUiView();
-		if (StringUtil.isBlank(cuiKey)) {
-			cuiKey = entityService.getUiView();
+		String cuiCode = menuService.getUiView();
+		if (StringUtil.isBlank(cuiCode)) {
+			cuiCode = entityService.getUiView();
 		}
 
 		/*
 		 * 计算UI属性
 		 */
 		String actionsView = null;
-		CuiEntityService cui = entityService.getCuiEntity(cuiKey);
+		ICuiEntityInfo cui = entityService.getCuiEntity(cuiCode);
 		if (cui != null) {
 			if (actionIDList == null || actionIDList.size() == 0) {
 				actionIDList = cui.getActionsList();
 			}
 			actionsView = cui.getActionsView();
+		}
+
+		if (actionIDList != null && actionIDList.size() == 0) {
+			actionIDList = null;
 		}
 
 		Tree data = getActionsData(menuService, entityService, null, null, actionIDList);
@@ -690,7 +786,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		UIActions model = new UIActions()//
 		        .setData(data)//
 		        .setId(makeHtmlID(UIActions.class, entityService.getId()))//
-		;
+		        ;
 		if (StringUtil.hasContent(actionsView))
 			model.setViewName(actionsView);
 		else
@@ -702,12 +798,12 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		return model;
 	}
 
-	private Tree getActionsData(SystemMenuService menuService, CocEntityService entityService, CocActionService entityAction, Object dataObject, List<String> actionIDList) {
+	private Tree getActionsData(ISystemMenuInfo menuService, ICocEntityInfo entityService, ICocActionInfo entityAction, Object dataObject, List<String> actionIDList) {
 
 		String theCurrentAction = "";
 		String dataID = "";
 		if (entityAction != null) {
-			theCurrentAction = entityAction.getKey();
+			theCurrentAction = entityAction.getCode();
 		}
 		if (dataObject != null) {
 			if (dataObject instanceof List) {
@@ -725,23 +821,24 @@ public class UIModelFactoryImpl implements UIModelFactory {
 					dataID = id.toString();
 			}
 		}
+		// Class classOfEntity = entityService.getClassOfEntity();
 
 		/*
 		 * 创建操作菜单
 		 */
 		Tree data = Tree.make();
-		List<CocActionService> actionServices = entityService.getActions(actionIDList);
-		for (CocActionService action : actionServices) {
-			String actionKey = action.getKey();
+		List<ICocActionInfo> actionServices = entityService.getActions(actionIDList);
+		for (ICocActionInfo action : actionServices) {
+			String actionCode = action.getCode();
 
 			/*
 			 * 创建节点ID
 			 */
-			String parentNodeID = action.getParentKey();
+			String parentNodeID = action.getParentCode();
 			if (parentNodeID == "") {
 				parentNodeID = null;
 			}
-			String nodeID = action.getKey();
+			String nodeID = action.getCode();
 
 			/*
 			 * 添加操作节点
@@ -761,99 +858,132 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			 */
 			String opUrl = null;
 			String urlAPI = null;
+			boolean isWorkflow = false;
+			boolean noHeader = !action.isUiWindowHeader();
+
 			switch (action.getOpCode()) {
-			/*
-			 * 打开操作表单
-			 */
+				/*
+				 * 打开操作表单
+				 */
 				case OpCodes.OP_INSERT_FORM_DATA:
-					if (theCurrentAction.equals(actionKey)) {
-						urlAPI = UrlAPI.ENTITY_SAVE;
+					// if (IProcessInstanceEntity.class.isAssignableFrom(classOfEntity)) {
+					// if (theCurrentAction.equals(actionCode)) {
+					// urlAPI = WfUrl.WF_START_URL;
+					// } else {
+					// urlAPI = WfUrl.WF_FORM_TO_START_URL;
+					// }
+					// isWorkflow = true;
+					// } else {
+					if (theCurrentAction.equals(actionCode)) {
+						urlAPI = CocUrl.ENTITY_SAVE;
 					} else {
-						urlAPI = UrlAPI.ENTITY_GET_FORM_TO_SAVE;
+						urlAPI = CocUrl.ENTITY_GET_FORM_TO_SAVE;
 					}
+					// }
 					break;
 				case OpCodes.OP_UPDATE_FORM_DATA:
 				case OpCodes.OP_UPDATE_FORM_DATAS:
-					if (theCurrentAction.equals(actionKey)) {
-						urlAPI = UrlAPI.ENTITY_SAVE;
+					// if (IProcessInstanceEntity.class.isAssignableFrom(classOfEntity)) {
+					// if (theCurrentAction.equals(actionCode)) {
+					// urlAPI = WfUrl.WF_START_URL;
+					// } else {
+					// urlAPI = WfUrl.WF_FORM_TO_START_URL;
+					// }
+					// isWorkflow = true;
+					// } else {
+					if (theCurrentAction.equals(actionCode)) {
+						urlAPI = CocUrl.ENTITY_SAVE;
 					} else {
-						urlAPI = UrlAPI.ENTITY_GET_FORM_TO_SAVE;
+						urlAPI = CocUrl.ENTITY_GET_FORM_TO_SAVE;
 					}
+					// }
 					break;
 				case OpCodes.OP_REMOVE_FORM_DATA:
 				case OpCodes.OP_REMOVE_FORM_DATAS:
-					if (theCurrentAction.equals(actionKey)) {
-						urlAPI = UrlAPI.ENTITY_REMOVE;
+					if (theCurrentAction.equals(actionCode)) {
+						urlAPI = CocUrl.ENTITY_REMOVE;
 					} else {
-						urlAPI = UrlAPI.ENTITY_GET_FORM_TO_REMOVE;
+						urlAPI = CocUrl.ENTITY_GET_FORM_TO_REMOVE;
 					}
+
 					break;
 				case OpCodes.OP_DELETE_FORM_DATA:
 				case OpCodes.OP_DELETE_FORM_DATAS:
-					if (theCurrentAction.equals(actionKey)) {
-						urlAPI = UrlAPI.ENTITY_DELETE;
+					// if (IProcessInstanceEntity.class.isAssignableFrom(classOfEntity)) {
+					// urlAPI = WfUrl.WF_DELETE_URL;
+					// isWorkflow = true;
+					// } else {
+					if (theCurrentAction.equals(actionCode)) {
+						urlAPI = CocUrl.ENTITY_DELETE;
 					} else {
-						urlAPI = UrlAPI.ENTITY_GET_FORM_TO_DELETE;
+						urlAPI = CocUrl.ENTITY_GET_FORM_TO_DELETE;
 					}
+					// }
 					break;
 				case OpCodes.OP_RUN_FORM_DATA:
 				case OpCodes.OP_RUN_FORM_DATAS:
 				case OpCodes.OP_RUN_FORM:
-					if (theCurrentAction.equals(actionKey)) {
-						urlAPI = UrlAPI.ENTITY_RUN;
+					if (theCurrentAction.equals(actionCode)) {
+						urlAPI = CocUrl.ENTITY_RUN;
 					} else {
-						urlAPI = UrlAPI.ENTITY_GET_FORM_TO_RUN;
+						urlAPI = CocUrl.ENTITY_GET_FORM_TO_RUN;
 					}
 					break;
 				case OpCodes.OP_EXPORT_XLS:
-					urlAPI = UrlAPI.ENTITY_GET_FORM_TO_EXPORT_XLS;
+					urlAPI = CocUrl.ENTITY_GET_FORM_TO_EXPORT_XLS;
 					break;
 				case OpCodes.OP_IMPORT_XLS:
-					urlAPI = UrlAPI.ENTITY_GET_FORM_TO_IMPORT_XLS;
+					urlAPI = CocUrl.ENTITY_GET_FORM_TO_IMPORT_XLS;
 					break;
 				/*
 				 * 以下操作不弹出表单
 				 */
 				case OpCodes.OP_UPDATE_ROW:
 				case OpCodes.OP_UPDATE_ROWS:
-					urlAPI = UrlAPI.ENTITY_SAVE;
+				case OpCodes.OP_SAVE_GRID_ROWS:
+					urlAPI = CocUrl.ENTITY_SAVE;
 					break;
 				case OpCodes.OP_REMOVE_ROW:
 				case OpCodes.OP_REMOVE_ROWS:
-					urlAPI = UrlAPI.ENTITY_REMOVE;
+					urlAPI = CocUrl.ENTITY_REMOVE;
 					break;
 				case OpCodes.OP_DELETE_ROW:
 				case OpCodes.OP_DELETE_ROWS:
-					urlAPI = UrlAPI.ENTITY_DELETE;
+					// if (IProcessInstanceEntity.class.isAssignableFrom(classOfEntity)) {
+					// urlAPI = WfUrl.WF_DELETE_URL;
+					// isWorkflow = true;
+					// } else {
+					urlAPI = CocUrl.ENTITY_DELETE;
+					// }
 					break;
 				case OpCodes.OP_RUN_ROW:
 				case OpCodes.OP_RUN_ROWS:
 				case OpCodes.OP_RUN:
-					urlAPI = UrlAPI.ENTITY_RUN;
+					urlAPI = CocUrl.ENTITY_RUN;
 					break;
 				case OpCodes.OP_CLEAR:
-					urlAPI = UrlAPI.ENTITY_CLEAR;
+					urlAPI = CocUrl.ENTITY_CLEAR;
 					break;
 				/*
 				 * 排序
 				 */
 				case OpCodes.OP_SORT_TOP:
-					urlAPI = UrlAPI.ENTITY_SORT_MOVE_TOP;
+					urlAPI = CocUrl.ENTITY_SORT_MOVE_TOP;
 					break;
 				case OpCodes.OP_SORT_UP:
-					urlAPI = UrlAPI.ENTITY_SORT_MOVE_UP;
+					urlAPI = CocUrl.ENTITY_SORT_MOVE_UP;
 					break;
 				case OpCodes.OP_SORT_DOWN:
-					urlAPI = UrlAPI.ENTITY_SORT_MOVE_DOWN;
+					urlAPI = CocUrl.ENTITY_SORT_MOVE_DOWN;
 					break;
 				case OpCodes.OP_SORT_BOTTOM:
-					urlAPI = UrlAPI.ENTITY_SORT_MOVE_BOTTOM;
+					urlAPI = CocUrl.ENTITY_SORT_MOVE_BOTTOM;
 					break;
 				case OpCodes.OP_SORT_REVERSE:
-					urlAPI = UrlAPI.ENTITY_SORT_REVERSE;
+					urlAPI = CocUrl.ENTITY_SORT_REVERSE;
 					break;
 				case OpCodes.OP_SORT_CANCEL:
-					urlAPI = UrlAPI.ENTITY_SORT_CANCEL;
+					urlAPI = CocUrl.ENTITY_SORT_CANCEL;
 					break;
 			}
 			if (StringUtil.hasContent(urlAPI)) {
@@ -875,12 +1005,24 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			child.set("errorMessage", action.getErrorMessage());
 			child.set("warnMessage", action.getWarnMessage());
 			child.set("opCode", "" + action.getOpCode());
-			child.set("opMode", action.getKey());
+			child.set("opMode", action.getCode());
+			if (noHeader) {
+				child.set("noHeader", true);
+			}
 			child.set("title", action.getTitle());
+
+			if (isWorkflow) {
+				child.set("dialogStyle", "window-simple");
+				child.set("noHeader", true);
+			}
+
+			// if (!isWorkflow) {
 			if (action.getUiWindowHeight() > 0)
 				child.set("windowHeight", action.getUiWindowHeight());
 			if (action.getUiWindowWidth() > 0)
 				child.set("windowWidth", action.getUiWindowWidth());
+			// }
+
 			if (opUrl != null) {// 自动生成的操作按钮访问路径
 				child.set("opUrl", opUrl);
 			}
@@ -898,13 +1040,13 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UITree getFilter(SystemMenuService menuService, CocEntityService entityService, boolean usedToSubEntity) {
+	public UITree getFilter(ISystemMenuInfo menuService, ICocEntityInfo entityService, boolean usedToSubEntity) {
 		/*
 		 * 获取需要引用的主界面
 		 */
-		String cuiKey = menuService.getUiView();
-		if (StringUtil.isBlank(cuiKey)) {
-			cuiKey = entityService.getUiView();
+		String cuiCode = menuService.getUiView();
+		if (StringUtil.isBlank(cuiCode)) {
+			cuiCode = entityService.getUiView();
 		}
 
 		/*
@@ -912,7 +1054,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		 */
 		List<String> filterFields = null;
 		String fielterFieldsView = null;
-		CuiEntityService cui = entityService.getCuiEntity(cuiKey);
+		ICuiEntityInfo cui = entityService.getCuiEntity(cuiCode);
 		byte filterPosition = 0;
 		if (cui != null) {
 			filterFields = cui.getFilterFieldsList();
@@ -944,16 +1086,16 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		model.set("checkbox", 1);
 		model.setViewName(fielterFieldsView);
 		model.set("filterPosition", filterPosition);
-		if (filterFields != null && filterFields.size() > 0) {
-			model.setTitle(entityService.getField(filterFields.get(0)).getName());//
-		} else {
-			model.setTitle("快速过滤");//
-		}
+		// if (filterFields != null && filterFields.size() > 0) {
+		// model.setTitle(entityService.getField(filterFields.get(0)).getName());//
+		// } else {
+		model.setTitle("快速过滤");//
+		// }
 
 		/*
 		 * 设置异步加载数据的 URL 地址
 		 */
-		String url = MVCUtil.makeUrl(UrlAPI.ENTITY_GET_FILTER_DATA, menuService, entityService);
+		String url = MVCUtil.makeUrl(CocUrl.ENTITY_GET_FILTER_DATA, menuService, entityService);
 		model.setDataLoadUrl(url + "/" + usedToSubEntity);
 
 		/*
@@ -963,20 +1105,20 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UITreeData getFilterData(SystemMenuService menuService, CocEntityService entityService, boolean usedToSubEntity) {
+	public UITreeData getFilterData(ISystemMenuInfo menuService, ICocEntityInfo entityService, boolean usedToSubEntity) {
 		/*
 		 * 获取需要引用的主界面
 		 */
-		String cuiKey = menuService.getUiView();
-		if (StringUtil.isBlank(cuiKey)) {
-			cuiKey = entityService.getUiView();
+		String cuiCode = menuService.getUiView();
+		if (StringUtil.isBlank(cuiCode)) {
+			cuiCode = entityService.getUiView();
 		}
 
 		/*
 		 * 计算UI属性
 		 */
 		List<String> filterFields = null;
-		CuiEntityService cui = entityService.getCuiEntity(cuiKey);
+		ICuiEntityInfo cui = entityService.getCuiEntity(cuiCode);
 		byte filterPosition = 0;
 		if (cui != null) {
 			filterFields = cui.getFilterFieldsList();
@@ -1036,7 +1178,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UITreeData getRowsAuthData(SystemMenuService menuService, CocEntityService entityService) {
+	public UITreeData getRowsAuthData(ISystemMenuInfo menuService, ICocEntityInfo entityService) {
 		/*
 		 * 查询数据
 		 */
@@ -1084,27 +1226,27 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UITreeData getActionsData(SystemMenuService menuService, CocEntityService entityService) {
+	public UITreeData getActionsData(ISystemMenuInfo menuService, ICocEntityInfo entityService) {
 
 		/*
 		 * 创建操作菜单
 		 */
 		Tree tree = Tree.make();
-		String rootNode = menuService.getKey() + "_actions";
+		String rootNode = menuService.getCode() + "_actions";
 		Node node = tree.addNode(null, rootNode).setName("全部");
 		node.set("open", "true");
 		node.set("type", "folder");
 
-		List<CocActionService> actionServices = menuService.getCocActions();
-		for (CocActionService action : actionServices) {
+		List<ICocActionInfo> actionServices = menuService.getCocActions();
+		for (ICocActionInfo action : actionServices) {
 			/*
 			 * 创建节点ID
 			 */
-			String parentNodeID = action.getParentKey();
+			String parentNodeID = action.getParentCode();
 			if (parentNodeID == null || parentNodeID.trim().length() == 0) {
 				parentNodeID = rootNode;
 			}
-			String nodeID = action.getKey();
+			String nodeID = action.getCode();
 
 			/*
 			 * 添加操作节点
@@ -1140,7 +1282,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UITree getTree(SystemMenuService menuService, CocEntityService entityService) {
+	public UITree getTree(ISystemMenuInfo menuService, ICocEntityInfo entityService) {
 		// if (entityService.getFieldOfTree() == null){
 		// entityService.getFieldOfGroup();
 		// return null;
@@ -1150,7 +1292,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		 * 创建树模型
 		 */
 		UITree model = new UITree();
-		model.setDataLoadUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_GET_TREE_DATA, menuService, entityService));
+		model.setDataLoadUrl(MVCUtil.makeUrl(CocUrl.ENTITY_GET_TREE_DATA, menuService, entityService));
 		model.setId(makeHtmlID(UITree.class, entityService.getId()));
 		// model.set("checkbox", false);
 		// model.set("onlyLeafCheck", false);
@@ -1164,7 +1306,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UITreeData getTreeData(SystemMenuService menuService, CocEntityService entityService) {
+	public UITreeData getTreeData(ISystemMenuInfo menuService, ICocEntityInfo entityService, CndExpr expr) {
 		// if (entityService.getFieldOfTree() == null)
 		// return null;
 
@@ -1177,7 +1319,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		/*
 		 * 查询数据
 		 */
-		Tree data = entityService.getTreeData(null);
+		Tree data = entityService.getTreeData(expr);
 
 		/*
 		 * 设置模型属性
@@ -1193,12 +1335,12 @@ public class UIModelFactoryImpl implements UIModelFactory {
 	}
 
 	@Override
-	public UIForm getForm(SystemMenuService menuService, CocEntityService entityService, CocActionService entityAction, Object dataObject) {
+	public UIForm getForm(ISystemMenuInfo menuService, ICocEntityInfo entityService, ICocActionInfo entityAction, Object dataObject) {
 		return this.getForm(menuService, entityService, entityAction, dataObject, null);
 	}
 
 	@Override
-	public UIForm getForm(SystemMenuService menuService, CocEntityService entityService, CocActionService entityAction, Object dataObject, List<String> fieldList) {
+	public UIForm getForm(ISystemMenuInfo menuService, ICocEntityInfo entityService, ICocActionInfo entityAction, Object dataObject, List<String> fieldList) {
 		UIForm form = new UIForm();
 
 		if (fieldList != null && fieldList.size() == 0) {
@@ -1209,42 +1351,44 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			throw new CocException("操作不存在！");
 		}
 
-		form.setActionID(entityAction.getKey());
-
-		String cuiFormKey = entityAction.getUiForm();
+		form.setActionID(entityAction.getCode());
 
 		/*
 		 * 获取需要引用的主界面
 		 */
-		String cuiKey = menuService.getUiView();
-		if (StringUtil.isBlank(cuiKey)) {
-			cuiKey = entityService.getUiView();
+		String cuiCode = menuService.getUiView();
+		if (StringUtil.isBlank(cuiCode)) {
+			cuiCode = entityService.getUiView();
 		}
 
 		/*
 		 * 获取表单UI服务
 		 */
-		CuiFormService cuiFormService = null;
-		CuiEntityService cuiEntityService = entityService.getCuiEntity(cuiKey);
-		if (cuiEntityService != null) {
-			cuiFormService = cuiEntityService.getCuiForm(cuiFormKey);
+		ICuiEntityInfo cuiEntityService = entityService.getCuiEntity(cuiCode);
+
+		ICuiFormInfo cuiFormService = null;
+		String cuiFormCode = entityAction.getUiForm();
+		if (cuiEntityService != null && StringUtil.hasContent(cuiFormCode)) {
+			cuiFormService = cuiEntityService.getCuiForm(cuiFormCode);
 		}
 
 		/*
 		 * 计算表单字段
 		 */
 		if (cuiFormService == null) {
-			if (!StringUtil.isBlank(cuiFormKey)) {
-				form.setViewName(cuiFormKey);
+			if (!StringUtil.isBlank(cuiFormCode)) {
+				form.setViewName(cuiFormCode);
 			}
 
-			evalUIFormFields(form, entityService, entityAction.getKey(), dataObject, fieldList);
+			evalUIFormFields(form, entityService, entityAction.getCode(), dataObject, fieldList);
 		} else {
-			evalUIFormFields(form, menuService, entityService, entityAction.getKey(), dataObject, cuiFormService, fieldList);
+			form.setViewName(cuiFormService.getUiView());
+
+			evalUIFormFields(form, menuService, entityService, entityAction.getCode(), dataObject, cuiFormService, fieldList);
 
 			List<String> batchFields = cuiFormService.getBatchFieldsList();
 			form.setBatchFields(batchFields);
-			this.evalUIFormFields(form, menuService, entityService, entityAction.getKey(), dataObject, cuiFormService, batchFields, fieldList);
+			this.evalUIFormFields(form, null, menuService, entityService, entityAction.getCode(), dataObject, cuiFormService, batchFields, fieldList);
 
 			/*
 			 * 计算表单UI属性
@@ -1266,8 +1410,8 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			if (actionsList != null && actionsList.size() > 0) {
 				Tree data = getActionsData(menuService, entityService, entityAction, dataObject, actionsList);
 				for (Node node : data.getChildren()) {
-					String actionKey = node.getId();
-					CuiFormActionService action = cuiFormService.getFormAction(actionKey);
+					String actionCode = node.getId();
+					ICuiFormActionInfo action = cuiFormService.getFormAction(actionCode);
 					if (action != null && StringUtil.hasContent(action.getName())) {
 						node.setName(action.getName());
 					}
@@ -1279,36 +1423,112 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			}
 		}
 
+		form.setDataObject(dataObject);
+
 		return form;
 	}
 
-	private void evalUIFormFields(UIForm form, SystemMenuService menuService, CocEntityService entityService, String opID, Object dataObject, CuiFormService cuiFormService, List<String> fieldList) {
+	private void evalUIFormFields(UIForm form, ISystemMenuInfo menuService, ICocEntityInfo entityService, String opID, Object dataObject, ICuiFormInfo cuiFormService, List<String> fieldList) {
 		List<List<String>> fields = cuiFormService.getFieldsList();
 		form.setFields(fields);
 
 		int fieldRowSize = 0;
 		for (List<String> fieldRow : fields) {
-			if (fieldRow.size() > fieldRowSize) {
-				fieldRowSize = fieldRow.size();
-			}
+			this.evalUIFormFields(form, null, menuService, entityService, opID, dataObject, cuiFormService, fieldRow, fieldList);
+		}
 
-			this.evalUIFormFields(form, menuService, entityService, opID, dataObject, cuiFormService, fieldRow, fieldList);
+		/*
+		 * 分组字段
+		 */
+		UIFieldGroup uiFieldGroup;
+
+		fields = cuiFormService.getGroup1FieldsList();
+		if (fields != null && fields.size() > 0) {
+
+			uiFieldGroup = new UIFieldGroup();
+			uiFieldGroup.setId(cuiFormService.getGroup1Name());
+			uiFieldGroup.setTitle(cuiFormService.getGroup1Name());
+			uiFieldGroup.setFields(fields);
+
+			form.addFieldGroup(uiFieldGroup);
+
+			for (List<String> fieldRow : fields) {
+				this.evalUIFormFields(form, uiFieldGroup, menuService, entityService, opID, dataObject, cuiFormService, fieldRow, fieldList);
+			}
+		}
+
+		fields = cuiFormService.getGroup2FieldsList();
+		if (fields != null && fields.size() > 0) {
+
+			uiFieldGroup = new UIFieldGroup();
+			uiFieldGroup.setId(cuiFormService.getGroup2Name());
+			uiFieldGroup.setTitle(cuiFormService.getGroup2Name());
+			uiFieldGroup.setFields(fields);
+
+			form.addFieldGroup(uiFieldGroup);
+
+			for (List<String> fieldRow : fields) {
+				this.evalUIFormFields(form, uiFieldGroup, menuService, entityService, opID, dataObject, cuiFormService, fieldRow, fieldList);
+			}
+		}
+
+		fields = cuiFormService.getGroup3FieldsList();
+		if (fields != null && fields.size() > 0) {
+
+			uiFieldGroup = new UIFieldGroup();
+			uiFieldGroup.setId(cuiFormService.getGroup3Name());
+			uiFieldGroup.setTitle(cuiFormService.getGroup3Name());
+			uiFieldGroup.setFields(fields);
+
+			form.addFieldGroup(uiFieldGroup);
+
+			for (List<String> fieldRow : fields) {
+				this.evalUIFormFields(form, uiFieldGroup, menuService, entityService, opID, dataObject, cuiFormService, fieldRow, fieldList);
+			}
+		}
+
+		fields = cuiFormService.getGroup4FieldsList();
+		if (fields != null && fields.size() > 0) {
+
+			uiFieldGroup = new UIFieldGroup();
+			uiFieldGroup.setId(cuiFormService.getGroup4Name());
+			uiFieldGroup.setTitle(cuiFormService.getGroup4Name());
+			uiFieldGroup.setFields(fields);
+
+			form.addFieldGroup(uiFieldGroup);
+
+			for (List<String> fieldRow : fields) {
+				this.evalUIFormFields(form, uiFieldGroup, menuService, entityService, opID, dataObject, cuiFormService, fieldRow, fieldList);
+			}
+		}
+
+		fields = cuiFormService.getGroup5FieldsList();
+		if (fields != null && fields.size() > 0) {
+
+			uiFieldGroup = new UIFieldGroup();
+			uiFieldGroup.setId(cuiFormService.getGroup5Name());
+			uiFieldGroup.setTitle(cuiFormService.getGroup5Name());
+			uiFieldGroup.setFields(fields);
+
+			form.addFieldGroup(uiFieldGroup);
+
+			for (List<String> fieldRow : fields) {
+				this.evalUIFormFields(form, uiFieldGroup, menuService, entityService, opID, dataObject, cuiFormService, fieldRow, fieldList);
+			}
 		}
 
 		form.setRowFieldsSize(fieldRowSize);
 
 	}
 
-	private void evalUIFormFields(UIForm form, SystemMenuService menuService, CocEntityService entityService, String opID, Object dataObject, CuiFormService cuiFormService, List<String> fields, List<String> allowFields) {
+	private void evalUIFormFields(UIForm form, UIFieldGroup uiFieldGroup, ISystemMenuInfo menuService, ICocEntityInfo entityService, String opID, Object dataObject, ICuiFormInfo cuiFormService, List<String> fields, List<String> allowFields) {
 		if (fields == null || fields.size() == 0)
 			return;
 
-		UIFieldGroup uiFieldGroup = null;
 		UIField uiField;
-		CocGroupService cocGroupService;
-		CocFieldService cocFieldService;
-		CuiFormFieldService cuiFieldService;
-		String fieldName, groupName, title, uiView, linkUrl, linkTarget, align, halign;
+		ICocFieldInfo cocFieldService;
+		ICuiFormFieldInfo cuiFieldService;
+		String fieldName, title, uiView, linkUrl, linkTarget, align, halign, modeStr;
 		UIForm oneToManyTargetForm;
 		int mode = 0;
 		byte labelPos = 0, colspan, rowspan;
@@ -1328,6 +1548,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			linkTarget = null;
 			align = null;
 			halign = null;
+			modeStr = null;
 			mode = 0;
 			labelPos = 0;
 			colspan = 0;
@@ -1337,11 +1558,8 @@ public class UIModelFactoryImpl implements UIModelFactory {
 
 			int idx = field.indexOf(":");
 			if (idx > -1) {
-				groupName = field.substring(0, idx);
-				fieldName = field.substring(idx + 1);
-
-				cocGroupService = entityService.getGroup(groupName);
-				uiFieldGroup = new UIFieldGroup().setId(groupName).setTitle(cocGroupService.getName());
+				fieldName = field.substring(0, idx);
+				modeStr = field.substring(idx + 1);
 			} else {
 				fieldName = field;
 			}
@@ -1358,7 +1576,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			 * 计算字段UI属性
 			 */
 			if (cuiFieldService != null) {
-				mode = cuiFieldService.getModeValue();
+				// mode = cuiFieldService.getModeValue();
 				title = cuiFieldService.getName();
 				uiView = cuiFieldService.getUiView();
 				align = cuiFieldService.getAlign();
@@ -1377,7 +1595,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 				dicOptions = cuiFieldService.getDicOptionsArray();
 				String oneToManyTargetAction = cuiFieldService.getOneToManyTargetAction();
 				if (StringUtil.hasContent(oneToManyTargetAction)) {
-					CocEntityService manyTargetEntity = cocFieldService.getOneToManyTargetEntity();
+					ICocEntityInfo manyTargetEntity = cocFieldService.getOneToManyTargetEntity();
 					String manyProp = cuiFieldService.getFieldName();
 					Object manyFieldValue = ObjectUtil.getValue(dataObject, manyProp);
 					oneToManyTargetForm = this.getForm(menuService, manyTargetEntity, manyTargetEntity.getAction(oneToManyTargetAction), manyFieldValue);
@@ -1386,6 +1604,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 					oneToManyTargetForm.setViewName(ViewNames.VIEW_SUBFORM);
 				}
 			}
+			mode = FieldModes.parseMode(modeStr);
 			if (mode == 0) {
 				mode = cocFieldService.getMode(opID, dataObject);
 			}
@@ -1418,7 +1637,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			        .setFieldService(cocFieldService)//
 			        .setMode(mode)//
 			        .setWidth(200)//
-			;
+			        ;
 
 			if (StringUtil.hasContent(align)) {
 				uiField.setAlign(align);
@@ -1456,7 +1675,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 
 	}
 
-	private UIField makeField(SystemMenuService menuService, CocFieldService cocFieldService, CuiFormFieldService cuiFieldService) {
+	private UIField makeField(ISystemMenuInfo menuService, ICocFieldInfo cocFieldService, ICuiFormFieldInfo cuiFieldService) {
 		String title, uiView, linkUrl, linkTarget, align, halign;
 		UIForm oneToManyTargetForm;
 		int mode = 0;
@@ -1484,7 +1703,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		 * 计算字段UI属性
 		 */
 		if (cuiFieldService != null) {
-			mode = cuiFieldService.getModeValue();
+			// mode = cuiFieldService.getModeValue();
 			title = cuiFieldService.getName();
 			uiView = cuiFieldService.getUiView();
 			align = cuiFieldService.getAlign();
@@ -1534,7 +1753,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		        .setFieldService(cocFieldService)//
 		        .setMode(mode)//
 		        .setWidth(200)//
-		;
+		        ;
 
 		if (StringUtil.hasContent(align)) {
 			uiField.setAlign(align);
@@ -1566,21 +1785,24 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		return uiField;
 	}
 
-	private void evalUIFormFields(UIForm form, CocEntityService entityService, String opID, Object dataObject, List<String> fieldList) {
+	private void evalUIFormFields(UIForm form, ICocEntityInfo entityService, String opID, Object dataObject, List<String> fieldList) {
 
-		List<CocGroupService> groups = entityService.getGroups();
+		List<ICocGroupInfo> groups = entityService.getGroups();
 		UIFieldGroup fieldGroup;
 		UIField field;
 
-		for (CocGroupService group : groups) {
-			fieldGroup = new UIFieldGroup().setTitle(group.getName()).setId(group.getKey());
+		for (ICocGroupInfo group : groups) {
+			fieldGroup = new UIFieldGroup().setTitle(group.getName()).setId(group.getCode());
 
-			List<CocFieldService> fields = group.getFields();
+			List<ICocFieldInfo> fields = group.getFields();
 			if (fields == null) {
 				continue;
 			}
 
-			for (CocFieldService fld : fields) {
+			List<List<String>> rowFieldsList = new ArrayList();
+			List<String> rowFields = null;
+
+			for (ICocFieldInfo fld : fields) {
 				if (fld.isDisabled()) {
 					continue;
 				}
@@ -1615,7 +1837,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 						mode = FieldModes.S;
 					}
 				}
-				if (StringUtil.hasContent(fld.getFkDependFieldKey())) {
+				if (StringUtil.hasContent(fld.getFkDependFieldCode())) {
 					mode = FieldModes.N;
 				}
 
@@ -1626,7 +1848,7 @@ public class UIModelFactoryImpl implements UIModelFactory {
 				        .setFieldService(fld)//
 				        .setMode(mode)//
 				        .setWidth(200)//
-				;
+				        ;
 
 				if (StringUtil.hasContent(fld.getUiView())) {
 					field.setViewName(fld.getUiView());
@@ -1644,14 +1866,16 @@ public class UIModelFactoryImpl implements UIModelFactory {
 		}
 	}
 
-	private String getDefaultFormFieldView(CocFieldService fieldService) {
+	private String getDefaultFormFieldView(ICocFieldInfo fieldService) {
+		int fieldType = fieldService.getFieldType();
 
-		if (fieldService.isDic())
+		if (fieldService.isDic() && fieldType != Const.FIELD_TYPE_BOOLEAN) {
 			return ViewNames.FIELD_VIEW_DIC;
+		}
 
-		switch (fieldService.getFieldType()) {
+		switch (fieldType) {
 			case Const.FIELD_TYPE_BOOLEAN:
-				return ViewNames.FIELD_VIEW_SELECT;
+				return ViewNames.FIELD_VIEW_RADIO;
 			case Const.FIELD_TYPE_BYTE:
 				return ViewNames.FIELD_VIEW_NUMBERBOX;
 			case Const.FIELD_TYPE_DATE:
@@ -1661,6 +1885,11 @@ public class UIModelFactoryImpl implements UIModelFactory {
 			case Const.FIELD_TYPE_DOUBLE:
 				return ViewNames.FIELD_VIEW_NUMBERBOX;
 			case Const.FIELD_TYPE_FK:
+				Class fldClass = fieldService.getFkTargetEntity().getClassOfEntity();
+				if (ITreeEntity.class.isAssignableFrom(fldClass) || ITreeObjectEntity.class.isAssignableFrom(fldClass)) {
+					return ViewNames.FIELD_VIEW_COMBOTREE;
+				}
+
 				return ViewNames.FIELD_VIEW_COMBOGRID;
 			case Const.FIELD_TYPE_FLOAT:
 				return ViewNames.FIELD_VIEW_NUMBERBOX;

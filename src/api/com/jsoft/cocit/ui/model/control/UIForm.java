@@ -38,6 +38,8 @@ public class UIForm extends UIControlModel implements UIFormModel {
 	private byte fieldLabelPos;// 字段标签的位置：自动布局时生效
 	private int rowFieldsSize;// 每行最多显示多少个字段？自动布局时生效
 	private String beanName = "entity";
+	private boolean autoButtons = true;
+	private boolean ignoreFormTag = false;
 	private UIActions actions;
 
 	public UIForm() {
@@ -131,7 +133,6 @@ public class UIForm extends UIControlModel implements UIFormModel {
 		return fieldLabelPos;
 	}
 
-
 	public List<List<String>> getFields() {
 		return fields;
 	}
@@ -169,10 +170,26 @@ public class UIForm extends UIControlModel implements UIFormModel {
 	}
 
 	public UIActions getActions() {
-    	return actions;
-    }
+		return actions;
+	}
 
 	public void setActions(UIActions actions) {
-    	this.actions = actions;
-    }
+		this.actions = actions;
+	}
+
+	public boolean isAutoButtons() {
+		return autoButtons;
+	}
+
+	public void setAutoButtons(boolean autoButtons) {
+		this.autoButtons = autoButtons;
+	}
+
+	public boolean isIgnoreFormTag() {
+		return ignoreFormTag;
+	}
+
+	public void setIgnoreFormTag(boolean ignoreFormTag) {
+		this.ignoreFormTag = ignoreFormTag;
+	}
 }

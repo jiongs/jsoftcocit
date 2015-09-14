@@ -1,22 +1,40 @@
 (function($, jCocit) {
-	var contextPath = jCocit.contextPath, dialogWidth = 800, dialogHeight = 600;
+	/*
+	 * dialog: maxWidth=1200, maxHeight=800, minWidth=700, minHeight=500
+	 */
+	var contextPath = jCocit.contextPath, dialogWidth = 800, dialogHeight = 600, contentWidth = 800, contentHeight = 600, dialogPositionTop = 0, dialogAutoHeight = false;
 	jCocit.setOptions = function(options) {
-		// if (options.contentWidth) {
-		// dialogWidth = options.contentWidth - 200;
-		// }
-		// if (options.contentHeight) {
-		// dialogHeight = options.contentHeight - 100;
-		// }
+		if (options.contentWidth) {
+			contentWidth = options.contentWidth;
+			dialogWidth = contentWidth - 50;
+			if (dialogWidth > 1200) {
+				dialogWidth = 1200;
+			} else if (dialogWidth < 600) {
+				dialogWidth = 600;
+			}
+		}
+		if (options.contentHeight) {
+			contentHeight = options.contentHeight;
+			dialogHeight = contentHeight - 50;
+			if (dialogHeight > 900) {
+				dialogHeight = 900;
+			} else if (dialogHeight < 500) {
+				dialogHeight = 500;
+			}
+		}
 		if (options.contextPath) {
 			contextPath = options.contextPath;
 			jCocit.contextPath = contextPath;
 		}
 	}
+
 	jCocit.entity = {
 		doAction : function(opts) {
 			// opts is button
-			if (!opts.opCode) {
+			if (opts.tagName) {
+				var btn = opts;
 				opts = $.parseOptions(opts);
+				opts.eventTarget = btn;
 			}
 
 			var opCode = opts.opCode;
@@ -37,6 +55,9 @@
 				case 242:// edit grid row
 					jCocit.entity.editGridRow(opts);
 					break;
+				case 243:// save grid rows
+					jCocit.util.submitForm(opts);
+					break;
 				default:
 					doOnRow(opts, true);
 				}
@@ -49,6 +70,7 @@
 		doRowAction : function(e, btn) {
 			var opts = $.parseOptions(btn);
 			opts.eventTarget = e.target;
+
 			var opCode = opts.opCode;
 			if (opCode >= 102 && opCode <= 150) {
 				getRowForm(opts, false);
@@ -119,21 +141,24 @@
 				$btn = $(this);
 			}
 			if ($btn.hasClass("jCocit-searchbox")) {
-				doRefreshUI($btn.searchbox("options"));
+				doRefreshResultUI($btn.searchbox("options"));
 			} else {
-				var $form = $btn.closest("form");
+				var $form = $btn.closest(".jCocit-searchform");
+				if ($form.length == 0) {
+					$form = $btn.closest("form");
+				}
 				var opts = $.parseOptions($form);
-				doRefreshUI(opts);
+				doRefreshResultUI(opts);
 			}
 		},
 		doSelectFilter : function(node) {
-			doRefreshUI($(this).tree("options"));
+			doRefreshResultUI($(this).tree("options"));
 		},
 		doSelectGrid : function(rowIndex, row) {
-			doRefreshUI($(this).datagrid("options"));
+			doRefreshResultUI($(this).datagrid("options"));
 		},
-		doRefreshUI : function(options) {
-			doRefreshUI(options);
+		doRefreshResultUI : function(options) {
+			doRefreshResultUI(options);
 		},
 		doBeforeLoadGrid : function(row, queryParams) {
 			var options = $(this).datagrid("options");
@@ -176,7 +201,7 @@
 					}
 				});
 				var fields = $grid.datagrid('getColumnFields');
-				for ( var i = 2; i < fields.length; i++) {
+				for (var i = 2; i < fields.length; i++) {
 					var field = fields[i];
 					var col = $grid.datagrid('getColumnOption', field);
 					$contextMenu.menu('append', {
@@ -202,7 +227,7 @@
 			var $childGrid = $(".jCocit-datagrid", $childTab);
 			// 刷新子业务表Grid数据
 			if ($childGrid.length)
-				doRefreshUI($childGrid.datagrid("options"));
+				$childGrid.datagrid("reload");
 		},
 		doSelectSystemMenuTree : function(node) {
 			if (node.linkURL) {
@@ -225,15 +250,29 @@
 
 			var $grid = $("#" + opts.resultUI[0]);
 			var options = $grid.datagrid("options");
-			
+
 			if (options.onEdit != $n && typeof options.editRowIndex != "undefined") {
 				$.messager.showMsg(jCocit.entity.defaults.promptSave);
 			} else {
-				var rowIndex = 0;
+				var row = $grid.datagrid("getSelected");
+				var rowIndex = $grid.datagrid("getRowIndex", row) + 1;
 				$grid.datagrid("insertRow", {
 					index : rowIndex,
 					row : {}
 				});
+				$grid.datagrid('selectRow', rowIndex);
+				$grid.datagrid('beginEdit', rowIndex);
+
+				options.editRowIndex = rowIndex;
+			}
+		},
+		editGridRowWhenDblClick : function(rowIndex, row) {
+			var $grid = $(this);
+			var options = $grid.datagrid("options");
+
+			if (options.onEdit != $n && typeof options.editRowIndex != "undefined") {
+				$.messager.showMsg(jCocit.entity.defaults.promptSave);
+			} else {
 				$grid.datagrid('selectRow', rowIndex);
 				$grid.datagrid('beginEdit', rowIndex);
 
@@ -261,13 +300,13 @@
 			}
 
 			var options = $grid.datagrid("options");
-			
-			if (options.onEdit != $n  && typeof options.editRowIndex != "undefined") {
+
+			if (options.onEdit != $n && typeof options.editRowIndex != "undefined") {
 				$.messager.showMsg(jCocit.entity.defaults.promptSave);
 			} else {
 				$grid.datagrid('selectRow', rowIndex);
 				$grid.datagrid('beginEdit', rowIndex);
-				
+
 				options.editRowIndex = rowIndex;
 			}
 		},
@@ -285,8 +324,6 @@
 				row[fld] = changedRow[fld];
 			}
 
-			// alert($.toJsonString(data));
-
 			var url;
 			if (row.id) {
 				url = options.editUrl + "/" + row.id;
@@ -294,7 +331,7 @@
 				url = options.addUrl + "/0"
 			}
 
-			_doAjax(url, {}, data, function(json) {
+			jCocit.util.doAjax(url, {}, data, function(json) {
 				if (json.success) {
 					$grid.datagrid('reload');
 				}
@@ -318,7 +355,7 @@
 		var rows = [];
 		var resultUI = options.resultUI;
 		if (resultUI && resultUI.length > 0) {
-			for ( var i = 0; i < resultUI.length; i++) {
+			for (var i = 0; i < resultUI.length; i++) {
 				var $ui = $("#" + resultUI[i]);
 				if ($ui.hasClass("jCocit-datagrid") || $ui.hasClass("jCocit-treegrid")) {
 					rows = $ui.datagrid("getChecked");
@@ -336,13 +373,28 @@
 	function getUIParams(options) {
 		var resultUI = options.resultUI;
 		if (resultUI && resultUI.length > 0) {
-			for ( var i = 0; i < resultUI.length; i++) {
+			for (var i = 0; i < resultUI.length; i++) {
 				var $ui = $("#" + resultUI[i]);
 				if ($ui.hasClass("jCocit-datagrid") || $ui.hasClass("jCocit-treegrid")) {
-					return makeUIParams($ui.datagrid("options"));
+
+					var gridOpts = $ui.datagrid("options");
+					var ret = makeUIParams(gridOpts);
+
+					/*
+					 * 排序操作：需要用到GRID查询参数参数：
+					 */
+					if (options.opCode >= 251 && options.opCode <= 290) {
+						ret["sortOrder"] = gridOpts.sortOrder;
+						ret["sortField"] = gridOpts.sortField;
+						ret["pageIndex"] = gridOpts.pageIndex;
+						ret["pageSize"] = gridOpts.pageSize;
+					}
+
+					return ret;
 				}
 			}
 		}
+
 		return null;
 	}
 	/**
@@ -359,7 +411,8 @@
 		}
 
 		/*
-		 * jsonExpr——JSON表达式语法：{fld1: [val1, val2, ...], fld2: [val3, val4, ...]}
+		 * jsonExpr——JSON表达式语法：{fld1: [val1, val2, ...], fld2: [val3, val4,
+		 * ...]}
 		 */
 		var jsonExpr = {};
 		/*
@@ -373,7 +426,7 @@
 		var paramUI = options.paramUI || [];
 		var fkTargetFields = options.fkTargetFields || [];
 		var fkFields = options.fkFields || [];
-		for ( var pIndex = 0; pIndex < paramUI.length; pIndex++) {
+		for (var pIndex = 0; pIndex < paramUI.length; pIndex++) {
 			var uiID = "#" + paramUI[pIndex];
 			var $ui = $(uiID);
 
@@ -429,7 +482,7 @@
 				// 生成导航树过滤表达式。导航树节点ID格式为“字段名:字段值”。
 				var nodeID, idx, fld, val, arr;
 
-				for ( var j = 0; j < nodes.length; j++) {
+				for (var j = 0; j < nodes.length; j++) {
 					nodeID = nodes[j].id;
 					idx = nodeID.indexOf(":");
 					fld = "";
@@ -466,7 +519,7 @@
 				// 生成导航树过滤表达式。导航树节点ID格式为“字段名:字段值”。
 				var nodeID, idx, fld, val, arr;
 
-				for ( var j = 0; j < nodes.length; j++) {
+				for (var j = 0; j < nodes.length; j++) {
 					nodeID = nodes[j].id;
 					idx = nodeID.indexOf(":");
 					fld = "";
@@ -521,10 +574,10 @@
 
 		return queryParams;
 	}
-	function doRefreshUI(options) {
+	function doRefreshResultUI(options) {
 		var resultUI = options.resultUI;
 		if (resultUI && resultUI.length > 0) {
-			for ( var i = 0; i < resultUI.length; i++) {
+			for (var i = 0; i < resultUI.length; i++) {
 				var $ui = $("#" + resultUI[i]);
 				if ($ui.hasClass("jCocit-datagrid")) {
 					$ui.datagrid("reload");
@@ -593,51 +646,92 @@
 		} else {
 			formdata = $form.serialize();
 		}
-		var params = jQuery.param(data);
+
+		var params = "";
+		if ($.type(data) == "string") {
+			params = data;
+		} else {
+			params = jQuery.param(data);
+		}
+
 		/*
-		 * 
+		 * 拼装form中grid的提交数据
 		 */
 		var griddataarray = new Array();
 		$form.find(".jCocit-datagrid").each(function() {
 			$grid = $(this);
 			var gridname = $grid.attr("name");
 			var options = $grid.datagrid("options");
-			var defaultFieldValues = options.defaultFieldValues;
-			if (typeof gridname != "undefined" && gridname != null && gridname.length > 0) {
+			var defaultValues = options.defaultValues;
+			var _gridDataStr = "";
+			var _gridDataArray = [];
+			if (gridname) {
 				var changedrows = $grid.datagrid("getChangeDatas");
 				if (changedrows.length > 0) {
-					var _datastr = "";
-					var _dataarray = [];
-					for ( var i = 0; i < changedrows.length; i++) {
-						if (typeof defaultFieldValues == "object") {
-							for ( var def in defaultFieldValues) {
-								if (typeof changedrows[i][def] == "undefined") {
-									changedrows[i][def] = defaultFieldValues[def];
+					for (var i = 0; i < changedrows.length; i++) {
+						if (typeof defaultValues == "object") {
+							for ( var def in defaultValues) {
+								if (changedrows[i][def]) {
+									changedrows[i][def] = defaultValues[def];
 								}
 							}
 						}
 						for ( var fn in changedrows[i]) {
-							if ("_row_buttons_" !== fn) {
-								if (typeof changedrows[i][fn] == "object") {
-									if(typeof changedrows[i][fn].value != "undefined"){
-										_datastr = gridname + "[" + i + "]." + fn + "=" + encodeURI(changedrows[i][fn].value);
-									}else{
-										_datastr = gridname + "[" + i + "]." + fn + "= ";
-									}
+							if (typeof changedrows[i][fn] == "object") {
+								if (changedrows[i][fn].value) {
+									_gridDataStr = gridname + "[" + i + "]." + fn + "=" + encodeURI(changedrows[i][fn].value);
 								} else {
-									_datastr = gridname + "[" + i + "]." + fn + "=" + encodeURI(changedrows[i][fn]);
+									_gridDataStr = gridname + "[" + i + "]." + fn + "= ";
 								}
-								_dataarray.push(_datastr);
+							} else {
+								_gridDataStr = gridname + "[" + i + "]." + fn + "=" + encodeURI(changedrows[i][fn]);
 							}
-							_datastr = "";
+							_gridDataArray.push(_gridDataStr);
+							_gridDataStr = "";
 						}
 					}
-					var gridstr = _dataarray.join("&");
-					griddataarray.push(gridstr);
+					if (_gridDataArray.length > 0) {
+						griddataarray.push(_gridDataArray.join("&"));
+					}
 				}
 			}
 		});
 		var griddatastr = griddataarray.join("&");
+
+		/*
+		 * 拼装form中tree的提交数据
+		 */
+		var treedataarray = new Array();
+		$form.find(".jCocit-tree").each(function() {
+			$tree = $(this);
+			var treename = $tree.attr("name");
+			var treeOptions = $tree.tree("options");
+			var _treeDataStr = "";
+			var _treeDataArray = [];
+			if (treename) {
+				var node = $tree.tree("getSelected");
+				var nodeID, idx, fld, val;
+				if (node) {
+					nodeID = node.id;
+					idx = nodeID.indexOf(":");
+					fld = "";
+					val = "";
+					if (idx > 0) {
+						fld = nodeID.substring(0, idx);
+						val = nodeID.substring(idx + 1);
+					}
+					if (fld.length > 0 && val.length > 0) {
+						_treeDataStr = treename + "." + fld + "=" + val;
+						_treeDataArray.push(_treeDataStr);
+					}
+					if (_treeDataArray.length > 0) {
+						treedataarray.push(_treeDataArray.join("&"));
+					}
+				}
+			}
+		});
+		var treedatastr = treedataarray.join("&");
+
 		/*
 		 * 提交数据
 		 */
@@ -645,7 +739,7 @@
 			type : "POST",
 			dataType : "json",
 			url : submitUrl,
-			data : formdata + "&" + griddatastr + "&" + params,
+			data : formdata + "&" + treedatastr + "&" + griddatastr + "&" + params,
 			success : funcSuccess,
 			complete : funcComplete
 		});
@@ -655,70 +749,7 @@
 			data = {};
 		}
 		var idx = url.indexOf("?");
-		if (opts.opUrlTarget && opts.opUrlTarget.length > 0) {
-			var $target = $(opts.eventTarget);
-			var $tabs = $target.closest(".jCocit-tabs");
-			if ($tabs.length > 0 && opts.opUrlTarget == "tabs") {
-				if (idx > 0) {
-					url += "&";
-				} else {
-					url += "/true?";// isAjax=true
-				}
-				var title = opts.title || opts.text || opts.name;
-				var tab = $tabs.tabs("getTab", title);
-				if (!tab) {
-					$tabs.tabs("add", {
-						url : url + "_uiToken=" + opts.token + "&_resultUI=" + (opts.resultUI || []).join(",") + "&" + $.param(data),
-						cache : false,
-						closable : true,
-						title : title
-					});
-				} else {
-					$tabs.tabs("select", title);
-				}
-			} else {
-				if (idx > 0) {
-					url += "&";
-				} else {
-					url += "?";
-				}
-				window.open(url + "_uiToken=" + opts.token + "&_resultUI=" + (opts.resultUI || []).join(",") + "&" + $.param(data), opts.opUrlTarget).focus();
-			}
-		} else {
-			if (idx > 0) {
-				url += "&";
-			} else {
-				url += "/true?";// isAjax=true
-			}
-			var w = opts.windowWidth || dialogWidth;
-			var h = opts.windowHeight || dialogHeight;
-			$.doAjax({
-				type : "POST",
-				url : url + "_uiToken=" + opts.token + "&_resultUI=" + (opts.resultUI || []).join(",") + "&_uiWidth=" + w + "&_uiHeight=" + h,
-				data : data,
-				success : function(responseText, status, jqXHR) {
-					var buttons = $(".dialog-buttons", $(responseText)).remove();
-					var toolbar = $(".dialog-toolbar", $(responseText)).remove();
-					jCocit.dialog.open(null, "dialog_" + opts.token + "_" + opts.opCode, {
-						title : opts.title || opts.text || opts.name,
-						width : w,
-						height : h,
-						logoCls : opts.iconCls || 'icon-logo',
-						modal : true,
-						shadow : false,
-						maxable : false,
-						draggable : true,
-						content : responseText,
-						buttons : buttons.html(),
-						toolbar : toolbar.html()
-					});
-
-				},
-				error : function(jqXHR, statusText, responseError) {
-					Jerror(responseError);
-				}
-			});
-		}
+		jCocit.util.openWindow(opts, url);
 	}
 	function makeUrl(urlExpr, rows) {
 		var url = "";
@@ -730,7 +761,7 @@
 			}
 			var field = urlExpr.substring(from + 2, to);
 			var value = "";
-			for ( var i = 0; i < rows.length; i++) {
+			for (var i = 0; i < rows.length; i++) {
 				var id = rows[i][field];
 				if (typeof id == "undefined") {
 					throw "Field '" + field + "' not be found!";
@@ -742,8 +773,9 @@
 				throw "Field '" + field + "' not be found!";
 			}
 			value = value.substring(1);
-			url = urlExpr.substring(0, from) + value;
+			url = url + urlExpr.substring(0, from) + value;
 			urlExpr = urlExpr.substring(to + 1);
+			from = urlExpr.indexOf("${");
 		}
 		url = url + urlExpr;
 
@@ -799,6 +831,9 @@
 					return;
 				}
 			}
+			if (rows.length == 0) {
+				rows[0] = 0;
+			}
 
 			url = url + "/" + rows.join(",");
 		} else {
@@ -831,6 +866,9 @@
 				Jwarn(jCocit.entity.defaults.unselectedAny);
 				return;
 			}
+			if (rows.length == 0) {
+				rows[0] = 0;
+			}
 
 			url = url + "/" + rows.join(",");
 		} else {
@@ -838,26 +876,6 @@
 		}
 
 		_getForm(url, opts, getUIParams(opts));
-	}
-	function _doAjax(url, opts, data, success) {
-		$.doAjax({
-			type : "POST",
-			dataType : "json",
-			url : url,
-			data : data,
-			success : function(json) {
-				var msg = json.message || opts.successMessage || jCocit.entity.defaults.successMessage;
-				if (msg) {
-					$.messager.showMsg(msg);
-				}
-				doRefreshUI(opts);
-				if (success) {
-					success(json);
-				}
-			},
-			complete : function() {
-			}
-		});
 	}
 	function doOnRow(opts, rowRequired) {
 		var url;
@@ -902,11 +920,11 @@
 		if (opts.warnMessage) {
 			Jconfirm(opts.warnMessage, "", function(ok) {
 				if (ok) {
-					_doAjax(url, opts, getUIParams(opts));
+					jCocit.util.doAjax(url, opts, getUIParams(opts));
 				}
 			});
 		} else {
-			_doAjax(url, opts, getUIParams(opts));
+			jCocit.util.doAjax(url, opts, getUIParams(opts));
 		}
 	}
 	function doOnRows(opts, rowsRequired) {
@@ -943,14 +961,15 @@
 		if (!msg && (opts.opCode == 269 || opts.opCode == 263)) {
 			msg = jCocit.entity.defaults.deleteMessage;
 		}
+
 		if (msg) {
 			Jconfirm(msg, "", function(ok) {
 				if (ok) {
-					_doAjax(url, opts, getUIParams(opts));
+					jCocit.util.doAjax(url, opts, getUIParams(opts));
 				}
 			});
 		} else {
-			_doAjax(url, opts, getUIParams(opts));
+			jCocit.util.doAjax(url, opts, getUIParams(opts));
 		}
 	}
 
@@ -981,6 +1000,30 @@
 		}
 	};
 	jCocit.util = {
+		loadHTML : function(event, htmlContainer, data) {
+			var btn = $(event.target).closest(".coc-tab-header");
+			if (btn.length) {
+				var options = $.parseOptions(btn);
+				var url = options.opUrl;
+
+				if (url) {
+					$(htmlContainer).doLoad({
+						type : "POST",
+						async : true,
+						url : url,
+						data : data || {}
+					});
+					btn.closest(".coc-tabs-header").find(".coc-tab-header-selected").removeClass("coc-tab-header-selected");
+					btn.addClass("coc-tab-header-selected");
+				}
+			}
+
+			if (event.stopPropagation) {
+				event.stopPropagation();
+			} else if (event.preventDefault) {
+				event.preventDefault();
+			}
+		},
 		doClickCellForAuth : function(rowIndex, field, fieldValue, td, target) {
 			var $grid = $(this);
 
@@ -1065,6 +1108,7 @@
 			var checkedRows = $grid.datagrid("getChecked");
 			var panel = $grid.datagrid("getPanel");
 			var gridName = $grid.attr("name");
+			var gridOptions = $grid.datagrid("options");
 
 			var dataRows = [];
 			for (i = 0; i < checkedRows.length; i++) {
@@ -1094,7 +1138,7 @@
 							var fldvalues = {};
 
 							var fldval, idx, fld, val, arr, input;
-							for ( var k = 0; k < inputs.length; k++) {
+							for (var k = 0; k < inputs.length; k++) {
 								input = inputs[k];
 								fldval = input.value;
 
@@ -1134,12 +1178,12 @@
 			var json = {};
 			json[gridName] = dataRows;
 
-			// alert($.toJsonString(json));
-
-			var params = jQuery.param(json);
+			var params = $.param(json);
 			if (params.length == 0) {
-				Jerror("请选择要授权的菜单！");
-				return;
+				json[gridName] = {};
+				var userGrid = $("#" + gridOptions.paramUI[0]);
+				var user = userGrid.datagrid("getSelected");
+				json[gridOptions.fkFields[0]] = user[gridOptions.fkTargetFields[0]];
 			}
 
 			var $btn = $(btn).attr("disabled", true);
@@ -1205,7 +1249,7 @@
 			if (!tab) {
 				if (linkUrl && linkUrl.trim().length > 0) {
 					$tabs.tabs("add", {
-						url : linkUrl + "/true",
+						url : linkUrl.replace("?", "/true?"),
 						cache : true,
 						closable : true,
 						title : title
@@ -1213,6 +1257,165 @@
 				}
 			} else {
 				$tabs.tabs("select", title);
+			}
+		},
+		/**
+		 * btn: <br/> tabs: <br/> step: 1——next tab, -1——prev tab <br/>
+		 * tabs-navi-prev: class name, used to button, if the current selected
+		 * tab is first, then this button will be hidden.<br/> tabs-navi-next:
+		 * class name, used to button, if the current selected tab is last, then
+		 * this button will be hidden.<br/> tabs-navi-first: class name, used
+		 * to button, if the current selected tab is first, then this button
+		 * will be shown. tabs-navi-last: class name, used to button, if the
+		 * current selected tab is last, then this button will be shown.<br/>
+		 */
+		navigateTabs : function(btn, tabs, step) {
+			var $tabs;
+			var $btn = $(btn);
+			if (typeof tabs == "undefined") {
+				$tabs = $btn.closest(".jCocit-tabs");
+			} else {
+				$tabs = $("#" + tabs);
+			}
+
+			var tab = $tabs.tabs("getSelected");
+			var tabIndex = $tabs.tabs("getTabIndex", tab);
+			var selectIndex = tabIndex + step;
+			$tabs.tabs("select", selectIndex);
+		},
+		doNaviTabsOnSelect : function(tabTitle, tabIndex) {
+			var $tabs = $(this);
+			var tabs = $tabs.tabs("tabs");
+			var tabsContainer = $tabs.parent();
+			if (tabIndex <= 0) {
+				tabsContainer.find(".tabs-navi-prev").hide();
+				tabsContainer.find(".tabs-navi-first").show();
+			} else {
+				tabsContainer.find(".tabs-navi-prev").show();
+				tabsContainer.find(".tabs-navi-first").hide();
+			}
+			if (tabIndex >= tabs.length - 1) {
+				tabsContainer.find(".tabs-navi-next").hide();
+				tabsContainer.find(".tabs-navi-last").show();
+			} else {
+				tabsContainer.find(".tabs-navi-next").show();
+				tabsContainer.find(".tabs-navi-last").hide();
+			}
+		},
+		openWindow : function(btn, url, dialogOptions) {
+			/*
+			 * 计算option
+			 */
+			var opts;
+			if (btn.tagName) {
+				opts = $.parseOptions(btn);
+			} else {
+				opts = btn;
+				btn = opts.eventTarget;
+			}
+			var $btn = $(btn);
+
+			/*
+			 * 计算url
+			 */
+			if (!url) {
+				url = opts.opUrl;
+			}
+			if (!url) {
+				return;
+			}
+
+			var idx = url.indexOf("?");
+
+			var data = getUIParams(opts) || {};
+
+			if (opts.opUrlTarget && opts.opUrlTarget.length > 0) {
+				var $tabs = $btn.closest(".jCocit-tabs");
+				if ($tabs.length > 0 && opts.opUrlTarget == "tabs") {
+					if (idx > 0) {
+						url += "&";
+					} else {
+						url += "/true?";// isAjax=true
+					}
+					var title = opts.title || opts.text || opts.name || $btn.attr("title");
+					var tab = $tabs.tabs("getTab", title);
+					if (!tab) {
+						$tabs.tabs("add", {
+							url : url + "_uiToken=" + (opts.token || '') + "&_resultUI=" + (opts.resultUI || []).join(",") + "&" + $.param(data) + "&_uiWidth=" + opts.windowWidth + "&_uiHeight=" + opts.windowHeight,
+							cache : false,
+							closable : true,
+							title : title
+						});
+					} else {
+						$tabs.tabs("select", title);
+					}
+				} else {
+					if (idx > 0) {
+						url += "&";
+					} else {
+						url += "?";
+					}
+					window.open(url + "_uiToken=" + (opts.token || "") + "&_resultUI=" + (opts.resultUI || []).join(",") + "&" + $.param(data), opts.opUrlTarget).focus();
+				}
+			} else {
+				if (idx > 0) {
+					url = url.replace("?", '/1?') + "&";
+				} else {
+					url = url + "/1?";// isAjax=true
+				}
+				var w = opts.windowWidth || dialogWidth;
+				var h = opts.windowHeight || dialogHeight;
+				var _uiWidth = w - 30;
+				var _uiHeight = h - 66;
+				if (opts.noHeader) {
+					_uiHeight += 40;
+				}
+
+				url = url + "_uiToken=" + (opts.token || "") + "&_resultUI=" + (opts.resultUI || []).join(",") + "&_uiWidth=" + _uiWidth + "&_uiHeight=" + _uiHeight;
+
+				$.doAjax({
+					type : "POST",
+					url : url,
+					data : data || {},
+					success : function(responseText, status, jqXHR) {
+
+						var $content = $(responseText);
+
+						/*
+						 * eval content size.
+						 */
+						var h1 = $content.outerHeight() + 85;
+						if (opts.noHeader) {
+							h1 = h1 - 50;
+						}
+						var w1 = $content.outerWidth() + 50;
+						var buttons = $(".dialog-buttons", $content).remove();
+						var toolbar = $(".dialog-toolbar", $content).remove();
+						var dialog = jCocit.dialog.open(null, "dialog_" + opts.token + "_" + opts.opCode, $.extend({
+							title : opts.noHeader ? "" : (opts.title || opts.text || opts.name || ""),
+							styleName : opts.dialogStyle,
+							width : w,
+							height : dialogAutoHeight ? 'auto' : h,
+							logoCls : opts.iconCls || 'icon-logo',
+							modal : true,
+							shadow : false,
+							maxable : false,
+							draggable : true,
+							content : $content,
+							buttons : buttons.html(),
+							toolbar : toolbar.html()
+						}, dialogOptions || {}));
+
+						if (dialogPositionTop > 0) {
+							dialog.dialog("move", {
+								top : dialogPositionTop
+							});
+						}
+					},
+					error : function(jqXHR, statusText, responseError) {
+						Jerror(responseError);
+					}
+				});
 			}
 		},
 		closeWindow : function(btn) {
@@ -1285,6 +1488,7 @@
 			return null;
 		},
 		submitForm : function(btn, resultUI, data, callback) {
+
 			/*
 			 * 计算BUTTON按钮和BUTTON选项
 			 */
@@ -1319,58 +1523,113 @@
 				url = form.action;
 			}
 
-			if (url) {
-				doSubmitForm(url, $(form), data || {}, function(json) {
-					if (json.success) {
-						if (window.opener) {
-							window.opener.jCocit.entity.doRefreshUI({
-								resultUI : resultUI
-							});
-							if (!callback || callback(json)) {
-								window.close();
-							}
-						} else {
-							jCocit.entity.doRefreshUI({
-								resultUI : resultUI
-							});
-							if (!callback || callback(json)) {
-								var dialog = $btn.closest(".Wd");
-								if (dialog.length > 0) {
-									$(".PnBC", dialog).dialog('close');
-								} else {
-									Jsuccess(json.message);
-								}
+			if (!url) {
+				return;
+			}
+
+			doSubmitForm(url, $(form), data || {}, function(json) {
+				if (json.success) {
+					if (window.opener) {
+						window.opener.jCocit.entity.doRefreshResultUI({
+							resultUI : resultUI
+						});
+						if (!callback || callback(json)) {
+							window.close();
+						}
+					} else {
+						jCocit.entity.doRefreshResultUI({
+							resultUI : resultUI
+						});
+						var msg = json.message || opts.successMessage || jCocit.entity.defaults.successMessage;
+						if (msg) {
+							$.messager.showMsg(msg);
+						}
+						if (!callback || callback(json)) {
+							var dialog = $btn.closest(".Wd");
+							if (dialog.length > 0) {
+								$(".PnBC:eq(0)", dialog).dialog("close");
+							} else {
+								jCocit.util.closeTab(btn);
 							}
 						}
 					}
-				}, function() {
-					$btn.attr("disabled", false);
-				});
-			}
+				}
+			}, function() {
+				$btn.attr("disabled", false);
+			});
 		},
 		resetForm : function(btn) {
 			/*
-			 * 计算BUTTON按钮和BUTTON选项
+			 * 查找FORM
 			 */
-			var opts;
-			if (btn.eventTarget) {
-				opts = btn;
+			var $form;
+			if (!btn.tagName) {
 				btn = btn.eventTarget;
-			} else {
-				opts = $.parseOptions(btn);
 			}
 			var $btn = $(btn);
 
-			var $form = $btn.closest("form");
-			if ($form.length > 0) {
-				$form.get(0).reset();
-				$(".jCocit-combotree", $form).each(function() {
-					$(this).combotree("reset");
-				});
-				var opts = $.parseOptions($form);
-				doRefreshUI(opts);
+			$form = $btn.closest(".jCocit-searchform");
+			if ($form.length == 0) {
+				$form = $btn.closest("form");
 			}
+
+			/*
+			 * 重置FORM字段值
+			 */
+			if ($form.length > 0) {
+				var form = $form.get(0);
+				if (form.tagName == "FORM") {
+					form.reset();
+				} else {
+					$("input,select,textarea", $form).each(function() {
+						$(this).val("");
+					});
+				}
+				$(".jCocit-ui", $form).each(function() {
+					var ths = $(this);
+					if (ths.hasClass("jCocit-combotree")) {
+						ths.combotree("reset");
+					} else if (ths.hasClass("jCocit-combobox")) {
+						ths.combobox("reset");
+					} else if (ths.combo) {
+						ths.combo("reset");
+					}
+				});
+				doRefreshResultUI($.parseOptions($form));
+			}
+		},
+		doAjax : function(url, opts, data, success) {
+			$.doAjax({
+				type : "POST",
+				dataType : "json",
+				url : url,
+				data : data,
+				success : function(json) {
+					doRefreshResultUI(opts);
+					var msg = json.message || opts.successMessage || jCocit.entity.defaults.successMessage;
+					if (msg) {
+						$.messager.showMsg(msg);
+					}
+					if (success) {
+						success(json);
+					}
+				},
+				complete : function() {
+				}
+			});
 		}
 
 	};
+
+	$.fn.clickfirstbutton = function() {
+		this.each(function() {
+			$(this).find("button:first").click();
+		});
+	}
+	$.fn.clickme = function() {
+		this.each(function() {
+			$(this).click();
+		});
+	}
+
 })(jQuery, jCocit);

@@ -2,8 +2,8 @@ package com.jsoft.cocit.ui.view;
 
 import java.io.Writer;
 
-import com.jsoft.cocit.entityengine.annotation.CocColumn;
-import com.jsoft.cocit.entityengine.annotation.CuiGridField;
+import com.jsoft.cocit.dmengine.annotation.CocColumn;
+import com.jsoft.cocit.dmengine.annotation.CuiGridField;
 import com.jsoft.cocit.ui.model.UIFieldModel;
 import com.jsoft.cocit.util.StringUtil;
 

@@ -11,9 +11,9 @@ interface TableNames {
 	 * 日志相关
 	 */
 	static final String TBL_LOG_RUNNING = "coc_log_running";
+	static final String TBL_LOG_VISIT = "coc_log_visit";
 	static final String TBL_LOG_LOGIN = "coc_log_login";
 	static final String TBL_LOG_OPERATION = "coc_log_operation";
-	static final String TBL_LOG_UPLOAD = "coc_log_upload";
 
 	/*
 	 * 实体相关
@@ -32,6 +32,7 @@ interface TableNames {
 	static final String TBL_CUI_GRIDFIELD = "coc_cui_gridfield";
 	static final String TBL_CUI_FORM = "coc_cui_form";
 	static final String TBL_CUI_FORMFIELD = "coc_cui_formfield";
+	static final String TBL_CUI_FORMACTION = "coc_cui_formaction";
 
 	/*
 	 * 安全相关
@@ -45,6 +46,7 @@ interface TableNames {
 	static final String TBL_SEC_ROLEMEMBER = "coc_sec_rolemember";
 	static final String TBL_SEC_SYSMENU = "coc_sec_sysmenu";
 	static final String TBL_SEC_TENANT = "coc_sec_tenant";
+	static final String TBL_SEC_SYSTENANCY = "coc_sec_systenancy";
 	static final String TBL_SEC_SYSUSER = "coc_sec_sysuser";
 	static final String TBL_SEC_DISABLEDIP = "coc_sec_disabledip";
 

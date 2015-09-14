@@ -35,6 +35,7 @@ import org.nutz.dao.entity.ErrorEntitySyntaxException;
 import org.nutz.dao.entity.FieldType;
 import org.nutz.dao.entity.Link;
 import org.nutz.dao.entity.ValueAdapter;
+import org.nutz.dao.entity.annotation.Name;
 import org.nutz.dao.entity.annotation.PK;
 import org.nutz.dao.entity.next.FieldQuery;
 import org.nutz.dao.sql.FieldAdapter;
@@ -45,10 +46,10 @@ import org.nutz.lang.segment.Segment;
 import com.jsoft.cocimpl.orm.generator.INamingStrategy;
 import com.jsoft.cocimpl.orm.generator.impl.TableEntityIdGenerator;
 import com.jsoft.cocit.constant.Const;
-import com.jsoft.cocit.entityengine.annotation.CocColumn;
-import com.jsoft.cocit.entityengine.annotation.CocEntity;
-import com.jsoft.cocit.entityengine.annotation.CocGroup;
-import com.jsoft.cocit.entityengine.field.IExtField;
+import com.jsoft.cocit.dmengine.annotation.CocColumn;
+import com.jsoft.cocit.dmengine.annotation.CocEntity;
+import com.jsoft.cocit.dmengine.annotation.CocGroup;
+import com.jsoft.cocit.dmengine.field.IExtField;
 import com.jsoft.cocit.orm.mapping.EnColumnMapping;
 import com.jsoft.cocit.orm.mapping.EnMapping;
 import com.jsoft.cocit.util.ClassUtil;
@@ -108,6 +109,10 @@ public class EnMappingMaker implements EntityMaker {
 		EnMapping mapping = holder.getEnMapping(classOfEntity);
 		if (mapping != null)
 			return mapping;
+
+		// if (classOfEntity.getSimpleName().equals("ProcessDefinitionEntity")) {
+		// System.out.println(classOfEntity);
+		// }
 
 		String displayNameOfEntity = ClassUtil.getDisplayName(classOfEntity);
 
@@ -656,11 +661,34 @@ public class EnMappingMaker implements EntityMaker {
 		 */
 		Id id = getIdAnnotation(field);
 		if (null != id) {
-			if (!columnMapping.getMirror().isIntLike()) {
-				throw error(entityMapping, "@Id 字段[%s]必需是一个数字型！", field.getName());
-			}
+			// if (!columnMapping.getMirror().isIntLike()) {
+			// throw error(entityMapping, "@Id 字段[%s]必需是一个数字型！", field.getName());
+			// }
 
 			columnMapping.setType(FieldType.ID);
+
+			EnMappingImpl parentEntity = entityMapping.getParent();
+			if (parentEntity != null && parentEntity.getIdGenerator() != null) {
+				entityMapping.setIdGenerator(parentEntity.getIdGenerator());
+			} else {
+
+				TableGenerator generatorAnnotation = field.getAnnotation(TableGenerator.class);
+				if (generatorAnnotation != null) {
+					TableEntityIdGenerator idGenerator = idGenerators.get(generatorAnnotation.table());
+
+					if (idGenerator == null) {
+						idGenerator = new TableEntityIdGenerator(generatorAnnotation.table(), generatorAnnotation.pkColumnName(), generatorAnnotation.valueColumnName());
+						idGenerators.put(generatorAnnotation.table(), idGenerator);
+					}
+
+					entityMapping.setIdGenerator(idGenerator);
+				}
+			}
+		}
+
+		Name name = getNameAnnotation(field);
+		if (null != name) {
+			columnMapping.setType(FieldType.NAME);
 
 			EnMappingImpl parentEntity = entityMapping.getParent();
 			if (parentEntity != null && parentEntity.getIdGenerator() != null) {
@@ -710,7 +738,7 @@ public class EnMappingMaker implements EntityMaker {
 					Link link = Link.getLinkForOne(entityClassMirror, field, targetClass, selfFkField, fkTargetField);
 					link.set("fetch", one.fetch());
 
-					LogUtil.trace("EnMappingMaker.makeLink: @OneToOne，%s, 本实体的外键字段关联到目标实体的主键！[classOfEntity: %s, selfFkField: %s, targetClass: %s, targetPkField: %s]",//
+					LogUtil.trace("EnMappingMaker.makeLink: @OneToOne，%s, 本实体的外键字段关联到目标实体的主键！[classOfEntity: %s, selfFkField: %s, targetClass: %s, targetPkField: %s]", //
 					        field, entityClassMirror.getType(), selfFkField, targetClass, fkTargetField);
 
 					return link;
@@ -726,7 +754,7 @@ public class EnMappingMaker implements EntityMaker {
 					link.set("mappedBy", one.mappedBy());
 					link.set("fetch", one.fetch());
 
-					LogUtil.trace("EnMappingMaker.makeLink: @OneToOne(mappedBy=%s)，%s, 目标实体的外键关联到本实体的主键！[classOfEntity: %s, selfPkField: %s, targetClass: %s, targetFkField: %s]",//
+					LogUtil.trace("EnMappingMaker.makeLink: @OneToOne(mappedBy=%s)，%s, 目标实体的外键关联到本实体的主键！[classOfEntity: %s, selfPkField: %s, targetClass: %s, targetFkField: %s]", //
 					        one.mappedBy(), field, entityClassMirror.getType(), selfPkField, targetClass, targetFkField);
 
 					return link;
@@ -760,7 +788,7 @@ public class EnMappingMaker implements EntityMaker {
 					link.set("linkEntity", linkEntity);
 				}
 
-				LogUtil.trace("EnMappingMaker.makeLink: @ManyToOne,%s, 目标实体的外键关联到本实体的主键！[classOfEntity: %s, selfFkField: %s, targetClass: %s, targetPkField: %s]",//
+				LogUtil.trace("EnMappingMaker.makeLink: @ManyToOne,%s, 目标实体的外键关联到本实体的主键！[classOfEntity: %s, selfFkField: %s, targetClass: %s, targetPkField: %s]", //
 				        field, entityClassMirror.getType(), selfFkField, targetClass, targetPkField);
 
 				return link;
@@ -790,7 +818,7 @@ public class EnMappingMaker implements EntityMaker {
 				link.set("mappedBy", many.mappedBy());
 				link.set("fetch", many.fetch());
 
-				LogUtil.trace("EnMappingMaker.makeLink: @OneToMany(mappedBy=%s),%s, 目标实体的外键关联到本实体的主键！[classOfEntity: %s, selfPkField: %s, targetClass: %s, targetFkField: %s]",//
+				LogUtil.trace("EnMappingMaker.makeLink: @OneToMany(mappedBy=%s),%s, 目标实体的外键关联到本实体的主键！[classOfEntity: %s, selfPkField: %s, targetClass: %s, targetFkField: %s]", //
 				        many.mappedBy(), field, entityClassMirror.getType(), selfPkField, targetClass, targetFkField);
 
 				return link;
@@ -851,10 +879,10 @@ public class EnMappingMaker implements EntityMaker {
 				}
 
 				if (mainFkField == null) {
-					LogUtil.error("EnMappingMaker.makeLink: @ManyToMany,%s,注解非法！[selfClass: %s, targetClass: %s, mainClass: %s, mainFkField: %s, minorClass: %s, minorFkField: %s]",//
+					LogUtil.error("EnMappingMaker.makeLink: @ManyToMany,%s,注解非法！[selfClass: %s, targetClass: %s, mainClass: %s, mainFkField: %s, minorClass: %s, minorFkField: %s]", //
 					        field, selfClass, targetClass, mainClass, mainFkField, minorClass, minorFkField);
 
-					throw ExceptionUtil.throwEx("EnMappingMaker.makeLink: @ManyToMany,%s, 注解非法！[selfClass: %s, targetClass: %s, mainClass: %s, mainFkField: %s, minorClass: %s, minorFkField: %s]",//
+					throw ExceptionUtil.throwEx("EnMappingMaker.makeLink: @ManyToMany,%s, 注解非法！[selfClass: %s, targetClass: %s, mainClass: %s, mainFkField: %s, minorClass: %s, minorFkField: %s]", //
 					        field, selfClass, targetClass, mainClass, mainFkField, minorClass, minorFkField);
 				}
 
@@ -930,7 +958,7 @@ public class EnMappingMaker implements EntityMaker {
 			return;
 		}
 
-		String gname = $CocColumn.generator();
+		String gname = $CocColumn.auto();
 		if (StringUtil.hasContent(gname)) {
 			column.setCocGenerator(gname);
 			mapping.addGeneratorColumn(column);
@@ -1051,6 +1079,13 @@ public class EnMappingMaker implements EntityMaker {
 	@SuppressWarnings("deprecation")
 	private CocColumn getCocColumnAnnotation(Mirror<?> entityMirror, Field fld) {
 		CocEntity cocEntityAnnotation = entityMirror.getType().getAnnotation(CocEntity.class);
+
+		for (CocColumn cc : cocEntityAnnotation.fields()) {
+			if (fld.getName().equals(cc.field()) || fld.getName().equals(cc.propName())) {
+				return cc;
+			}
+		}
+
 		if (cocEntityAnnotation != null) {
 			CocGroup[] cocGroups = cocEntityAnnotation.groups();
 			for (CocGroup cocGroup : cocGroups) {
@@ -1067,6 +1102,10 @@ public class EnMappingMaker implements EntityMaker {
 
 	private Column getColumnAnnotation(Field fld) {
 		return (Column) getAnnotation(fld, Column.class);
+	}
+
+	private Name getNameAnnotation(Field fld) {
+		return (Name) getAnnotation(fld, Name.class);
 	}
 
 	private Id getIdAnnotation(Field fld) {
@@ -1176,10 +1215,10 @@ public class EnMappingMaker implements EntityMaker {
 
 		CocEntity cocEntityAnnotation = (CocEntity) classOfEntity.getAnnotation(CocEntity.class);
 
-		if (cocEntityAnnotation != null && !StringUtil.isBlank(cocEntityAnnotation.key())) {
+		if (cocEntityAnnotation != null && !StringUtil.isBlank(cocEntityAnnotation.code())) {
 
 			if (StringUtil.isBlank(cocEntityAnnotation.tableName())) {
-				return cocEntityAnnotation.key();
+				return cocEntityAnnotation.code();
 			} else {
 				return cocEntityAnnotation.tableName();
 			}

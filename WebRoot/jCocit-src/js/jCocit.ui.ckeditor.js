@@ -19,7 +19,7 @@
 				$d(this, "ckeditor", {
 					options : $.extend({}, $.fn.ckeditor.defaults, $.fn.ckeditor.parseOptions(this), options),
 					tabs : [],
-					selectHis : []
+					selectHis :  []
 				});
 				if (typeof CKEDITOR != "undefined") {
 					delete CKEDITOR.instances[this.id];

@@ -22,18 +22,18 @@
 		}
 
 		if (opts.text) {
-//			$button.html(opts.text).wrapInner('<span class="l-btn-left"><span class="l-btn-text"></span></span>');
-//			if (opts.iconCls) {
-//				$ac(opts.iconAlign == "left" ? "l-btn-icon-left" : "l-btn-icon-right", $ac(opts.iconCls, $f(".l-btn-text", $button)));
-//			}
+			// $button.html(opts.text).wrapInner('<span class="l-btn-left"><span class="l-btn-text"></span></span>');
+			// if (opts.iconCls) {
+			// $ac(opts.iconAlign == "left" ? "l-btn-icon-left" : "l-btn-icon-right", $ac(opts.iconCls, $f(".l-btn-text", $button)));
+			// }
 
 			$button.html(opts.text).wrapInner('<span class="l-btn-left"><span class="l-btn-text"></span></span>');
 			/*
-			 * COC: waiting to ui images. 
+			 * COC: waiting to ui images.
 			 */
-//			if (opts.iconCls) {
-//				$('<span class="l-btn-icon"></span>').addClass(opts.iconCls).prependTo($f(".l-btn-left", $button));
-//			}
+			// if (opts.iconCls) {
+			// $('<span class="l-btn-icon"></span>').addClass(opts.iconCls).prependTo($f(".l-btn-left", $button));
+			// }
 		} else {
 			$button.html("&nbsp;").wrapInner('<span class="l-btn-left"><span class="l-btn-text"><span class="l-btn-empty"></span></span></span>');
 			if (opts.iconCls) {
@@ -53,7 +53,7 @@
 			}
 
 			opts.eventTarget = e.target;
-			
+
 			if (opts.onClick)
 				opts.onClick.call(buttonHTML, opts);
 

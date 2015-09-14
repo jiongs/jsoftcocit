@@ -5,15 +5,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import com.jsoft.cocimpl.ui.view.BaseFieldView;
 import com.jsoft.cocimpl.util.StyleUtil;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.constant.ViewNames;
-import com.jsoft.cocit.entityengine.service.CocEntityService;
-import com.jsoft.cocit.entityengine.service.CocFieldService;
+import com.jsoft.cocit.dmengine.info.ICocEntityInfo;
+import com.jsoft.cocit.dmengine.info.ICocFieldInfo;
 import com.jsoft.cocit.ui.model.UIFieldModel;
 import com.jsoft.cocit.ui.model.control.UIField;
 import com.jsoft.cocit.ui.model.control.UIGrid;
+import com.jsoft.cocit.ui.view.BaseFieldView;
 import com.jsoft.cocit.util.StringUtil;
 
 public class ComboGridFieldView extends BaseFieldView {
@@ -31,8 +31,8 @@ public class ComboGridFieldView extends BaseFieldView {
 	        String targetIdField,//
 	        String targetTextField //
 	) throws Exception {
-		CocFieldService fieldService = ((UIField) fieldModel).getFieldService();
-		CocEntityService fkModule = fieldService.getFkTargetEntity();
+		ICocFieldInfo fieldService = ((UIField) fieldModel).getFieldService();
+		ICocEntityInfo fkModule = fieldService.getFkTargetEntity();
 
 		UIGrid gridModel = null;
 		List<UIFieldModel> columns = null;
@@ -67,6 +67,8 @@ public class ComboGridFieldView extends BaseFieldView {
 		}
 		if (width == null)
 			width = fieldModel.getWidth() + 2;
+		boolean multiSelect = fieldModel.isMultiple();
+		int columnWidth = 187;
 
 		/*
 		 * 输出字段 HTML
@@ -78,9 +80,17 @@ public class ComboGridFieldView extends BaseFieldView {
 		        textValue,//
 		        width);
 		write(out, "panelWidth: 380,");
+		if (multiSelect) {
+			write(out, "multiple: true,");
+			write(out, "singleSelect: false,");
+			columnWidth = 173;
+		} else {
+			write(out, "singleSelect: true,");
+		}
+		write(out, "rownumbers: false,");
 		write(out, "panelHeight: 390,");
-		write(out, "fitColumns: true,");
-		write(out, "singleSelect: false,");
+		write(out, "pagination: true,");
+		write(out, "fitColumns: false,");
 		write(out, "showRefresh: false,");
 		write(out, "showPageList: false,");
 		write(out, "idField: '%s',", targetIdField);
@@ -88,29 +98,23 @@ public class ComboGridFieldView extends BaseFieldView {
 		if (!StringUtil.isBlank(dataUrl)) {
 			write(out, "url: '%s',", dataUrl);
 		}
-		write(out, "rownumbers: %s,", true);// (boolean) gridModel.get("rownumbers", true));
-		write(out, "pagination: true,");
 		write(out, "mode: 'remote',");
 		write(out, "pageSize: %s,", 10);
 		write(out, "columns: [[");
 
-		boolean checkbox = (boolean) gridModel.get("checkbox", true);
-		write(out, "{field:'id', title:'ID', width:80, align:'right', %s},", checkbox ? "checkbox: true" : "hidden: true");
+		write(out, "{field:'id', title:'ID', width:80, align:'right', %s},", multiSelect ? "checkbox: true" : "hidden: true");
 
 		if (columns != null) {
 			for (UIFieldModel col : columns) {
-				write(out, "{field:'%s',title:'%s',width:%s,sortable:true,align:'%s',halign:''},", //
+				write(out, "{field:'%s',title:'%s',width:%s,sortable:true,align:'center',halign:'center'},", //
 				        col.getPropName(), //
 				        col.getTitle(),//
-				        col.getWidth(), //
-				        StringUtil.isBlank(col.getAlign()) ? "left" : col.getAlign(),//
-				        StringUtil.isBlank(col.getHalign()) ? "center" : col.getHalign()//
+				        columnWidth //
 				);
 			}
 		}
 
 		write(out, "]],");
-		write(out, "fitColumns: true");
 		write(out, "\"");
 
 		renderAttrs(out, attrs);

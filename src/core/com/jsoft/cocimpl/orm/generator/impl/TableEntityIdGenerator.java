@@ -12,7 +12,7 @@ import com.jsoft.cocimpl.orm.dialect.Dialect;
 import com.jsoft.cocimpl.orm.generator.EntityIdGenerator;
 import com.jsoft.cocimpl.orm.nutz.EnMappingImpl;
 import com.jsoft.cocit.exception.CocException;
-import com.jsoft.cocit.orm.ExtDao;
+import com.jsoft.cocit.orm.IExtDao;
 import com.jsoft.cocit.orm.NoTransConnCallback;
 import com.jsoft.cocit.orm.mapping.EnColumnMapping;
 import com.jsoft.cocit.orm.mapping.EnMapping;
@@ -47,7 +47,7 @@ public class TableEntityIdGenerator implements EntityIdGenerator<EnMapping> {
 	}
 
 	// 检查 ID 生成器
-	private void checkTable(final ExtDao dao) {
+	private void checkTable(final IExtDao dao) {
 		try {
 			dao.run(new NoTransConnCallback() {
 				public Object invoke(Connection conn) throws Exception {
@@ -104,7 +104,7 @@ public class TableEntityIdGenerator implements EntityIdGenerator<EnMapping> {
 		return "insert into " + tableName + " (" + pkColumnName + ", " + valueColumnName + ") " + " values (?,?)";
 	}
 
-	public Serializable generate(ExtDao dao, final EnMapping entity, EnColumnMapping column, Object dataObject, String... params) {
+	public Serializable generate(IExtDao dao, final EnMapping entity, EnColumnMapping column, Object dataObject, String... params) {
 		final String columnName = ((EnMappingImpl) entity).getField(entity.getIdProperty()).getColumnName();
 		try {
 			return (Serializable) dao.run(new NoTransConnCallback() {

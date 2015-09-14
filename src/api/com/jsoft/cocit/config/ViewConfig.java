@@ -41,9 +41,9 @@ public class ViewConfig implements ConfigKeys {
 		 */
 		item = getButtonStyleForGridCell();
 		if ("link".equals(item)) {
-			cache.put("cellViewForRowActions", ViewNames.CELL_VIEW_LINK_FOR_ROWACTIONS);
+			cache.put("cellViewForRowActions", ViewNames.CELL_VIEW_ROWACTIONS_LINK);
 		} else {
-			cache.put("cellViewForRowActions", ViewNames.CELL_VIEW_BUTTON_FOR_ROWACTIONS);
+			cache.put("cellViewForRowActions", ViewNames.CELL_VIEW_ROWACTIONS_BUTTON);
 		}
 
 		/*

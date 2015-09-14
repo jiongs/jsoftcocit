@@ -6,13 +6,13 @@ import org.nutz.lang.Each;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Mirror;
 
-import com.jsoft.cocit.orm.Dao;
+import com.jsoft.cocit.orm.IDao;
 import com.jsoft.cocit.orm.mapping.EnMapping;
 import com.jsoft.cocit.util.ObjectUtil;
 
 public class SaveManyManyInvoker extends CocInsertInvoker {
 
-	public SaveManyManyInvoker(Dao dao, Object mainObj, Mirror<?> mirror) {
+	public SaveManyManyInvoker(IDao dao, Object mainObj, Mirror<?> mirror) {
 		super(dao, mainObj, mirror);
 	}
 

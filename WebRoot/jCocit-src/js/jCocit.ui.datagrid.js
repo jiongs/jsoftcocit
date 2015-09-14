@@ -1812,7 +1812,16 @@
 		$f("div.datagrid-editable", tr).each(function() {
 			var field = $p($(this)).attr("field");
 			var ed = $d(this, "datagrid.editor");
-			ed.actions.setValue(ed.target, row[field]);
+			var defaultValues = opts.defaultValues;
+			if (defaultValues && defaultValues[field]) {
+				if (row[field]) {
+					ed.actions.setValue(ed.target, row[field]);
+				} else {
+					ed.actions.setValue(ed.target, defaultValues[field]);
+				}
+			} else {
+				ed.actions.setValue(ed.target, row[field]);
+			}
 		});
 		validateRow(gridTable, rowIndex);
 	}
@@ -1825,6 +1834,7 @@
 
 		var tr = opts.finder.getTr(gridTable, rowIndex);
 		var row = opts.finder.getRow(gridTable, rowIndex);
+
 		if (!$hc("datagrid-row-editing", tr)) {
 			return;
 		}
@@ -1934,70 +1944,86 @@
 	function _addRowCellEditor(gridTable, rowIndex) {
 		var opts = $d(gridTable, "datagrid").options;
 		var tr = opts.finder.getTr(gridTable, rowIndex);
+		var $grid = $(gridTable);
 
 		$c("td", tr).each(function() {
 			var cell = $f("div.datagrid-cell", $(this));
 			var field = $(this).attr("field");
-			var col = $(gridTable).datagrid("getColumnOption", field);
-			if (col && col.editor) {
-				var editorType, editorOptions;
-				if (typeof col.editor == "string") {
-					editorType = col.editor;
+			var col = $grid.datagrid("getColumnOption", field);
+			if (!col || !col.editor) {
+				return;
+			}
+
+			var editorType, editorOptions;
+			if (typeof col.editor == "string") {
+				editorType = col.editor;
+			} else {
+				editorType = col.editor.type;
+				editorOptions = col.editor.options;
+			}
+			if (editorType != "buttons") {
+				var editable = true;
+				if (tr.attr("node-id")) {
+					editable = col.editor.updatable;
 				} else {
-					editorType = col.editor.type;
-					editorOptions = col.editor.options;
+					editable = col.editor.insertable;
 				}
-				var editor = opts.editors[editorType];
-				if (editor) {
-					var oldHtml = cell.html();
-					var cellWidth = cell.ow();
-					$ac("datagrid-editable", cell);
-					cell.ow(cellWidth);
-					cell.html('<table border="0" cellspacing="0" cellpadding="1"><tr><td></td></tr></table>');
-					$c("table", cell).bind("click dblclick contextmenu", function(e) {
-						var tt = $(e.target);
-						var isEditSaveButton = tt.hasClass("datagrid-edit-save");
-						if (isEditSaveButton) {
-							submitEdit(gridTable, rowIndex);
-						} else {
-							var isEditCancelButton = tt.hasClass("datagrid-edit-cancel");
-							if (isEditCancelButton) {
-								var options = $(gridTable).datagrid("options");
-								if (options.onEdit != $n) {
-									$(gridTable).datagrid("reload");
-								}else{
-									var rowIndex;
-									var tr = tt.closest("tr.datagrid-row");
-									if (tr.length) {
-										rowIndex = tr.attr("datagrid-row-index");
-									} else {
-										var row = $(gridTable).datagrid("getSelected");
-										rowIndex = $(gridTable).datagrid("getRowIndex", row);
-										tr = $d(gridTable, "datagrid").options.finder.getTr(gridTable, rowIndex);
-									}
-									
-									if(tr.hasClass("datagrid-row-alt")){
-										endEdit(gridTable, rowIndex, true);
-									}else{
-										deleteRow(gridTable, rowIndex);
-									}
-									resetRowIndex(gridTable);
-								}
-							}
-						}
-						e.stopPropagation();
-					});
-					$d(cell[0], "datagrid.editor", {
-						actions : editor,
-						target : editor.init($f("td", cell), editorOptions, opts),
-						field : field,
-						type : editorType,
-						oldHtml : oldHtml
-					});
+				if (!editable) {
+					return;
 				}
 			}
+
+			var editor = opts.editors[editorType];
+			if (editor) {
+				var oldHtml = cell.html();
+				var cellWidth = cell.ow();
+				$ac("datagrid-editable", cell);
+				cell.ow(cellWidth);
+				cell.html('<table border="0" cellspacing="0" cellpadding="1"><tr><td></td></tr></table>');
+				$c("table", cell).bind("click dblclick contextmenu", function(e) {
+					var tt = $(e.target);
+					var isEditSaveButton = tt.hasClass("datagrid-edit-save");
+					var tr = tt.closest("tr.datagrid-row");
+					rowIndex = tr.attr("datagrid-row-index");
+					if (isEditSaveButton) {
+						submitEdit(gridTable, rowIndex);
+					} else {
+						var isEditCancelButton = tt.hasClass("datagrid-edit-cancel");
+						if (isEditCancelButton) {
+							var options = $grid.datagrid("options");
+							if (options.onEdit != $n) {
+								$grid.datagrid("reload");
+							} else {
+								var rowIndex;
+								var tr = tt.closest("tr.datagrid-row");
+								if (tr.length) {
+									rowIndex = tr.attr("datagrid-row-index");
+								} else {
+									var row = $grid.datagrid("getSelected");
+									rowIndex = $grid.datagrid("getRowIndex", row);
+									tr = $d(gridTable, "datagrid").options.finder.getTr(gridTable, rowIndex);
+								}
+
+								if ($(tr).attr("node-id")) {
+									endEdit(gridTable, rowIndex, true);
+								} else {
+									deleteRow(gridTable, rowIndex);
+								}
+								resetRowIndex(gridTable);
+							}
+						}
+					}
+					e.stopPropagation();
+				});
+				$d(cell[0], "datagrid.editor", {
+					actions : editor,
+					target : editor.init($f("td", cell), editorOptions, opts),
+					field : field,
+					type : editorType,
+					oldHtml : oldHtml
+				});
+			}
 		});
-		var $grid = $(gridTable);
 		$grid.datagrid("fixRowHeight", {
 			rowIndex : rowIndex,
 			syncFrozen : true
@@ -2076,34 +2102,62 @@
 		var panel = $(gridTable).datagrid("getPanel");
 
 		panel.find(".datagrid-view2").find("tr.datagrid-row-editing").each(function() {
-			var rowIndex = _getRowIndex($(this));
+			var $tr = $(this);
+			var rowIndex = _getRowIndex($tr);
 			var row = opts.finder.getRow(gridTable, rowIndex);
-			$f("div.datagrid-editable", $(this)).each(function() {
+			var newRow = {};
+			newRow["id"] = row["id"];
+			$f("div.datagrid-editable", $tr).each(function() {
 				var field = $p($(this)).attr("field");
-				var ed = $d(this, "datagrid.editor");
-				var value = ed.actions.getValue(ed.target);
-				if (row[field] != value) {
-					row[field] = value;
+				var col = $(gridTable).datagrid("getColumnOption", field);
+				if (col && col.editor) {
+					var editorType, editorOptions;
+					if (typeof col.editor == "string") {
+						editorType = col.editor;
+					} else {
+						editorType = col.editor.type;
+						editorOptions = col.editor.options;
+					}
+					if (editorType != "buttons") {
+						var editable = true;
+						if ($tr.attr("node-id")) {
+							editable = col.editor.updatable;
+						} else {
+							editable = col.editor.insertable;
+						}
+						if (editable) {
+							var ed = $d(this, "datagrid.editor");
+							var value = ed.actions.getValue(ed.target);
+							if (row[field] != value) {
+								row[field] = value;
+							}
+							newRow[field] = row[field];
+						}
+					}
 				}
 			});
-			changedDatas.push(row);
+			changedDatas.push(newRow);
 		});
-		// alert($.toJsonString(changedDatas));
 		return changedDatas;
 	}
-	
-	function resetRowIndex(gridTable){
+
+	function resetRowIndex(gridTable) {
+		var state = $d(gridTable, "datagrid");
 		var $grid = $(gridTable);
 		var panel = $(gridTable).datagrid("getPanel");
 		var i = 0;
 		panel.find(".datagrid-view1").find("tr.datagrid-row").each(function() {
-			$(this).attr("datagrid-row-index",i);
-			$f("div.datagrid-cell-rownumber", $(this)).text(i+1);
+			var trID = state.rowIdPrefix + "-" + (true ? 1 : 2) + "-" + i;
+			$(this).attr("id", trID);
+			$(this).attr("datagrid-row-index", i);
+			$f("div.datagrid-cell-rownumber", $(this)).text(i + 1);
 			i++;
 		});
 		i = 0;
 		panel.find(".datagrid-view2").find("tr.datagrid-row").each(function() {
-			$(this).attr("datagrid-row-index","" + i);
+			var trID = state.rowIdPrefix + "-" + (false ? 1 : 2) + "-" + i;
+			$(this).attr("id", trID);
+			$(this).attr("datagrid-row-index", i);
 			i++;
 		});
 	}

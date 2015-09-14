@@ -39,15 +39,23 @@
 				_doSelectRow();
 				opts.onUnselect.call(this, rowIndex, row);
 			},
-			onSelectAll : function(rows) {
-				_doSelectRow();
-				opts.onSelectAll.call(this, rows);
+			onCheck : function(rowIndex, row) {
+				_doSelectRow("getChecked");
+				opts.onCheck.call(this, rowIndex, row);
 			},
-			onUnselectAll : function(rows) {
+			onUncheck : function(rowIndex, row) {
+				_doSelectRow("getChecked");
+				opts.onUncheck.call(this, rowIndex, row);
+			},
+			onCheckAll : function(rows) {
+				_doSelectRow("getChecked");
+				opts.onCheckAll.call(this, rows);
+			},
+			onUncheckAll : function(rows) {
 				if (opts.multiple) {
-					_doSelectRow();
+					_doSelectRow("getChecked");
 				}
-				opts.onUnselectAll.call(this, rows);
+				opts.onUncheckAll.call(this, rows);
 			}
 		}));
 
@@ -60,9 +68,9 @@
 			opts.onClickRow.call(this, rowIndex, row);
 		}
 
-		function _doSelectRow() {
+		function _doSelectRow(getter) {
 			var remainText = $d(target, "combogrid").remainText;
-			var selectedRows = $grid.datagrid("getSelections");
+			var selectedRows = $grid.datagrid(getter || "getSelections");
 			var vv = [], ss = [];
 			for ( var i = 0; i < selectedRows.length; i++) {
 				vv.push(selectedRows[i][opts.idField]);

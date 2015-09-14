@@ -6,22 +6,26 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.jsoft.cocimpl.context.StopWatch;
+import org.springframework.context.ApplicationContext;
+
 import com.jsoft.cocimpl.mvc.nutz.CocActionHandler;
 import com.jsoft.cocimpl.orm.generator.INamingStrategy;
-import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocit.config.IBeansConfig;
 import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.config.IDSConfig;
 import com.jsoft.cocit.config.IMessageConfig;
-import com.jsoft.cocit.entityengine.DataManagerFactory;
-import com.jsoft.cocit.entityengine.EntityEngine;
-import com.jsoft.cocit.entityengine.EntityServiceFactory;
-import com.jsoft.cocit.entityengine.PatternAdapters;
-import com.jsoft.cocit.orm.Orm;
+import com.jsoft.cocit.context.StopWatch;
+import com.jsoft.cocit.dmengine.IDataManagerFactory;
+import com.jsoft.cocit.dmengine.IDataModelEngine;
+import com.jsoft.cocit.dmengine.IEntityInfoFactory;
+import com.jsoft.cocit.dmengine.IPatternAdapters;
+import com.jsoft.cocit.dmengine.command.ICommandInterceptors;
+import com.jsoft.cocit.orm.IOrm;
 import com.jsoft.cocit.orm.generator.EntityGenerators;
-import com.jsoft.cocit.securityengine.SecurityEngine;
+import com.jsoft.cocit.securityengine.SecurityService;
+import com.jsoft.cocit.service.LogService;
 import com.jsoft.cocit.ui.UIModelFactory;
+import com.jsoft.cocit.ui.UIViews;
 
 /**
  * 
@@ -52,13 +56,13 @@ public abstract class Cocit {
 
 	public abstract <T> T getBean(Class<T> type);
 
-	public abstract EntityServiceFactory getEntityServiceFactory();
+	public abstract IEntityInfoFactory getEntityServiceFactory();
 
 	public abstract UIModelFactory getUiModelFactory();
 
 	public abstract UIViews getViews();
 
-	public abstract DataManagerFactory getDataManagerFactory();
+	public abstract IDataManagerFactory getDataManagerFactory();
 
 	public abstract IDSConfig commonDataSource();
 
@@ -72,11 +76,11 @@ public abstract class Cocit {
 
 	public abstract void releaseHttpConext();
 
-	public abstract Orm orm();
+	public abstract IOrm orm();
 
-	public abstract Orm getProxiedORM();
+	// public abstract Orm getProxiedORM();
 
-	public abstract Orm getORM(IDSConfig dsConfig);
+	public abstract IOrm getORM(IDSConfig dsConfig);
 
 	public abstract void close();
 
@@ -88,9 +92,9 @@ public abstract class Cocit {
 
 	public abstract INamingStrategy getNamingStrategy();
 
-	public abstract EntityEngine getEntityEngine();
+	public abstract IDataModelEngine getEntityEngine();
 
-	public abstract SecurityEngine getSecurityEngine();
+	public abstract SecurityService getSecurityEngine();
 
 	public abstract ICocConfig getConfig();
 
@@ -98,12 +102,18 @@ public abstract class Cocit {
 
 	public abstract CocActionHandler actionHandler();
 
-	public abstract PatternAdapters getPatternAdapters();
+	public abstract ICommandInterceptors getCommandInterceptors();
+
+	public abstract IPatternAdapters getPatternAdapters();
 
 	public abstract EntityGenerators getEntityGenerators();
 
 	public abstract void destroy(ServletContext context);
 
 	public abstract IMessageConfig getMessages();
+
+	public abstract LogService getLogService();
+	
+	public abstract ApplicationContext getApplicationContext();
 
 }

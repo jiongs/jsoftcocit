@@ -1,11 +1,13 @@
 package com.jsoft.cocimpl.ui.view.jcocitfield;
 
 import java.io.Writer;
+import java.util.Map;
 import java.util.Properties;
 
-import com.jsoft.cocimpl.ui.view.BaseFieldView;
+import com.jsoft.cocimpl.util.StyleUtil;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.ui.model.UIFieldModel;
+import com.jsoft.cocit.ui.view.BaseFieldView;
 import com.jsoft.cocit.util.StringUtil;
 
 public class TextFieldView extends BaseFieldView {

@@ -2,16 +2,16 @@ package com.jsoft.cocimpl.ui.view.jcocit;
 
 import java.io.Writer;
 
-import com.jsoft.cocimpl.ui.UIViews;
-import com.jsoft.cocimpl.ui.view.BaseModelView;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.ViewNames;
-import com.jsoft.cocit.entityengine.service.CocFieldService;
+import com.jsoft.cocit.dmengine.info.ICocFieldInfo;
+import com.jsoft.cocit.ui.UIViews;
 import com.jsoft.cocit.ui.model.UIFieldModel;
 import com.jsoft.cocit.ui.model.control.UIField;
 import com.jsoft.cocit.ui.model.control.UISearchBox;
+import com.jsoft.cocit.ui.view.BaseModelView;
 import com.jsoft.cocit.ui.view.UIFieldView;
 import com.jsoft.cocit.util.StringUtil;
 
@@ -26,9 +26,9 @@ public class UISearchFormView extends BaseModelView<UISearchBox> {
 		HttpContext ctx = Cocit.me().getHttpContext();
 
 		/*
-		 * 创建 FORM 标签
+		 * 创建 FORM 标签：用DIV代替FORM，因为当DataGrid支持行编辑，且DataGrid外套有FORM标签时，这里FORM标签将失效。
 		 */
-		write(out, "<form id=\"%s\" class=\"searchForm jCocit-searchform\" onsubmit=\"return false;\" data-options=\"resultUI: %s, token: '%s'\" >",//
+		write(out, "<div id=\"%s\" class=\"searchForm jCocit-searchform\" data-options=\"resultUI: %s, token: '%s'\" >",//
 		        model.getId(), //
 		        StringUtil.toJSArray(model.getResultUI()),//
 		        token//
@@ -52,7 +52,7 @@ public class UISearchFormView extends BaseModelView<UISearchBox> {
 			UIFieldView view = views.getFieldView(uiField.getViewName());
 			String fieldname = uiField.getPropName();
 			UIField f = (UIField) uiField;
-			CocFieldService fs = f.getFieldService();
+			ICocFieldInfo fs = f.getFieldService();
 			if (fs != null) {
 				switch (fs.getFieldType()) {
 					case Const.FIELD_TYPE_STRING:
@@ -97,7 +97,7 @@ public class UISearchFormView extends BaseModelView<UISearchBox> {
 		write(out, "</tr>");
 
 		write(out, "</table>");
-		write(out, "</form>");
+		write(out, "</div>");// 用DIV代替FORM
 	}
 
 }

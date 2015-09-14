@@ -16,7 +16,7 @@ import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.action.OpContext;
 import com.jsoft.cocit.config.IMessageConfig;
-import com.jsoft.cocit.constant.UrlAPI;
+import com.jsoft.cocit.constant.CocUrl;
 import com.jsoft.cocit.constant.ViewKeys;
 import com.jsoft.cocit.ui.model.UIModel;
 import com.jsoft.cocit.ui.model.control.UIForm;
@@ -252,7 +252,7 @@ public class FormTag extends TagSupport {
 
 			uiModel = (UIForm) opContext.getUiModelFactory().getForm(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getCocAction(), opContext.getDataObject());
 
-			uiModel.setSubmitUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_SAVE, opExpr, dataID));
+			uiModel.setSubmitUrl(MVCUtil.makeUrl(CocUrl.ENTITY_SAVE, opExpr, dataID));
 			uiModel.setDataObject(opContext.getDataObject());
 
 		}

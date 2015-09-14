@@ -6,14 +6,14 @@ import java.util.List;
 import org.nutz.dao.entity.Link;
 import org.nutz.lang.Mirror;
 
-import com.jsoft.cocit.orm.ExtDao;
+import com.jsoft.cocit.orm.IExtDao;
 import com.jsoft.cocit.util.ExceptionUtil;
 import com.jsoft.cocit.util.LogUtil;
 import com.jsoft.cocit.util.ObjectUtil;
 
 public class ManyFieldGetterIntercepter extends LinkFieldGetterIntercepter {
 
-	public ManyFieldGetterIntercepter(ExtDao dao, Link link) {
+	public ManyFieldGetterIntercepter(IExtDao dao, Link link) {
 		this.dao = dao;
 		this.link = link;
 		// FetchType fetch = (FetchType) link.get("fetch");

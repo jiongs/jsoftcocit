@@ -7,14 +7,14 @@ import java.util.Map;
 import com.jsoft.cocimpl.config.impl.BaseConfig;
 import com.jsoft.cocimpl.securityengine.RootUserFactory;
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.baseentity.security.IUserEntity;
 import com.jsoft.cocit.config.IConfig;
-import com.jsoft.cocit.entity.security.IUser;
-import com.jsoft.cocit.entityengine.service.UserService;
+import com.jsoft.cocit.dmengine.info.IUserInfo;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.util.StringUtil;
 
 public class RootUserFactoryImpl extends BaseConfig implements RootUserFactory {
-	private Map<String, RootUser> rootUserMap;
+	private Map<String, RootUserEntity> rootUserMap;
 
 	public RootUserFactoryImpl() {
 	}
@@ -34,7 +34,7 @@ public class RootUserFactoryImpl extends BaseConfig implements RootUserFactory {
 		}
 	}
 
-	public UserService getRootUser(final String username) {
+	public IUserInfo getRootUser(final String username) {
 		initRootUsers();
 
 		final String password = this.get(username);
@@ -42,9 +42,9 @@ public class RootUserFactoryImpl extends BaseConfig implements RootUserFactory {
 			return null;
 		}
 
-		RootUser user = rootUserMap.get(username);
+		RootUserEntity user = rootUserMap.get(username);
 		if (user == null) {
-			user = new RootUser();
+			user = new RootUserEntity();
 
 			user.setUsername(username);
 			user.setPassword(password);
@@ -52,10 +52,10 @@ public class RootUserFactoryImpl extends BaseConfig implements RootUserFactory {
 			rootUserMap.put(username, user);
 		}
 
-		return new RootUserService(user);
+		return new RootUserInfo(user);
 	}
 
-	public void saveRootUser(IUser newUser) {
+	public void saveRootUser(IUserEntity newUser) {
 		if (newUser == null) {
 			return;
 		}
@@ -74,13 +74,18 @@ public class RootUserFactoryImpl extends BaseConfig implements RootUserFactory {
 		return this;
 	}
 
-	public static RootUser makeRootUser(String username, String rawpassword) {
-		RootUser root = new RootUser();
-		root.setKey(username);
+	public static RootUserEntity makeRootUser(String username, String rawpassword) {
+		RootUserEntity root = new RootUserEntity();
+		root.setCode(username);
 		root.setRawPassword(rawpassword);
 		root.setRawPassword2(rawpassword);
 
 		return root;
+	}
+
+	public static void main(String[] args) {
+		RootUserEntity root = makeRootUser("root", "akxx2015!@#$");
+		System.out.println(root.getCode() + " = " + root.getPassword());
 	}
 
 }

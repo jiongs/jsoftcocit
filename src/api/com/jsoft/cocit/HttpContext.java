@@ -1,12 +1,15 @@
 package com.jsoft.cocit;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.jsoft.cocit.entity.security.IUser;
-import com.jsoft.cocit.entityengine.service.SystemService;
-import com.jsoft.cocit.entityengine.service.TenantService;
-import com.jsoft.cocit.securityengine.LoginSession;
+import com.jsoft.cocit.baseentity.security.IUserEntity;
+import com.jsoft.cocit.dmengine.info.ISystemInfo;
+import com.jsoft.cocit.dmengine.info.ITenantInfo;
+import com.jsoft.cocit.securityengine.SecurityVoter;
+import com.jsoft.cocit.securityengine.ILoginSession;
 
 /**
  * Cocit HTTP环境：用来管理HTTP请求的一次生命周期。
@@ -21,19 +24,19 @@ public interface HttpContext {
 
 	HttpServletResponse getResponse();
 
-	LoginSession getLoginSession();
+	ILoginSession getLoginSession();
 
-	IUser getLoginUser();
+	IUserEntity getLoginUser();
 
-	TenantService getLoginTenant();
+	ITenantInfo getLoginTenant();
 
-	SystemService getLoginSystem();
+	ISystemInfo getLoginSystem();
 
 	String getLoginUsername();
 
-	String getLoginTenantKey();
+	String getLoginTenantCode();
 
-	String getLoginSystemKey();
+	String getLoginSystemCode();
 
 	int getBrowserWidth();
 
@@ -48,6 +51,10 @@ public interface HttpContext {
 	 */
 	String getClientResultUI();
 
+	List<String> getClientResultUIList();
+
+	List<String> getClientParamUIList();
+
 	int getClientUIHeight();
 
 	int getClientUIWidth();
@@ -59,6 +66,13 @@ public interface HttpContext {
 	<T> T getParameterValue(String key, T defaultReturn);
 
 	<T> T getParameterValue(String parameterName, Class<T> classOfParameter, T defaultValue);
+
+	/**
+	 * 为用户添加临时权限
+	 */
+	void addAccessVoter(SecurityVoter voter);
+
+	List<SecurityVoter> getAccessVoters();
 
 	void release();
 }

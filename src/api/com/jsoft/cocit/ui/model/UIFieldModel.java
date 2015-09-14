@@ -79,7 +79,7 @@ public interface UIFieldModel {
 	public String getFkComboTreeUrl();
 
 	public String getFkComboListUrl();
-	
+
 	public String getFkComboGridUrl();
 
 	/**
@@ -116,10 +116,14 @@ public interface UIFieldModel {
 	public boolean isMultiple();
 
 	public <T extends BaseUIModel> T setViewName(String viewName);
-	
+
 	public <T extends BaseUIModel> T setTitle(String title);
-	
+
 	public void setSupportHtml(boolean supportHtml);
-	
+
 	public boolean isSupportHtml();
+
+	public int getModeToAddGridRow();
+
+	public int getModeToEditGridRow();
 }

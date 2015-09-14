@@ -7,28 +7,30 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.jsoft.cocimpl.entityengine.impl.service.EmptySystemService;
-import com.jsoft.cocimpl.entityengine.impl.service.EmptyTenantService;
+import com.jsoft.cocimpl.dmengine.impl.info.EmptySystemInfo;
+import com.jsoft.cocimpl.dmengine.impl.info.EmptyTenantInfo;
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.baseentity.log.ILogLoginEntity;
+import com.jsoft.cocit.baseentity.security.IPermissionEntity;
+import com.jsoft.cocit.baseentity.security.ISystemMenuEntity;
 import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.EntityTypes;
 import com.jsoft.cocit.constant.PrincipalTypes;
-import com.jsoft.cocit.entity.security.IAuthority;
-import com.jsoft.cocit.entity.security.ISystemMenu;
-import com.jsoft.cocit.entityengine.EntityServiceFactory;
-import com.jsoft.cocit.entityengine.service.SystemMenuService;
-import com.jsoft.cocit.entityengine.service.SystemService;
-import com.jsoft.cocit.entityengine.service.TenantService;
-import com.jsoft.cocit.entityengine.service.UserService;
+import com.jsoft.cocit.dmengine.IEntityInfoFactory;
+import com.jsoft.cocit.dmengine.info.ISystemMenuInfo;
+import com.jsoft.cocit.dmengine.info.IUserInfo;
+import com.jsoft.cocit.dmengine.info.ISystemInfo;
+import com.jsoft.cocit.dmengine.info.ITenantInfo;
 import com.jsoft.cocit.exception.CocDBException;
 import com.jsoft.cocit.exception.CocSecurityException;
-import com.jsoft.cocit.orm.Orm;
+import com.jsoft.cocit.orm.IOrm;
 import com.jsoft.cocit.orm.expr.CndExpr;
 import com.jsoft.cocit.orm.expr.Expr;
+import com.jsoft.cocit.securityengine.SecurityVoter;
 import com.jsoft.cocit.securityengine.GrantedAuthority;
-import com.jsoft.cocit.securityengine.LoginSession;
-import com.jsoft.cocit.securityengine.SecurityEngine;
+import com.jsoft.cocit.securityengine.ILoginSession;
+import com.jsoft.cocit.securityengine.SecurityService;
 import com.jsoft.cocit.util.ExceptionUtil;
 import com.jsoft.cocit.util.ExprUtil;
 import com.jsoft.cocit.util.LogUtil;
@@ -37,20 +39,23 @@ import com.jsoft.cocit.util.StringUtil;
 import com.jsoft.cocit.util.Tree;
 import com.jsoft.cocit.util.Tree.Node;
 
-public class LoginSessionImpl implements LoginSession {
+public class LoginSessionImpl implements ILoginSession {
 	private static final long serialVersionUID = -2227024696863349919L;
 
 	private Map<String, Object> cachedData = new HashMap();
-	private List<IAuthority> authorities;
-	private UserService user;
-	private TenantService tenant;
-	private SystemService system;
+	private List<IPermissionEntity> authorities;
+	private IUserInfo user;
+	private ITenantInfo tenant;
+	private ISystemInfo system;
 	private String username;
 	private int userType;
 	private double clientWidth = 1024.0;
 	private double clientHeight = 768.0;
-	private String loginLogKey;
+	private String loginLogCode;
 	private boolean authenticated;
+	private ILogLoginEntity loginLog;
+	private String appURL;
+	private Map<String, SecurityVoter> accessVoters;
 
 	public void release() {
 		if (this.cachedData != null) {
@@ -61,14 +66,13 @@ public class LoginSessionImpl implements LoginSession {
 		this.tenant = null;
 		this.system = null;
 		this.username = null;
-		this.loginLogKey = null;
+		this.loginLogCode = null;
 		authenticated = false;
 	}
 
-	LoginSessionImpl(SecurityEngine securityEngine, HttpServletRequest request, TenantService tenant, SystemService system, String userTypeKey, String username, String password) throws CocSecurityException {
+	LoginSessionImpl(SecurityService securityEngine, HttpServletRequest request, ITenantInfo tenant, ISystemInfo system, String userTypeCode, String username, String password) throws CocSecurityException {
 		LogUtil.debug("创建登录信息对象......");
 
-		this.username = username;
 
 		// if (!StringUtil.isEmpty(realm)) {
 		// IRealm realmObj = moduleEngine.getRealm(soft, realm);
@@ -79,24 +83,32 @@ public class LoginSessionImpl implements LoginSession {
 		if (StringUtil.isBlank(username)) {
 			throw new CocSecurityException("10012");
 		} else {
-			user = securityEngine.checkUser(tenant, userTypeKey, username, password);
+			user = securityEngine.checkUser(tenant, userTypeCode, username, password);
 
+			this.username = user.getCode();
 			this.tenant = tenant;
 			this.system = system;
 
 			Cocit coc = Cocit.me();
 			ICocConfig config = coc.getConfig();
-			EntityServiceFactory sf = coc.getEntityServiceFactory();
+			IEntityInfoFactory sf = coc.getEntityServiceFactory();
 
-			if (user instanceof RootUserService) {
-				if (system == null || system instanceof EmptySystemService) {
-					this.system = sf.getSystem(config.getCocitSystemKey());
+			if (user instanceof RootUserInfo) {
+				if (system == null || system instanceof EmptySystemInfo) {
+					this.system = sf.getSystem(config.getCocitSystemCode());
 				}
-				if (tenant == null || tenant instanceof EmptyTenantService) {
-					this.tenant = sf.getTenant(config.getCocitTenantKey());
+				if (tenant == null || tenant instanceof EmptyTenantInfo) {
+					this.tenant = sf.getTenant(config.getCocitTenantCode());
 				}
 			} else {
-				if (config.getCocitSystemKey().equals(system.getKey())) {
+				if (tenant == null || tenant instanceof EmptyTenantInfo) {
+					this.tenant = sf.getTenant(user.getTenantCode());
+				}
+				if (system == null || system instanceof EmptySystemInfo) {
+					this.system = sf.getSystem(this.tenant.getSystemCode());
+				}
+
+				if (config.getCocitSystemCode().equals(system.getCode())) {
 					throw new CocSecurityException("10006");
 				}
 			}
@@ -112,29 +124,34 @@ public class LoginSessionImpl implements LoginSession {
 		try {
 			userType = user.getPrincipalType();
 
-			Orm orm = Cocit.me().orm();
+			IOrm orm = Cocit.me().orm();
 
-			CndExpr expr = Expr.eq("userKey", user.getUsername());
+			CndExpr expr = Expr.eq("userCode", user.getUsername());
 			if (system != null) {
-				CndExpr sexpr = ExprUtil.systemIs(system.getKey());
+				CndExpr sexpr = ExprUtil.systemIs(system.getCode());
 				if (sexpr != null) {
 					expr = expr.and(sexpr);
 				}
 			}
 			if (tenant != null) {
-				CndExpr texpr = ExprUtil.tenantIs(tenant.getKey());
+				CndExpr texpr = ExprUtil.tenantIs(tenant.getCode());
 				if (texpr != null) {
 					expr = expr.and(texpr);
 				}
 			}
 
-			this.authorities = (List<IAuthority>) orm.query(EntityTypes.Authority, expr);
+			this.authorities = (List<IPermissionEntity>) orm.query(EntityTypes.Authority, expr);
 		} catch (CocDBException e) {
 			LogUtil.error("加载权限失败！%s", ExceptionUtil.msg(e));
 		}
 	}
 
 	private void initClientParams(HttpServletRequest request) {
+
+		StringBuffer url = request.getRequestURL();
+		int idx = url.indexOf("//") + 2;
+		idx = idx + url.substring(idx).indexOf("/");
+		this.appURL = url.substring(0, idx) + Cocit.me().getContextPath();
 
 		String sClientWidth = request.getParameter(Const.REQUEST_KEY_CLIENT_WIDTH);
 		String sClientHeight = request.getParameter(Const.REQUEST_KEY_CLIENT_HEIGHT);
@@ -154,11 +171,11 @@ public class LoginSessionImpl implements LoginSession {
 		}
 	}
 
-	public UserService getUser() {
+	public IUserInfo getUser() {
 		return user;
 	}
 
-	public TenantService getTenant() {
+	public ITenantInfo getTenant() {
 		return tenant;
 	}
 
@@ -170,7 +187,7 @@ public class LoginSessionImpl implements LoginSession {
 		return cachedData.get(key);
 	}
 
-	public LoginSession set(String key, Object value) {
+	public ILoginSession set(String key, Object value) {
 		cachedData.put(key, value);
 		return this;
 	}
@@ -179,7 +196,7 @@ public class LoginSessionImpl implements LoginSession {
 		return userType;
 	}
 
-	public SystemService getSystem() {
+	public ISystemInfo getSystem() {
 		return system;
 	}
 
@@ -191,8 +208,8 @@ public class LoginSessionImpl implements LoginSession {
 		return clientHeight;
 	}
 
-	public String getLoginLogKey() {
-		return loginLogKey;
+	public String getLoginLogCode() {
+		return loginLogCode;
 	}
 
 	@Override
@@ -222,15 +239,15 @@ public class LoginSessionImpl implements LoginSession {
 	public Tree makeFuncMenu(String urlPrefix) {
 
 		Tree root = Tree.make();
-		UserService user = this.getUser();
+		IUserInfo user = this.getUser();
 
-		if (user instanceof RootUserService//
+		if (user instanceof RootUserInfo//
 		        || user.getRolesList().contains(PrincipalTypes.ROLE_ROOT)//
 		) {
-			if (system == null || system instanceof EmptySystemService)
+			if (system == null || system instanceof EmptySystemInfo)
 				return root;
 
-			for (SystemMenuService menu : system.getSystemMenus()) {
+			for (ISystemMenuInfo menu : system.getSystemMenus()) {
 
 				if (menu.isDisabled() || menu.isHidden())
 					continue;
@@ -239,10 +256,10 @@ public class LoginSessionImpl implements LoginSession {
 			}
 		} else {
 
-			for (IAuthority auth : this.authorities) {
-				SystemMenuService menu = system.getSystemMenu(auth.getMenuKey());
+			for (IPermissionEntity auth : this.authorities) {
+				ISystemMenuInfo menu = system.getSystemMenu(auth.getMenuCode());
 
-				if (menu.isDisabled() || menu.isHidden())
+				if (menu == null || menu.isDisabled() || menu.isHidden())
 					continue;
 
 				makeSystemMenuItem(root, menu, urlPrefix);
@@ -264,12 +281,12 @@ public class LoginSessionImpl implements LoginSession {
 		return root;
 	}
 
-	private void makeSystemMenuItem(Tree root, SystemMenuService menu, String entityUrlPrefix) {
+	private void makeSystemMenuItem(Tree root, ISystemMenuInfo menu, String entityUrlPrefix) {
 		Node node;
-		if (!StringUtil.isBlank(menu.getParentKey())) {
-			node = root.addNode(menu.getParentKey(), menu.getKey());
+		if (!StringUtil.isBlank(menu.getParentCode())) {
+			node = root.addNode(menu.getParentCode(), menu.getCode());
 		} else {
-			node = root.addNode(null, menu.getKey());
+			node = root.addNode(null, menu.getCode());
 		}
 		if (node == null) {
 			return;
@@ -278,7 +295,7 @@ public class LoginSessionImpl implements LoginSession {
 		// node.setParams(moduleID);
 		node.setSn(menu.getSn());
 		node.setName(menu.getName());
-		// node.set("key", menu.getKey());
+		// node.set("code", menu.getCode());
 		node.setReferObj(menu);
 
 		switch (menu.getType()) {
@@ -302,18 +319,18 @@ public class LoginSessionImpl implements LoginSession {
 			return;
 		}
 
-		List<SystemMenuService> parentMenus = new ArrayList();
+		List<ISystemMenuInfo> parentMenus = new ArrayList();
 		Map<String, Node> nodes = tree.getAllMap();
 		for (Node node : nodes.values()) {
 			Node parentNode = node.getParent();
 			if (parentNode != null) {
-				ISystemMenu menu = (ISystemMenu) node.getReferObj();
-				String parentKey = menu.getParentKey();
-				SystemMenuService parentMenu = this.system.getSystemMenu(parentKey);
+				ISystemMenuEntity menu = (ISystemMenuEntity) node.getReferObj();
+				String parentCode = menu.getParentCode();
+				ISystemMenuInfo parentMenu = this.system.getSystemMenu(parentCode);
 				if (parentMenu != null) {
 					parentMenus.add(parentMenu);
 				} else {
-					LogUtil.error("创建菜单父节点失败：没有找到系统(%s)菜单(%s)！", system.getKey(), parentKey);
+					LogUtil.error("创建菜单父节点失败：没有找到系统(%s)菜单(%s)！", system.getCode(), parentCode);
 				}
 			}
 		}
@@ -323,12 +340,12 @@ public class LoginSessionImpl implements LoginSession {
 		}
 	}
 
-	private void makeParentNodes(Tree tree, List<SystemMenuService> parentMenus, int depth) {
-		for (ISystemMenu parentMenu : parentMenus) {
-			String key = parentMenu.getKey();
-			String parentKey = parentMenu.getParentKey();
+	private void makeParentNodes(Tree tree, List<ISystemMenuInfo> parentMenus, int depth) {
+		for (ISystemMenuEntity parentMenu : parentMenus) {
+			String key = parentMenu.getCode();
+			String parentCode = parentMenu.getParentCode();
 
-			tree.addNode(parentKey, key).setName(parentMenu.getName()).setReferObj(parentMenu);
+			tree.addNode(parentCode, key).setName(parentMenu.getName()).setReferObj(parentMenu);
 		}
 
 		this.makeParentNodes(tree, depth);
@@ -339,4 +356,36 @@ public class LoginSessionImpl implements LoginSession {
 		return getName();
 	}
 
+	public ILogLoginEntity getLoginLog() {
+		return loginLog;
+	}
+
+	public void setLoginLog(ILogLoginEntity loginLog) {
+		if (loginLog != null) {
+			this.loginLogCode = loginLog.getCode();
+		}
+		this.loginLog = loginLog;
+	}
+
+	public String getAppURL() {
+		return appURL;
+	}
+
+	@Override
+	public void putAccessVoter(String voterCode, SecurityVoter voter) {
+		if (accessVoters == null) {
+			accessVoters = new HashMap();
+		}
+
+		this.accessVoters.put(voterCode, voter);
+	}
+
+	@Override
+	public SecurityVoter removeAccessVoter(String voterCode) {
+		if (accessVoters != null) {
+			return accessVoters.remove(voterCode);
+		}
+
+		return null;
+	}
 }

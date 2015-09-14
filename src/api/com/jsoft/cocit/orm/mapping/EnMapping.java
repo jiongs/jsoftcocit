@@ -23,6 +23,8 @@ public interface EnMapping<T> {
 
 	String getTableName();
 
+	EnColumnMapping getColumnMapping(String name);
+
 	EntityIdGenerator getIdGenerator();
 
 	List getRelations(String regex);

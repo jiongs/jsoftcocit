@@ -6,12 +6,12 @@ import org.nutz.aop.InterceptorChain;
 import org.nutz.aop.interceptor.AbstractMethodInterceptor;
 import org.nutz.dao.entity.Link;
 
-import com.jsoft.cocit.orm.ExtDao;
+import com.jsoft.cocit.orm.IExtDao;
 import com.jsoft.cocit.util.LogUtil;
 
 public abstract class LinkFieldGetterIntercepter extends AbstractMethodInterceptor {
 
-	protected ExtDao dao;
+	protected IExtDao dao;
 
 	protected Link link;
 

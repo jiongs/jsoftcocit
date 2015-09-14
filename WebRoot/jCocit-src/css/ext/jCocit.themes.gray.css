@@ -17,7 +17,8 @@ form.entityForm .textarea, .coc-textarea,
 .entityToolbar .CbT,  .coc-toolbar .CbT,
 .entityToolbar .entityFieldBox .CbT, .coc-fld .CbT,
 .PnHT,
-#AlBM,#AlC .AlBt,#AlHC,#AlHT span
+#AlBM,#AlC .AlBt,#AlHC,#AlHT span,
+.coc-fldh, .coc-fld
 {
 	font-family: "微软雅黑", Arial, Times;
 }
@@ -117,11 +118,18 @@ form.entityForm .textarea, .coc-textarea,
 .DlBS button, 
 .DlTB input[type=submit], 
 .DlTB button, 
-.coc-btn
+.coc-btn, .coc-btn2
 {
 	border: 1px solid #999999;
 	background-color: transparent;
 	font-family: "微软雅黑", Arial, Times;
+}
+.coc-btn2{
+	background-color: #f1f1f1;
+}
+.coc-btn-selected{
+	background-color: #cccccc;
+	font-weight: bold;
 }
 .DlBS input[type=submit]:hover, .DlTB input[type=submit]:hover, .DlBS button:hover, .DlTB button:hover, div.entityButtons button:hover, .coc-btn:hover{
 	background-color: #cccccc;
@@ -271,9 +279,9 @@ form.entityForm .textarea, .coc-textarea,
 
 .tabs2 .tabs li:hover,
 .tabs2 .tabs li a.tabs-inner:hover,
-.tabs2 .tabs li a.tabs-inner，
 .tabs2 .tabs li.tabs-selected, 
 .tabs2 .tabs li a.tabs-inner:hover, 
+.tabs2 .tabs li.tabs-selected,
 .tabs2 .tabs li.tabs-selected a.tabs-inner{
 	background-color: #cccccc;
 }
@@ -292,6 +300,28 @@ form.entityForm .textarea, .coc-textarea,
 .tabs2 .tabs-panels, 
 .tabs2 .tabs li {
 	border-color: #939393;
+}
+
+/*
+ * calendar
+ */
+.calendar {
+	border-color: #939393;
+}
+.calendar-header {
+	background: #cccccc;
+}
+.calendar-hover,.calendar-nav-hover,.calendar-menu-hover {
+	background-color: #e0f0ff;
+}
+.calendar-selected {
+	background-color: #95cdff;
+	border: 1px solid #95cdff;
+}
+
+/*dialog tabs*/
+.dialogtabs .tabs-panels .PnBC{
+	background: #ffffff;
 }
 
 /*
@@ -330,4 +360,12 @@ form.entityForm .textarea, .coc-textarea,
 .entityToolbar .CbB, .coc-toolbar .CbB
 {
 	border-color: #999999;
+}
+
+a.coc-link {
+	color: #000000;
+}
+
+a.coc-link:hover {
+	color: #ff9900;
 }

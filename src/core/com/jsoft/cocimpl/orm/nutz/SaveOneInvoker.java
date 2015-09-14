@@ -4,13 +4,13 @@ import org.nutz.dao.entity.Link;
 import org.nutz.dao.impl.CocInsertInvoker;
 import org.nutz.lang.Mirror;
 
-import com.jsoft.cocit.orm.Dao;
+import com.jsoft.cocit.orm.IDao;
 import com.jsoft.cocit.orm.mapping.EnMapping;
 import com.jsoft.cocit.util.ObjectUtil;
 
 public class SaveOneInvoker extends CocInsertInvoker {
 
-	public SaveOneInvoker(Dao dao, Object mainObj, Mirror<?> mirror) {
+	public SaveOneInvoker(IDao dao, Object mainObj, Mirror<?> mirror) {
 		super(dao, mainObj, mirror);
 	}
 

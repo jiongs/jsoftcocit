@@ -4,8 +4,8 @@ import java.io.Writer;
 
 import org.nutz.mvc.view.JspView;
 
-import com.jsoft.cocimpl.ui.UIView;
 import com.jsoft.cocit.constant.ViewNames;
+import com.jsoft.cocit.ui.UIView;
 import com.jsoft.cocit.ui.model.JSPModel;
 
 public class JSPView implements UIView<JSPModel> {

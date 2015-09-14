@@ -1,6 +1,6 @@
 package com.jsoft.cocit.constant;
 
-import com.jsoft.cocit.entityengine.bizplugin.IBizPlugin;
+import com.jsoft.cocit.dmengine.bizplugin.IBizPlugin;
 
 /**
  * 操作码分类：
@@ -12,7 +12,7 @@ import com.jsoft.cocit.entityengine.bizplugin.IBizPlugin;
  * <LI>“GRID数据”操作：“只能”用业务插件实现业务逻辑，操作码（191-200）不能作为行操作
  * </UL>
  * </LI>
- * <LI>非表单操作：即点击操作按钮后操作即可完成；对于这类操作，业务插件中的（{@link IBizPlugin#beforeLoad(com.jsoft.cocit.entityengine.bizplugin.BizEvent)}）和（{@link IBizPlugin#afterLoad(com.jsoft.cocit.entityengine.bizplugin.BizEvent)}）方法将失效。操作码（201-300）
+ * <LI>非表单操作：即点击操作按钮后操作即可完成；对于这类操作，业务插件中的（{@link IBizPlugin#beforeLoad(com.jsoft.cocit.dmengine.bizplugin.BizEvent)}）和（{@link IBizPlugin#afterLoad(com.jsoft.cocit.dmengine.bizplugin.BizEvent)}）方法将失效。操作码（201-300）
  * <UL>
  * <LI>“单条数据”操作：操作码（201-250）可以作为GRID行操作
  * <LI>“多条数据”操作：操作码（251-290）可以作为GRID行操作
@@ -30,9 +30,9 @@ public interface OpCodes {
 	/*
 	 * 基于“单条数据”的操作（打开表单）：101-150
 	 */
-	/** 添加表单数据：在插件方法({@link IBizPlugin#beforeSubmit(com.jsoft.cocit.entityengine.bizplugin.BizEvent)})中修改过的数据会被自动保存。 */
+	/** 添加表单数据：在插件方法({@link IBizPlugin#beforeSubmit(com.jsoft.cocit.dmengine.bizplugin.BizEvent)})中修改过的数据会被自动保存。 */
 	static final int OP_INSERT_FORM_DATA = 101;
-	/** 修改表单数据：在插件方法({@link IBizPlugin#beforeSubmit(com.jsoft.cocit.entityengine.bizplugin.BizEvent)})中修改过的数据会被自动保存。 */
+	/** 修改表单数据：在插件方法({@link IBizPlugin#beforeSubmit(com.jsoft.cocit.dmengine.bizplugin.BizEvent)})中修改过的数据会被自动保存。 */
 	static final int OP_UPDATE_FORM_DATA = 102;
 	/** 移除表单数据：即逻辑删除 */
 	static final int OP_REMOVE_FORM_DATA = 103;
@@ -44,7 +44,7 @@ public interface OpCodes {
 	/*
 	 * 基于“多条数据”的操作（打开表单）：151-190
 	 */
-	/** 批量修改表单数据：在插件方法({@link IBizPlugin#beforeSubmit(com.jsoft.cocit.entityengine.bizplugin.BizEvent)})中修改过的数据会被自动保存。 */
+	/** 批量修改表单数据：在插件方法({@link IBizPlugin#beforeSubmit(com.jsoft.cocit.dmengine.bizplugin.BizEvent)})中修改过的数据会被自动保存。 */
 	static final int OP_UPDATE_FORM_DATAS = 162;
 	/** 批量移除表单数据：即逻辑删除 */
 	static final int OP_REMOVE_FORM_DATAS = 163;
@@ -83,6 +83,8 @@ public interface OpCodes {
 	static final int OP_INSERT_GRID_ROW = 241;
 	/** 修改单条数据：在GRID上选中一条记录后直接发送到后台，通过注解完成字段的修改。 */
 	static final int OP_UPDATE_GRID_ROW = 242;
+	/** 保存多条数据：在GRID上新增、修改数据后，一次性保存。 */
+	static final int OP_SAVE_GRID_ROWS = 243;
 
 	/*
 	 * 基于“多条数据”的操作（不打开表单）：251-290
@@ -99,7 +101,6 @@ public interface OpCodes {
 	static final int OP_SORT_REVERSE = 255;
 	/** 排序：取消排序 */
 	static final int OP_SORT_CANCEL = 256;
-
 	/** 修改多条数据： */
 	static final int OP_UPDATE_ROWS = 262;
 	/** 移除多条数据：即逻辑删除 */

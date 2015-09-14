@@ -2,18 +2,18 @@ package com.jsoft.cocimpl.ui.view.jcocit;
 
 import java.io.Writer;
 
-import com.jsoft.cocimpl.ui.view.BaseModelView;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.exception.CocSecurityException;
-import com.jsoft.cocit.securityengine.LoginSession;
+import com.jsoft.cocit.securityengine.ILoginSession;
 import com.jsoft.cocit.ui.model.control.UIActions;
 import com.jsoft.cocit.ui.model.control.UIEntity;
 import com.jsoft.cocit.ui.model.control.UIGrid;
 import com.jsoft.cocit.ui.model.control.UISearchBox;
 import com.jsoft.cocit.ui.model.control.UITree;
+import com.jsoft.cocit.ui.view.BaseModelView;
 import com.jsoft.cocit.util.StringUtil;
 import com.jsoft.cocit.util.UIPositionUtil;
 
@@ -25,7 +25,7 @@ public class UIEntityView extends BaseModelView<UIEntity> {
 	public void render(Writer out, UIEntity model) throws Exception {
 
 		HttpContext ctx = Cocit.me().getHttpContext();
-		LoginSession login = ctx.getLoginSession();
+		ILoginSession login = ctx.getLoginSession();
 		if (login == null) {
 			throw new CocSecurityException("您尚未登录或登录已过期，请先登录！");
 		}
@@ -104,7 +104,17 @@ public class UIEntityView extends BaseModelView<UIEntity> {
 			}
 		}
 
+		/*
+		 * 主界面容器
+		 */
 		write(out, "<div style=\"padding: %spx; position: relative\">", contentPadding);
+
+		/*
+		 * 是否需要表单？
+		 */
+		if (model.isForm()) {
+			write(out, "<form onsubmit=\"return false;\">");
+		}
 
 		/*
 		 * 顶部：查询表单 位于操作按钮 顶部
@@ -129,7 +139,7 @@ public class UIEntityView extends BaseModelView<UIEntity> {
 		        contentWidth - 32,//
 		        actionsHeight - 5//
 		);
-		write(out, "<table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr><td class=\"entityActions\" style=\"white-space: nowrap;\">");
+		write(out, "<table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr><td class=\"entityActions\" valign=\"top\" style=\"white-space: nowrap;\">");
 
 		/*
 		 * 顶部：左边操作按钮
@@ -143,7 +153,7 @@ public class UIEntityView extends BaseModelView<UIEntity> {
 		 * 顶部 快速过滤
 		 */
 		if (filterTree != null && filterPosition == 1) {// top:
-			write(out, "</td><td align=\"left\" class=\"entityFilter\" style=\"white-space: nowrap;\">");
+			write(out, "</td><td align=\"left\" class=\"entityFilter\" valign=\"top\" style=\"white-space: nowrap;\">");
 			write(out, "<div style=\"padding: 0 5px 4px 5px; \">",//
 			        token //
 			);
@@ -159,7 +169,7 @@ public class UIEntityView extends BaseModelView<UIEntity> {
 
 		if (searchBox != null && (searchPos == 4 || searchIsTop2)//
 		) {
-			write(out, "</td><td align=\"left\" width=\"2\" class=\"entitySearch\" style=\"white-space: nowrap;\">");
+			write(out, "</td><td align=\"left\" width=\"2\" class=\"entitySearch\" valign=\"top\" style=\"white-space: nowrap;\">");
 			write(out, "<div id=\"searchform_%s\" style=\"padding: 0 5px 5px 5px; \">",//
 			        token //
 			);
@@ -233,6 +243,14 @@ public class UIEntityView extends BaseModelView<UIEntity> {
 		//
 		write(out, "</tr></table>");
 
-		write(out, "</div>");
+		/*
+		 * 是否需要表单？
+		 */
+		if (model.isForm()) {
+			write(out, "</form>");
+		}
+
+		write(out, "</div>");// 主界面容器
+
 	}
 }

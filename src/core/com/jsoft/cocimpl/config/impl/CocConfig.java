@@ -51,8 +51,8 @@ public class CocConfig extends BaseConfig implements ICocConfig, ICommonConfig {
 
 		properties.put("cocit.cocitSystemName", "COC平台管理系统");
 		properties.put("cocit.cocitSystemKey", "___coc_platform___");
-		properties.put("cocit.cocitTenantName", "COC平台用户");
-		properties.put("cocit.cocitTenantKey", "___coc_jsoft___");
+		properties.put("cocit.cocitTenantName", "COC平台租户");
+		properties.put("cocit.cocitTenantKey", "0000");
 
 		properties.put("cocit.defaultSystemName", "");
 		properties.put("cocit.defaultSystemKey", "");
@@ -167,7 +167,7 @@ public class CocConfig extends BaseConfig implements ICocConfig, ICommonConfig {
 		return this.get("cocit.cocitSystemName");
 	}
 
-	public String getCocitSystemKey() {
+	public String getCocitSystemCode() {
 		return this.get("cocit.cocitSystemKey");
 	}
 
@@ -175,7 +175,7 @@ public class CocConfig extends BaseConfig implements ICocConfig, ICommonConfig {
 		return this.get("cocit.cocitTenantName");
 	}
 
-	public String getCocitTenantKey() {
+	public String getCocitTenantCode() {
 		return this.get("cocit.cocitTenantKey");
 	}
 
@@ -183,7 +183,7 @@ public class CocConfig extends BaseConfig implements ICocConfig, ICommonConfig {
 		return this.get("cocit.defaultSystemName");
 	}
 
-	public String getDefaultSystemKey() {
+	public String getDefaultSystemCode() {
 		return this.get("cocit.defaultSystemKey");
 	}
 
@@ -274,8 +274,13 @@ public class CocConfig extends BaseConfig implements ICocConfig, ICommonConfig {
 		return this.getBoolean(MODE_PRODUCT);
 	}
 
-	public boolean isAutoUpgrade() {
-		return this.getBoolean("mode.autoupgrade");
+	public boolean isAutoUpgradeEntityDefinition() {
+		return this.getBoolean("mode.autoupgrade.entitydefinition");
+	}
+
+	@Override
+	public boolean isAutoUpgradeEntityTables() {
+		return this.getBoolean("mode.autoupgrade.entitytables");
 	}
 
 	public String getUploadPath() {

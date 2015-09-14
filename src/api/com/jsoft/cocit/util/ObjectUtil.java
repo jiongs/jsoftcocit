@@ -11,10 +11,10 @@ import java.util.Map;
 
 import org.nutz.lang.Mirror;
 
+import com.jsoft.cocit.baseentity.DataEntity;
+import com.jsoft.cocit.baseentity.IDataEntity;
 import com.jsoft.cocit.config.IDynaBean;
 import com.jsoft.cocit.constant.Const;
-import com.jsoft.cocit.entity.DataEntity;
-import com.jsoft.cocit.entity.IDataEntity;
 import com.jsoft.cocit.orm.mapping.EnMapping;
 
 /**

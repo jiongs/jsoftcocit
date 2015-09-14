@@ -52,8 +52,11 @@
 						width : opts.panelWidth,
 						height : opts.panelHeight,
 						modal : true,
+						shadow : false,
 						combo : $combo,
 						logoCls : opts.iconCls || 'icon-logo',
+						openerElement: selfHTML,
+						onSelect : opts.onSelect
 //						buttons : [ {
 //							text : opts.ok,
 //							onClick : function(data) {

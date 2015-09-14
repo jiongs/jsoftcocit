@@ -47,7 +47,7 @@ import com.jsoft.cocimpl.orm.nutz.intercepter.ManyFieldGetterIntercepter;
 import com.jsoft.cocimpl.orm.nutz.intercepter.OneFieldGetterIntercepter;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.orm.ConnCallback;
-import com.jsoft.cocit.orm.ExtDao;
+import com.jsoft.cocit.orm.IExtDao;
 import com.jsoft.cocit.orm.mapping.EnColumnMapping;
 import com.jsoft.cocit.orm.mapping.EnMapping;
 import com.jsoft.cocit.util.ClassUtil;
@@ -55,7 +55,7 @@ import com.jsoft.cocit.util.ExceptionUtil;
 import com.jsoft.cocit.util.ObjectUtil;
 import com.jsoft.cocit.util.StringUtil;
 
-public class ExtDaoImpl extends CocNutzDao implements ExtDao {
+public class ExtDaoImpl extends CocNutzDao implements IExtDao {
 
 	// 实体映射持有者
 	private EnMappingHolder entityHolder;
@@ -338,7 +338,7 @@ public class ExtDaoImpl extends CocNutzDao implements ExtDao {
 			}
 		}
 
-		log.infof("加载%s实体. [syncTable=%s, syncRefTable=%s]", enInfo, syncTable, syncRefTable);
+		log.infof("加载实体(%s). [syncTable=%s, syncRefTable=%s]", enInfo, syncTable, syncRefTable);
 
 		return (EnMappingImpl<T>) entity;
 	}
@@ -548,7 +548,7 @@ public class ExtDaoImpl extends CocNutzDao implements ExtDao {
 
 	public int saveLinks(Object obj, final String regex) {
 		int len = Lang.length(obj);
-		final ExtDao dao = this;
+		final IExtDao dao = this;
 		Lang.each(obj, new Each<Object>() {
 			public void invoke(int i, final Object ele, int length) {
 				final Entity<?> entity = getEntity(ele.getClass());

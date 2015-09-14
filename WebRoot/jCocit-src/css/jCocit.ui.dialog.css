@@ -1,7 +1,3 @@
-/* Dialog Tool Bar */
-.DlTB {
-	padding: 10px 5px 5px 5px;
-}
 
 /* Dialog Tool Bar Button Separator */
 .DlTBS {
@@ -17,6 +13,7 @@
 	padding: 3px 8px 10px 5px;
 	text-align: right;
 }
+/* Dialog Tool Bar */
 .DlTB {
 	padding: 10px 8px 3px 5px;
 	text-align: right;

@@ -126,7 +126,8 @@
 		 * <LI>valid JSON object: "statusCode" property existed in server return value JSON object.
 		 * <UL>
 		 * <LI>statusCode equals SUCCESS(200): means that the current user already login success.
-		 * <LI>statusCode not equals SUCCESS(200): means that the current user don't login, the error message specified by "message" property of server return value JSON object will NOT be pop-up.
+		 * <LI>statusCode not equals SUCCESS(200): means that the current user don't login, the error message specified by "message" property of server return value JSON object will NOT be
+		 * pop-up.
 		 * </UL>
 		 * </UL>
 		 * <p>
@@ -190,7 +191,8 @@
 		 * <LI>valid JSON object: "statusCode" property existed in server return value JSON object.
 		 * <UL>
 		 * <LI>statusCode equals SUCCESS(200): means that the current user already login success.
-		 * <LI>statusCode not equals SUCCESS(200): means that the current user don't login, the error message specified by "message" property of server return value JSON object will be pop-up.
+		 * <LI>statusCode not equals SUCCESS(200): means that the current user don't login, the error message specified by "message" property of server return value JSON object will be
+		 * pop-up.
 		 * </UL>
 		 * </UL>
 		 * <p>
@@ -405,15 +407,16 @@
 		 * <P>
 		 * <b>Server Return Value:</b> Server side return value can be JSON object or HTML content.
 		 * <UL>
-		 * <LI>invalid JSON object: server return value is HTML content. means that the server side process business logic success and the server return value is regard as content of the current HTML
-		 * element.
+		 * <LI>invalid JSON object: server return value is HTML content. means that the server side process business logic success and the server return value is regard as content of the
+		 * current HTML element.
 		 * <LI>valid JSON object: server return value is a JSON object.
 		 * <UL>
-		 * <LI>statusCode equals ERROR_NO_ACCESS(301): means that the current user don't have enough permissions and the login dialog will be pop-up, "message" property of server side JSON object
-		 * will be regard as login dialog caption.
-		 * <LI>statusCode equals ERROR(300): means that server side process business logic occurs error. the error message specified by "message" property of server return value JSON object will be
-		 * pop-up.
-		 * <LI>statusCode equals others or undefined: means that server side process business logic success and the success callback function will be invoked with the server return value JSON object.
+		 * <LI>statusCode equals ERROR_NO_ACCESS(301): means that the current user don't have enough permissions and the login dialog will be pop-up, "message" property of server side JSON
+		 * object will be regard as login dialog caption.
+		 * <LI>statusCode equals ERROR(300): means that server side process business logic occurs error. the error message specified by "message" property of server return value JSON object
+		 * will be pop-up.
+		 * <LI>statusCode equals others or undefined: means that server side process business logic success and the success callback function will be invoked with the server return value JSON
+		 * object.
 		 * </UL>
 		 * </UL>
 		 * <p>
@@ -638,6 +641,19 @@
 				this[i].className = value;
 
 			return this;
+		},
+		outerHTML: function() {
+
+		    // IE, Chrome & Safari will comply with the non-standard outerHTML, all others (FF) will have a fall-back for cloning
+		    return (!this.length) ? this : (this[0].outerHTML ||
+		    (function(el) {
+		        var div = document.createElement('div');
+		        div.appendChild(el.cloneNode(true));
+		        var contents = div.innerHTML;
+		        div = null;
+		        return contents;
+		    })(this[0]));
+		    
 		}
 	});
 

@@ -149,6 +149,12 @@
 			$(this).click(function() {
 				var opts = $.extend({}, $.fn.dialog.defaults, $.fn.dialog.parseOptions(this), options || {});
 				opts.id = "__jCocit_dialog_" + opts.id;
+				opts.openerElement = this;
+				if (opts.panelWidth)
+					opts.width = opts.panelWidth;
+				if (opts.panelHeight)
+					opts.height = opts.panelHeight;
+
 				jCocit.dialog.open(opts.url, opts.id, opts);
 				return false;
 			});

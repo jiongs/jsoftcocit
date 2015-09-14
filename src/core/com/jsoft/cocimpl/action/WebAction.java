@@ -8,7 +8,7 @@ import org.nutz.mvc.annotation.Param;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.action.OpContext;
-import com.jsoft.cocit.constant.UrlAPI;
+import com.jsoft.cocit.constant.CocUrl;
 import com.jsoft.cocit.mvc.CocEntityParam;
 import com.jsoft.cocit.mvc.UIModelView;
 import com.jsoft.cocit.ui.model.JSPModel;
@@ -31,14 +31,14 @@ public class WebAction {
 	 *            实体参数节点：用来接收HTTP中以entity.开头的参数，这些参数将被注入到实体对象中，继续传递到指定的页面。
 	 * @return JSPModel 对象
 	 */
-	@At(UrlAPI.GET_JSP_PAGE)
+	@At(CocUrl.GET_JSP_PAGE)
 	public JSPModel getJspModel(String jspArgs, String opArgs, String entityID, @Param("::entity") CocEntityParam cocEntityParamNode) {
 		LogUtil.debug("WebAction.getJspModel... jspArgs=%s, opArgs=%s, entityID=%s", jspArgs, opArgs, entityID);
 
 		HttpContext httpCtx = Cocit.me().getHttpContext();
 		OpContext actionContext = OpContext.make(opArgs, entityID, cocEntityParamNode);
 
-		String softContextPath = Cocit.me().getContextPath() + "/" + actionContext.getTenant().getKey().replace('.', '_');
+		String softContextPath = Cocit.me().getContextPath() + "/" + actionContext.getTenant().getCode().replace('.', '_');
 		String jspPath = softContextPath + "" + MVCUtil.makeJspPath(jspArgs);
 
 		JSPModel model = JSPModel.make(httpCtx.getRequest(), httpCtx.getResponse(), jspPath);

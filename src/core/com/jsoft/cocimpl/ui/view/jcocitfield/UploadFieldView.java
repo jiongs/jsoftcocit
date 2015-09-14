@@ -4,14 +4,14 @@ import java.io.Writer;
 import java.util.Map;
 import java.util.Properties;
 
-import com.jsoft.cocimpl.ui.view.BaseFieldView;
 import com.jsoft.cocimpl.util.StyleUtil;
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.constant.UrlAPI;
+import com.jsoft.cocit.constant.CocUrl;
 import com.jsoft.cocit.constant.ViewNames;
-import com.jsoft.cocit.entityengine.service.CocFieldService;
+import com.jsoft.cocit.dmengine.info.ICocFieldInfo;
 import com.jsoft.cocit.ui.model.UIFieldModel;
 import com.jsoft.cocit.ui.model.control.UIField;
+import com.jsoft.cocit.ui.view.BaseFieldView;
 import com.jsoft.cocit.util.MVCUtil;
 import com.jsoft.cocit.util.StringUtil;
 
@@ -36,7 +36,7 @@ public class UploadFieldView extends BaseFieldView {
 			String targetTextField //
 	) throws Exception {
 
-		CocFieldService fieldService = ((UIField) fieldModel).getFieldService();
+		ICocFieldInfo fieldService = ((UIField) fieldModel).getFieldService();
 
 		Properties attrs = fieldModel.getAttributes();
 		
@@ -70,7 +70,7 @@ public class UploadFieldView extends BaseFieldView {
 				"",//
 				width,//
 				24,//
-				MVCUtil.makeUrl(UrlAPI.URL_UPLOAD, fieldService.getCocEntityKey(), fieldService.getKey()) + ";jsessionid=" + Cocit.me().getHttpContext().getRequest().getSession().getId()//
+				MVCUtil.makeUrl(CocUrl.URL_UPLOAD, fieldService.getCocEntityCode(), fieldService.getCode()) + ";jsessionid=" + Cocit.me().getHttpContext().getRequest().getSession().getId()//
 		);
 
 //		renderAttrs(out, attrs);

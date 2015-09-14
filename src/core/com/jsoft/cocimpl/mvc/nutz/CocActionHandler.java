@@ -52,8 +52,8 @@ public class CocActionHandler {
 
 		if (null == invoker)
 			return false;
-		else
-			LogUtil.trace("CocActionHander.execute: invoker = %s", invoker.getClass().getName());
+		// else
+		// LogUtil.trace("CocActionHander.execute: invoker = %s", invoker.getClass().getName());
 
 		invoker.invoke(ac);
 

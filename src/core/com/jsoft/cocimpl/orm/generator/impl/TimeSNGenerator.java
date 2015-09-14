@@ -3,7 +3,7 @@ package com.jsoft.cocimpl.orm.generator.impl;
 import java.io.Serializable;
 import java.util.Date;
 
-import com.jsoft.cocit.orm.ExtDao;
+import com.jsoft.cocit.orm.IExtDao;
 import com.jsoft.cocit.orm.generator.Generator;
 import com.jsoft.cocit.orm.mapping.EnColumnMapping;
 import com.jsoft.cocit.orm.mapping.EnMapping;
@@ -18,7 +18,7 @@ public class TimeSNGenerator implements Generator {
 		return "timesn";
 	}
 
-	public Serializable generate(ExtDao dao, EnMapping entity, EnColumnMapping column, Object dataObject, String... params) {
+	public Serializable generate(IExtDao dao, EnMapping entity, EnColumnMapping column, Object dataObject, String... params) {
 		synchronized (lock) {
 			count++;
 

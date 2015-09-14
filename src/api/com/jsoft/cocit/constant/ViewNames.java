@@ -17,7 +17,6 @@ public interface ViewNames {
 	String VIEW_MAINS = "mains";
 	String VIEW_MAIN = "main";
 	String VIEW_FORM = "form";
-	String VIEW_FORM_WF_NEW = "formwfnew";
 	String VIEW_FORM_BUTTONS = "formbuttons";
 	String VIEW_FORM_FIELDS = "formfields";
 	String VIEW_SUBFORM = "subform";
@@ -57,13 +56,15 @@ public interface ViewNames {
 	String FIELD_VIEW_PASSWORD = "password";
 	String FIELD_VIEW_ONE2MANY = "one2many";
 	String FIELD_VIEW_DEFAULT = FIELD_VIEW_TEXT;
+	String FIELD_VIEW_PROPERTIES = "properties";
 
 	/*
 	 * 
 	 */
-	String CELL_VIEW_LINK_TO_FORM = "linkToForm";
+	String CELL_VIEW_LINK_DIALOG = "link_dialog";
 	String CELL_VIEW_LINK = "link";
-	String CELL_VIEW_BUTTON_FOR_ROWACTIONS = "rowactions-button";
-	String CELL_VIEW_LINK_FOR_ROWACTIONS = "rowactions-link";
+	String CELL_VIEW_LINK_PIDIAGRAM = "link_pidiagram";
+	String CELL_VIEW_ROWACTIONS_BUTTON = "rowactions-btn";
+	String CELL_VIEW_ROWACTIONS_LINK = "rowactions-link";
 	String CELL_VIEW_STYLE = "style";
 }

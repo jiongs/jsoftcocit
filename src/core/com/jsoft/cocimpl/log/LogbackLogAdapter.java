@@ -84,27 +84,27 @@ public class LogbackLogAdapter implements LogAdapter {
 		protected void log(int levelInt, Object message, Throwable tx) {
 			Level level;
 			switch (levelInt) {
-			case LEVEL_FATAL:
-				level = Level.ERROR;
-				break;
-			case LEVEL_ERROR:
-				level = Level.ERROR;
-				break;
-			case LEVEL_WARN:
-				level = Level.WARN;
-				break;
-			case LEVEL_INFO:
-				level = Level.INFO;
-				break;
-			case LEVEL_DEBUG:
-				level = Level.DEBUG;
-				break;
-			case LEVEL_TRACE:
-				level = Level.TRACE;
-				break;
-			default:
-				level = Level.INFO;
-				break;
+				case LEVEL_FATAL:
+					level = Level.ERROR;
+					break;
+				case LEVEL_ERROR:
+					level = Level.ERROR;
+					break;
+				case LEVEL_WARN:
+					level = Level.WARN;
+					break;
+				case LEVEL_INFO:
+					level = Level.INFO;
+					break;
+				case LEVEL_DEBUG:
+					level = Level.DEBUG;
+					break;
+				case LEVEL_TRACE:
+					level = Level.TRACE;
+					break;
+				default:
+					level = Level.INFO;
+					break;
 			}
 
 			this.log(SUPER_FQCN, level, message, tx);

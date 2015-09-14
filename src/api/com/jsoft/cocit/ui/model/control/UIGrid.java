@@ -50,8 +50,9 @@ public class UIGrid extends UIControlModel implements UIGridModel {
 	private String sortExpr;
 	private String treeField;
 
-	private String entityKey;
+	private String entityCode;
 	private boolean singleRowEdit;
+	private Map<String, Object> defaultValuesToAddRow;
 
 	public UIGrid() {
 		super();
@@ -242,12 +243,12 @@ public class UIGrid extends UIControlModel implements UIGridModel {
 		return treeField;
 	}
 
-	public String getEntityKey() {
-		return entityKey;
+	public String getEntityCode() {
+		return entityCode;
 	}
 
-	public void setEntityKey(String entityKey) {
-		this.entityKey = entityKey;
+	public void setEntityCode(String entityCode) {
+		this.entityCode = entityCode;
 	}
 
 	public boolean isSingleRowEdit() {
@@ -256,6 +257,14 @@ public class UIGrid extends UIControlModel implements UIGridModel {
 
 	public void setSingleRowEdit(boolean singleRowEdit) {
 		this.singleRowEdit = singleRowEdit;
+	}
+
+	public Map getDefaultValuesToAddRow() {
+		return defaultValuesToAddRow;
+	}
+
+	public void setDefaultValuesForAddRow(Map defaultValuesOfAddRow) {
+		this.defaultValuesToAddRow = defaultValuesOfAddRow;
 	}
 
 }

@@ -27,7 +27,10 @@ public abstract class AbstractSort implements SortStrategy {
 			return null;
 		}
 
-		int dot = path.indexOf(".");
+		int dot = -1;
+		if (path != null) {
+			dot = path.indexOf(".");
+		}
 		if (dot > -1) {
 			Object subObj = null;
 			try {

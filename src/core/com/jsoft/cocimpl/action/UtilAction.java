@@ -8,7 +8,7 @@ import org.nutz.mvc.annotation.Ok;
 
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
-import com.jsoft.cocit.constant.UrlAPI;
+import com.jsoft.cocit.constant.CocUrl;
 import com.jsoft.cocit.mvc.UIModelView;
 import com.jsoft.cocit.ui.model.datamodel.AlertModel;
 import com.jsoft.cocit.util.DateUtil;
@@ -19,7 +19,7 @@ import com.jsoft.cocit.util.LogUtil;
 @Fail(UIModelView.VIEW_TYPE)
 public class UtilAction {
 
-	@At(UrlAPI.CHK_HEARTBEAT)
+	@At(CocUrl.CHK_HEARTBEAT)
 	public AlertModel chkHeartbeat(String timestamp) {
 		try {
 			HttpContext ctx = Cocit.me().getHttpContext();
@@ -33,13 +33,13 @@ public class UtilAction {
 		}
 	}
 
-	@At(UrlAPI.GET_IMG_VERIFY_CODE)
+	@At(CocUrl.GET_IMG_VERIFY_CODE)
 	public void getImgVerifyCode() {
 		HttpContext ctx = Cocit.me().getHttpContext();
 		HttpUtil.makeImgVerifyCode(ctx.getRequest(), ctx.getResponse());
 	}
 
-	@At(UrlAPI.CHK_IMG_VERIFY_CODE)
+	@At(CocUrl.CHK_IMG_VERIFY_CODE)
 	public AlertModel chkImgVerifyCode(String code) {
 		String message = "";
 		try {
@@ -88,7 +88,7 @@ public class UtilAction {
 	// }
 	// }
 
-	@At(UrlAPI.GET_SMS_VERIFY_CODE2)
+	@At(CocUrl.GET_SMS_VERIFY_CODE2)
 	public AlertModel getSmsVerifyCode2(String tel) {
 		String message = "";
 		try {
@@ -119,7 +119,7 @@ public class UtilAction {
 		}
 	}
 
-	@At(UrlAPI.CHK_SMS_VERIFY_CODE)
+	@At(CocUrl.CHK_SMS_VERIFY_CODE)
 	public AlertModel chkSmsVerifyCode(String tel, String code) {
 		String message = "";
 		try {

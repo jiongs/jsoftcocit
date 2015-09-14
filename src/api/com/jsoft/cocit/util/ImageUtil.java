@@ -22,8 +22,8 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
+//import com.sun.image.codec.jpeg.JPEGCodec;
+//import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 /**
  * 图片工具
@@ -62,116 +62,116 @@ public abstract class ImageUtil {
 			return imgSrc;
 	}
 
-	public static String makeThumbImage(String contextDir, String imgRelativePath, int destWidth, int destHeight) {
+//	public static String makeThumbImage(String contextDir, String imgRelativePath, int destWidth, int destHeight) {
+//
+//		String ret = makeThumbPath(imgRelativePath, destWidth, destHeight).replace(" ", "_");
+//		String destPath = contextDir + ret;
+//		String srcPath = contextDir + imgRelativePath;
+//		if (!new File(destPath).exists() && new File(srcPath).exists()) {
+//			makeThumbImage(srcPath, destPath, destWidth, destHeight, true);
+//		}
+//
+//		return ret;
+//	}
 
-		String ret = makeThumbPath(imgRelativePath, destWidth, destHeight).replace(" ", "_");
-		String destPath = contextDir + ret;
-		String srcPath = contextDir + imgRelativePath;
-		if (!new File(destPath).exists() && new File(srcPath).exists()) {
-			makeThumbImage(srcPath, destPath, destWidth, destHeight, true);
-		}
-
-		return ret;
-	}
-
-	public static boolean makeThumbImage(String srcImg, String destImg, int destWidth, int destHeight, boolean autoCutImage) {
-		FileOutputStream fos = null;
-		try {
-			File destFile = new File(destImg);
-			destFile.getParentFile().mkdirs();
-			File srcFile = new File(srcImg);
-
-			Image image = javax.imageio.ImageIO.read(srcFile);
-			int imageWidth = image.getWidth(null);
-			int imageHeight = image.getHeight(null);
-			if (imageWidth <= destWidth && imageHeight <= destHeight) {
-				FileUtil.copyFile(srcFile, destFile);
-				return true;
-			}
-
-			// 剪切图片
-			if (autoCutImage) {
-				double newScale = new Double(destWidth) / new Double(destHeight);
-				double srcScale = new Double(imageWidth) / new Double(imageHeight);
-				if (newScale > srcScale) {// 原图片太高
-					double cutHeight = imageHeight - imageWidth / newScale;
-					int newHeight = new Double(imageHeight - cutHeight).intValue();
-					int newY = (imageHeight - newHeight) / 2;
-
-					String cutImgName = makeThumbName(srcFile.getName(), imageWidth, newHeight);
-					String newSrcImg = destFile.getParentFile().getAbsolutePath() + File.separator + cutImgName;
-					cutImage(srcImg, newSrcImg, 0, newY, imageWidth, newHeight);
-					srcImg = newSrcImg;
-				} else if (newScale < srcScale) {// 原图片太长
-					double cutWidth = imageWidth - imageHeight * newScale;
-					int newWidth = new Double(imageWidth - cutWidth).intValue();
-					int newX = (imageWidth - newWidth) / 2;
-
-					String cutImgName = makeThumbName(srcFile.getName(), newWidth, imageHeight);
-					String newSrcImg = destFile.getParentFile().getAbsolutePath() + File.separator + cutImgName;
-					cutImage(srcImg, newSrcImg, newX, 0, newWidth, imageHeight);
-					srcImg = newSrcImg;
-				}
-
-				// 压缩图片
-				srcFile = new File(srcImg);
-				image = javax.imageio.ImageIO.read(srcFile);
-				imageWidth = image.getWidth(null);
-				imageHeight = image.getHeight(null);
-			}
-
-			float scale = getRatio(imageWidth, imageHeight, destWidth, destHeight);
-			imageWidth = (int) (scale * imageWidth);
-			imageHeight = (int) (scale * imageHeight);
-
-			image = image.getScaledInstance(imageWidth, imageHeight, Image.SCALE_AREA_AVERAGING);
-			// Make a BufferedImage from the Image.
-			BufferedImage mBufferedImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
-			Graphics2D g2 = mBufferedImage.createGraphics();
-
-			// Map readeringHint = new HashMap();
-			// readeringHint.put(RenderingHints.KEY_ALPHA_INTERPOLATION,
-			// RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-			// readeringHint.put(RenderingHints.KEY_ANTIALIASING,
-			// RenderingHints.VALUE_ANTIALIAS_ON);
-			// readeringHint.put(RenderingHints.KEY_COLOR_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
-			// readeringHint.put(RenderingHints.KEY_DITHERING,
-			// RenderingHints.VALUE_DITHER_ENABLE);
-			// readeringHint.put(RenderingHints.KEY_INTERPOLATION,
-			// RenderingHints.VALUE_INTERPOLATION_BILINEAR);//VALUE_INTERPOLATION_BICUBIC
-			// readeringHint.put(RenderingHints.KEY_RENDERING,
-			// RenderingHints.VALUE_RENDER_QUALITY);
-			// g.setRenderingHints(readeringHint);
-
-			g2.drawImage(image, 0, 0, imageWidth, imageHeight, Color.white, null);
-			g2.dispose();
-
-			float[] kernelData2 = { -0.125f, -0.125f, -0.125f, -0.125f, 2, -0.125f, -0.125f, -0.125f, -0.125f };
-			Kernel kernel = new Kernel(3, 3, kernelData2);
-			ConvolveOp cOp = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
-			mBufferedImage = cOp.filter(mBufferedImage, null);
-
-			fos = new FileOutputStream(destImg);
-			// JPEGEncodeParam param =
-			// encoder.getDefaultJPEGEncodeParam(bufferedImage);
-			// param.setQuality(0.9f, true);
-			// encoder.setJPEGEncodeParam(param);
-			JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(fos);
-			encoder.encode(mBufferedImage);
-			return true;
-		} catch (FileNotFoundException fnf) {
-			return false;
-		} catch (IOException ioe) {
-			return false;
-		} finally {
-			if (fos != null) {
-				try {
-					fos.close();
-				} catch (IOException e) {
-				}
-			}
-		}
-	}
+//	public static boolean makeThumbImage(String srcImg, String destImg, int destWidth, int destHeight, boolean autoCutImage) {
+//		FileOutputStream fos = null;
+//		try {
+//			File destFile = new File(destImg);
+//			destFile.getParentFile().mkdirs();
+//			File srcFile = new File(srcImg);
+//
+//			Image image = javax.imageio.ImageIO.read(srcFile);
+//			int imageWidth = image.getWidth(null);
+//			int imageHeight = image.getHeight(null);
+//			if (imageWidth <= destWidth && imageHeight <= destHeight) {
+//				FileUtil.copyFile(srcFile, destFile);
+//				return true;
+//			}
+//
+//			// 剪切图片
+//			if (autoCutImage) {
+//				double newScale = new Double(destWidth) / new Double(destHeight);
+//				double srcScale = new Double(imageWidth) / new Double(imageHeight);
+//				if (newScale > srcScale) {// 原图片太高
+//					double cutHeight = imageHeight - imageWidth / newScale;
+//					int newHeight = new Double(imageHeight - cutHeight).intValue();
+//					int newY = (imageHeight - newHeight) / 2;
+//
+//					String cutImgName = makeThumbName(srcFile.getName(), imageWidth, newHeight);
+//					String newSrcImg = destFile.getParentFile().getAbsolutePath() + File.separator + cutImgName;
+//					cutImage(srcImg, newSrcImg, 0, newY, imageWidth, newHeight);
+//					srcImg = newSrcImg;
+//				} else if (newScale < srcScale) {// 原图片太长
+//					double cutWidth = imageWidth - imageHeight * newScale;
+//					int newWidth = new Double(imageWidth - cutWidth).intValue();
+//					int newX = (imageWidth - newWidth) / 2;
+//
+//					String cutImgName = makeThumbName(srcFile.getName(), newWidth, imageHeight);
+//					String newSrcImg = destFile.getParentFile().getAbsolutePath() + File.separator + cutImgName;
+//					cutImage(srcImg, newSrcImg, newX, 0, newWidth, imageHeight);
+//					srcImg = newSrcImg;
+//				}
+//
+//				// 压缩图片
+//				srcFile = new File(srcImg);
+//				image = javax.imageio.ImageIO.read(srcFile);
+//				imageWidth = image.getWidth(null);
+//				imageHeight = image.getHeight(null);
+//			}
+//
+//			float scale = getRatio(imageWidth, imageHeight, destWidth, destHeight);
+//			imageWidth = (int) (scale * imageWidth);
+//			imageHeight = (int) (scale * imageHeight);
+//
+//			image = image.getScaledInstance(imageWidth, imageHeight, Image.SCALE_AREA_AVERAGING);
+//			// Make a BufferedImage from the Image.
+//			BufferedImage mBufferedImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+//			Graphics2D g2 = mBufferedImage.createGraphics();
+//
+//			// Map readeringHint = new HashMap();
+//			// readeringHint.put(RenderingHints.KEY_ALPHA_INTERPOLATION,
+//			// RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+//			// readeringHint.put(RenderingHints.KEY_ANTIALIASING,
+//			// RenderingHints.VALUE_ANTIALIAS_ON);
+//			// readeringHint.put(RenderingHints.KEY_COLOR_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+//			// readeringHint.put(RenderingHints.KEY_DITHERING,
+//			// RenderingHints.VALUE_DITHER_ENABLE);
+//			// readeringHint.put(RenderingHints.KEY_INTERPOLATION,
+//			// RenderingHints.VALUE_INTERPOLATION_BILINEAR);//VALUE_INTERPOLATION_BICUBIC
+//			// readeringHint.put(RenderingHints.KEY_RENDERING,
+//			// RenderingHints.VALUE_RENDER_QUALITY);
+//			// g.setRenderingHints(readeringHint);
+//
+//			g2.drawImage(image, 0, 0, imageWidth, imageHeight, Color.white, null);
+//			g2.dispose();
+//
+//			float[] kernelData2 = { -0.125f, -0.125f, -0.125f, -0.125f, 2, -0.125f, -0.125f, -0.125f, -0.125f };
+//			Kernel kernel = new Kernel(3, 3, kernelData2);
+//			ConvolveOp cOp = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
+//			mBufferedImage = cOp.filter(mBufferedImage, null);
+//
+//			fos = new FileOutputStream(destImg);
+//			// JPEGEncodeParam param =
+//			// encoder.getDefaultJPEGEncodeParam(bufferedImage);
+//			// param.setQuality(0.9f, true);
+//			// encoder.setJPEGEncodeParam(param);
+//			JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(fos);
+//			encoder.encode(mBufferedImage);
+//			return true;
+//		} catch (FileNotFoundException fnf) {
+//			return false;
+//		} catch (IOException ioe) {
+//			return false;
+//		} finally {
+//			if (fos != null) {
+//				try {
+//					fos.close();
+//				} catch (IOException e) {
+//				}
+//			}
+//		}
+//	}
 
 	/** 截取图片 */
 	public static boolean cutImage(String file, String targetFile, int width, int height) {
@@ -286,42 +286,42 @@ public abstract class ImageUtil {
 	 *            --y坐标
 	 * @throws IOException
 	 */
-	public final static void pressImage(String pressImg, String targetImg, int x, int y) throws IOException {
-		// 目标文件
-		File file = new File(targetImg);
-		Image src = ImageIO.read(file);
-		int width = src.getWidth(null);
-		int height = src.getHeight(null);
-		File logoFile = new File(pressImg);
-		Image logoSrc = ImageIO.read(logoFile);
-		int logoWidth = logoSrc.getWidth(null);
-		int logoHeight = logoSrc.getHeight(null);
-		if (width < 500) {
-			return;
-		}
-
-		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		Graphics g = image.createGraphics();
-		g.drawImage(src, 0, 0, width, height, null);
-
-		// 水印文件
-		// int ratio = logoWidth / logoHeight;
-		// int w = width / 2;
-		// if (w < logoWidth) {
-		// logoWidth = w;
-		// }
-		// if (logoWidth % 2 == 1) {
-		// logoWidth = logoWidth - 1;
-		// }
-		// logoHeight = logoWidth / ratio;
-		g.drawImage(logoSrc, (width - logoWidth), (height - logoHeight), logoWidth, logoHeight, null);
-		// 水印文件结束
-		g.dispose();
-		FileOutputStream out = new FileOutputStream(targetImg);
-		JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
-		encoder.encode(image);
-		out.close();
-	}
+//	public final static void pressImage(String pressImg, String targetImg, int x, int y) throws IOException {
+//		// 目标文件
+//		File file = new File(targetImg);
+//		Image src = ImageIO.read(file);
+//		int width = src.getWidth(null);
+//		int height = src.getHeight(null);
+//		File logoFile = new File(pressImg);
+//		Image logoSrc = ImageIO.read(logoFile);
+//		int logoWidth = logoSrc.getWidth(null);
+//		int logoHeight = logoSrc.getHeight(null);
+//		if (width < 500) {
+//			return;
+//		}
+//
+//		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+//		Graphics g = image.createGraphics();
+//		g.drawImage(src, 0, 0, width, height, null);
+//
+//		// 水印文件
+//		// int ratio = logoWidth / logoHeight;
+//		// int w = width / 2;
+//		// if (w < logoWidth) {
+//		// logoWidth = w;
+//		// }
+//		// if (logoWidth % 2 == 1) {
+//		// logoWidth = logoWidth - 1;
+//		// }
+//		// logoHeight = logoWidth / ratio;
+//		g.drawImage(logoSrc, (width - logoWidth), (height - logoHeight), logoWidth, logoHeight, null);
+//		// 水印文件结束
+//		g.dispose();
+//		FileOutputStream out = new FileOutputStream(targetImg);
+//		JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
+//		encoder.encode(image);
+//		out.close();
+//	}
 
 	/**
 	 * 打印文字水印图片
@@ -343,25 +343,25 @@ public abstract class ImageUtil {
 	 * @param y
 	 * @throws IOException
 	 */
-	public static void pressText(String pressText, String targetImg, String fontName, int fontStyle, int color, int fontSize, int x, int y) throws IOException {
-		File _file = new File(targetImg);
-		Image src = ImageIO.read(_file);
-		int wideth = src.getWidth(null);
-		int height = src.getHeight(null);
-		BufferedImage image = new BufferedImage(wideth, height, BufferedImage.TYPE_INT_RGB);
-		Graphics g = image.createGraphics();
-		g.drawImage(src, 0, 0, wideth, height, null);
-		// String s="www.qhd.com.cn";
-		g.setColor(Color.RED);
-		g.setFont(new Font(fontName, fontStyle, fontSize));
-
-		g.drawString(pressText, wideth - fontSize - x, height - fontSize / 2 - y);
-		g.dispose();
-		FileOutputStream out = new FileOutputStream(targetImg);
-		JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
-		encoder.encode(image);
-		out.close();
-	}
+//	public static void pressText(String pressText, String targetImg, String fontName, int fontStyle, int color, int fontSize, int x, int y) throws IOException {
+//		File _file = new File(targetImg);
+//		Image src = ImageIO.read(_file);
+//		int wideth = src.getWidth(null);
+//		int height = src.getHeight(null);
+//		BufferedImage image = new BufferedImage(wideth, height, BufferedImage.TYPE_INT_RGB);
+//		Graphics g = image.createGraphics();
+//		g.drawImage(src, 0, 0, wideth, height, null);
+//		// String s="www.qhd.com.cn";
+//		g.setColor(Color.RED);
+//		g.setFont(new Font(fontName, fontStyle, fontSize));
+//
+//		g.drawString(pressText, wideth - fontSize - x, height - fontSize / 2 - y);
+//		g.dispose();
+//		FileOutputStream out = new FileOutputStream(targetImg);
+//		JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
+//		encoder.encode(image);
+//		out.close();
+//	}
 
 	public static String zoomImgPath(String imgSrc, int width, int height) {
 		if (imgSrc == null) {
@@ -376,104 +376,104 @@ public abstract class ImageUtil {
 			return imgSrc;
 	}
 
-	public static boolean zoomImage(String srcImg, String destImg, int destWidth, int destHeight, boolean autoCutImage) {
-		FileOutputStream fos = null;
-		try {
-			File destFile = new File(destImg);
-			destFile.getParentFile().mkdirs();
-			File srcFile = new File(srcImg);
-
-			Image image = javax.imageio.ImageIO.read(srcFile);
-			int imageWidth = image.getWidth(null);
-			int imageHeight = image.getHeight(null);
-			if (imageWidth <= destWidth && imageHeight <= destHeight) {
-				FileUtil.copyFile(srcFile, destFile);
-				return true;
-			}
-
-			// 剪切图片
-			if (autoCutImage) {
-				double newScale = new Double(destWidth) / new Double(destHeight);
-				double srcScale = new Double(imageWidth) / new Double(imageHeight);
-				if (newScale > srcScale) {// 原图片太高
-					double cutHeight = imageHeight - imageWidth / newScale;
-					int newHeight = new Double(imageHeight - cutHeight).intValue();
-					int newY = (imageHeight - newHeight) / 2;
-
-					String cutImgName = cutImgName(srcFile.getName(), imageWidth, newHeight);
-					String newSrcImg = destFile.getParentFile().getAbsolutePath() + File.separator + cutImgName;
-					cutImage(srcImg, newSrcImg, 0, newY, imageWidth, newHeight);
-					srcImg = newSrcImg;
-				} else if (newScale < srcScale) {// 原图片太长
-					double cutWidth = imageWidth - imageHeight * newScale;
-					int newWidth = new Double(imageWidth - cutWidth).intValue();
-					int newX = (imageWidth - newWidth) / 2;
-
-					String cutImgName = cutImgName(srcFile.getName(), newWidth, imageHeight);
-					String newSrcImg = destFile.getParentFile().getAbsolutePath() + File.separator + cutImgName;
-					cutImage(srcImg, newSrcImg, newX, 0, newWidth, imageHeight);
-					srcImg = newSrcImg;
-				}
-
-				// 压缩图片
-				srcFile = new File(srcImg);
-				image = javax.imageio.ImageIO.read(srcFile);
-				imageWidth = image.getWidth(null);
-				imageHeight = image.getHeight(null);
-			}
-
-			float scale = getRatio(imageWidth, imageHeight, destWidth, destHeight);
-			imageWidth = (int) (scale * imageWidth);
-			imageHeight = (int) (scale * imageHeight);
-
-			image = image.getScaledInstance(imageWidth, imageHeight, Image.SCALE_AREA_AVERAGING);
-			// Make a BufferedImage from the Image.
-			BufferedImage mBufferedImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
-			Graphics2D g2 = mBufferedImage.createGraphics();
-
-			// Map readeringHint = new HashMap();
-			// readeringHint.put(RenderingHints.KEY_ALPHA_INTERPOLATION,
-			// RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-			// readeringHint.put(RenderingHints.KEY_ANTIALIASING,
-			// RenderingHints.VALUE_ANTIALIAS_ON);
-			// readeringHint.put(RenderingHints.KEY_COLOR_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
-			// readeringHint.put(RenderingHints.KEY_DITHERING,
-			// RenderingHints.VALUE_DITHER_ENABLE);
-			// readeringHint.put(RenderingHints.KEY_INTERPOLATION,
-			// RenderingHints.VALUE_INTERPOLATION_BILINEAR);//VALUE_INTERPOLATION_BICUBIC
-			// readeringHint.put(RenderingHints.KEY_RENDERING,
-			// RenderingHints.VALUE_RENDER_QUALITY);
-			// g.setRenderingHints(readeringHint);
-
-			g2.drawImage(image, 0, 0, imageWidth, imageHeight, Color.white, null);
-			g2.dispose();
-
-			float[] kernelData2 = { -0.125f, -0.125f, -0.125f, -0.125f, 2, -0.125f, -0.125f, -0.125f, -0.125f };
-			Kernel kernel = new Kernel(3, 3, kernelData2);
-			ConvolveOp cOp = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
-			mBufferedImage = cOp.filter(mBufferedImage, null);
-
-			fos = new FileOutputStream(destImg);
-			// JPEGEncodeParam param =
-			// encoder.getDefaultJPEGEncodeParam(bufferedImage);
-			// param.setQuality(0.9f, true);
-			// encoder.setJPEGEncodeParam(param);
-			JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(fos);
-			encoder.encode(mBufferedImage);
-			return true;
-		} catch (FileNotFoundException fnf) {
-			return false;
-		} catch (IOException ioe) {
-			return false;
-		} finally {
-			if (fos != null) {
-				try {
-					fos.close();
-				} catch (IOException e) {
-				}
-			}
-		}
-	}
+//	public static boolean zoomImage(String srcImg, String destImg, int destWidth, int destHeight, boolean autoCutImage) {
+//		FileOutputStream fos = null;
+//		try {
+//			File destFile = new File(destImg);
+//			destFile.getParentFile().mkdirs();
+//			File srcFile = new File(srcImg);
+//
+//			Image image = javax.imageio.ImageIO.read(srcFile);
+//			int imageWidth = image.getWidth(null);
+//			int imageHeight = image.getHeight(null);
+//			if (imageWidth <= destWidth && imageHeight <= destHeight) {
+//				FileUtil.copyFile(srcFile, destFile);
+//				return true;
+//			}
+//
+//			// 剪切图片
+//			if (autoCutImage) {
+//				double newScale = new Double(destWidth) / new Double(destHeight);
+//				double srcScale = new Double(imageWidth) / new Double(imageHeight);
+//				if (newScale > srcScale) {// 原图片太高
+//					double cutHeight = imageHeight - imageWidth / newScale;
+//					int newHeight = new Double(imageHeight - cutHeight).intValue();
+//					int newY = (imageHeight - newHeight) / 2;
+//
+//					String cutImgName = cutImgName(srcFile.getName(), imageWidth, newHeight);
+//					String newSrcImg = destFile.getParentFile().getAbsolutePath() + File.separator + cutImgName;
+//					cutImage(srcImg, newSrcImg, 0, newY, imageWidth, newHeight);
+//					srcImg = newSrcImg;
+//				} else if (newScale < srcScale) {// 原图片太长
+//					double cutWidth = imageWidth - imageHeight * newScale;
+//					int newWidth = new Double(imageWidth - cutWidth).intValue();
+//					int newX = (imageWidth - newWidth) / 2;
+//
+//					String cutImgName = cutImgName(srcFile.getName(), newWidth, imageHeight);
+//					String newSrcImg = destFile.getParentFile().getAbsolutePath() + File.separator + cutImgName;
+//					cutImage(srcImg, newSrcImg, newX, 0, newWidth, imageHeight);
+//					srcImg = newSrcImg;
+//				}
+//
+//				// 压缩图片
+//				srcFile = new File(srcImg);
+//				image = javax.imageio.ImageIO.read(srcFile);
+//				imageWidth = image.getWidth(null);
+//				imageHeight = image.getHeight(null);
+//			}
+//
+//			float scale = getRatio(imageWidth, imageHeight, destWidth, destHeight);
+//			imageWidth = (int) (scale * imageWidth);
+//			imageHeight = (int) (scale * imageHeight);
+//
+//			image = image.getScaledInstance(imageWidth, imageHeight, Image.SCALE_AREA_AVERAGING);
+//			// Make a BufferedImage from the Image.
+//			BufferedImage mBufferedImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+//			Graphics2D g2 = mBufferedImage.createGraphics();
+//
+//			// Map readeringHint = new HashMap();
+//			// readeringHint.put(RenderingHints.KEY_ALPHA_INTERPOLATION,
+//			// RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+//			// readeringHint.put(RenderingHints.KEY_ANTIALIASING,
+//			// RenderingHints.VALUE_ANTIALIAS_ON);
+//			// readeringHint.put(RenderingHints.KEY_COLOR_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+//			// readeringHint.put(RenderingHints.KEY_DITHERING,
+//			// RenderingHints.VALUE_DITHER_ENABLE);
+//			// readeringHint.put(RenderingHints.KEY_INTERPOLATION,
+//			// RenderingHints.VALUE_INTERPOLATION_BILINEAR);//VALUE_INTERPOLATION_BICUBIC
+//			// readeringHint.put(RenderingHints.KEY_RENDERING,
+//			// RenderingHints.VALUE_RENDER_QUALITY);
+//			// g.setRenderingHints(readeringHint);
+//
+//			g2.drawImage(image, 0, 0, imageWidth, imageHeight, Color.white, null);
+//			g2.dispose();
+//
+//			float[] kernelData2 = { -0.125f, -0.125f, -0.125f, -0.125f, 2, -0.125f, -0.125f, -0.125f, -0.125f };
+//			Kernel kernel = new Kernel(3, 3, kernelData2);
+//			ConvolveOp cOp = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
+//			mBufferedImage = cOp.filter(mBufferedImage, null);
+//
+//			fos = new FileOutputStream(destImg);
+//			// JPEGEncodeParam param =
+//			// encoder.getDefaultJPEGEncodeParam(bufferedImage);
+//			// param.setQuality(0.9f, true);
+//			// encoder.setJPEGEncodeParam(param);
+//			JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(fos);
+//			encoder.encode(mBufferedImage);
+//			return true;
+//		} catch (FileNotFoundException fnf) {
+//			return false;
+//		} catch (IOException ioe) {
+//			return false;
+//		} finally {
+//			if (fos != null) {
+//				try {
+//					fos.close();
+//				} catch (IOException e) {
+//				}
+//			}
+//		}
+//	}
 
 	public static String cutImgName(String imgSrc, int width, int height) {
 		if (imgSrc == null) {

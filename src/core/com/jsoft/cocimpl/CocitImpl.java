@@ -1,10 +1,8 @@
 package com.jsoft.cocimpl;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -12,30 +10,28 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.nutz.trans.Trans;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import com.jsoft.cocimpl.config.impl.CocConfig;
 import com.jsoft.cocimpl.config.impl.DSConfig;
 import com.jsoft.cocimpl.config.impl.LogConfig;
 import com.jsoft.cocimpl.config.impl.MessageConfig;
 import com.jsoft.cocimpl.context.HttpContextImpl;
-import com.jsoft.cocimpl.context.StopWatch;
-import com.jsoft.cocimpl.entityengine.impl.DataManagerFactoryImpl;
-import com.jsoft.cocimpl.entityengine.impl.EntityEngineImpl;
-import com.jsoft.cocimpl.entityengine.impl.service.EntityServiceFactoryImpl;
+import com.jsoft.cocimpl.dmengine.impl.CocEntityEngineImpl;
+import com.jsoft.cocimpl.dmengine.impl.DataManagerFactoryImpl;
+import com.jsoft.cocimpl.dmengine.impl.info.EntityInfoFactoryImpl;
 import com.jsoft.cocimpl.mvc.nutz.CocActionHandler;
 import com.jsoft.cocimpl.mvc.nutz.CocNutConfig;
 import com.jsoft.cocimpl.orm.generator.INamingStrategy;
 import com.jsoft.cocimpl.orm.generator.impl.EncodeNamingStrategy;
 import com.jsoft.cocimpl.orm.generator.impl.SimpleNamingStrategy;
 import com.jsoft.cocimpl.orm.listener.EntityListeners;
-import com.jsoft.cocimpl.orm.listener.impl.CocEntityListener;
 import com.jsoft.cocimpl.orm.nutz.EnMappingHolder;
 import com.jsoft.cocimpl.orm.nutz.EnMappingMaker;
 import com.jsoft.cocimpl.orm.nutz.impl.CocTransaction;
 import com.jsoft.cocimpl.orm.nutz.impl.OrmImpl;
-import com.jsoft.cocimpl.orm.nutz.impl.ProxyOrm;
-import com.jsoft.cocimpl.securityengine.impl.SecurityEngineImpl;
-import com.jsoft.cocimpl.ui.UIViews;
+import com.jsoft.cocimpl.securityengine.impl.SecurityServiceImpl;
 import com.jsoft.cocimpl.ui.impl.UIModelFactoryImpl;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.ExtHttpContext;
@@ -44,19 +40,21 @@ import com.jsoft.cocit.config.IBeansConfig;
 import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.config.IDSConfig;
 import com.jsoft.cocit.config.IMessageConfig;
-import com.jsoft.cocit.entityengine.DataManagerFactory;
-import com.jsoft.cocit.entityengine.EntityEngine;
-import com.jsoft.cocit.entityengine.EntityServiceFactory;
-import com.jsoft.cocit.entityengine.PatternAdapters;
+import com.jsoft.cocit.context.StopWatch;
+import com.jsoft.cocit.dmengine.IDataManagerFactory;
+import com.jsoft.cocit.dmengine.IDataModelEngine;
+import com.jsoft.cocit.dmengine.IEntityInfoFactory;
+import com.jsoft.cocit.dmengine.IPatternAdapters;
+import com.jsoft.cocit.dmengine.command.ICommandInterceptors;
 import com.jsoft.cocit.log.Log;
 import com.jsoft.cocit.log.Logs;
-import com.jsoft.cocit.orm.ExtOrm;
-import com.jsoft.cocit.orm.Orm;
+import com.jsoft.cocit.orm.IExtOrm;
+import com.jsoft.cocit.orm.IOrm;
 import com.jsoft.cocit.orm.generator.EntityGenerators;
-import com.jsoft.cocit.orm.listener.EntityListener;
-import com.jsoft.cocit.securityengine.LoginSession;
-import com.jsoft.cocit.securityengine.SecurityEngine;
+import com.jsoft.cocit.securityengine.SecurityService;
+import com.jsoft.cocit.service.LogService;
 import com.jsoft.cocit.ui.UIModelFactory;
+import com.jsoft.cocit.ui.UIViews;
 import com.jsoft.cocit.util.StringUtil;
 
 public class CocitImpl extends Cocit {
@@ -75,7 +73,7 @@ public class CocitImpl extends Cocit {
 	private String contextDir = "";
 	private Map<String, String> contextParameters = new HashMap();
 	private ThreadLocal<StopWatch> stopWatchHolder = new ThreadLocal();
-	private Map<IDSConfig, ExtOrm> ormMap = new HashMap();
+	private Map<IDSConfig, IExtOrm> ormMap = new HashMap();
 	private ICocConfig cocconfig = null;
 	private IMessageConfig i18nconfig = null;
 	private INamingStrategy namingStrategy;
@@ -85,12 +83,12 @@ public class CocitImpl extends Cocit {
 	private EnMappingHolder entityHolder;
 	private EnMappingMaker entityMaker;
 	private BeanFactory beanFactory;
-	private EntityEngine entityEngine;
+	private IDataModelEngine entityEngine;
 	// private SystemEngine systemEngine;
-	private SecurityEngine securityEngine;
-	private EntityServiceFactory entityServiceFactory;
+	private SecurityService securityEngine;
+	private IEntityInfoFactory entityServiceFactory;
 	private UIModelFactory uiModelFactory;
-	private DataManagerFactory dataManagerFactory;
+	private IDataManagerFactory dataManagerFactory;
 	private IDSConfig commonDataSourceConfig;
 	private EntityListeners listeners;
 	private IBeansConfig beansConfig;
@@ -175,20 +173,19 @@ public class CocitImpl extends Cocit {
 		this.entityMaker.setNamingStrategyForEncoding(this.namingStrategyForEncoding);
 		this.actionHandler = new CocActionHandler(new CocNutConfig());
 
-		this.entityEngine = new EntityEngineImpl();
-		this.securityEngine = new SecurityEngineImpl();
+		this.entityEngine = new CocEntityEngineImpl();
+		this.securityEngine = new SecurityServiceImpl();
 		// systemEngine = bean("systemEngine");
-		this.entityServiceFactory = new EntityServiceFactoryImpl();
+		this.entityServiceFactory = new EntityInfoFactoryImpl();
 		this.uiModelFactory = new UIModelFactoryImpl();
 		this.dataManagerFactory = new DataManagerFactoryImpl();
 		this.commonDataSourceConfig = new DSConfig();
 
-		List<EntityListener> listeners = new ArrayList();
-		listeners.add(new CocEntityListener());
-		this.listeners = new EntityListeners(listeners);
+		this.listeners = EntityListeners.make();
 
 		// try {
-		// ipSeeker = new IPSeeker("QQWry.Dat", contextDir + File.separator + "WEB-INF" + File.separator + "lib");
+		// ipSeeker = new IPSeeker("QQWry.Dat", contextDir + File.separator +
+		// "WEB-INF" + File.separator + "lib");
 		// } catch (Throwable e) {
 		// log.error("加载IP地址转换包失败！");
 		// }
@@ -196,12 +193,18 @@ public class CocitImpl extends Cocit {
 		// /*
 		// * 验证
 		// */
-		// Assert.isTrue(entityModuleEngine != null, "entityModuleEngine cannot be null!");
-		// Assert.isTrue(securityEngine != null, "securityEngine cannot be null!");
-		// Assert.isTrue(entityProxyEngine != null, "entityProxyEngine cannot be null!");
-		// Assert.isTrue(widgetModelFactory != null, "widgetModelFactory cannot be null!");
-		// Assert.isTrue(widgetRenderFactory != null, "widgetRenderFactory cannot be null!");
-		// Assert.isTrue(entityManagerFactory != null, "entityManagerFactory cannot be null!");
+		// Assert.isTrue(entityModuleEngine != null,
+		// "entityModuleEngine cannot be null!");
+		// Assert.isTrue(securityEngine != null,
+		// "securityEngine cannot be null!");
+		// Assert.isTrue(entityProxyEngine != null,
+		// "entityProxyEngine cannot be null!");
+		// Assert.isTrue(widgetModelFactory != null,
+		// "widgetModelFactory cannot be null!");
+		// Assert.isTrue(widgetRenderFactory != null,
+		// "widgetRenderFactory cannot be null!");
+		// Assert.isTrue(entityManagerFactory != null,
+		// "entityManagerFactory cannot be null!");
 		// Assert.isTrue(beansConfig != null, "beansConfig cannot be null!");
 
 		/*
@@ -235,9 +238,13 @@ public class CocitImpl extends Cocit {
 		log.info("初始化Cocit数据......");
 
 		try {
-			if (this.getConfig().isAutoUpgrade()) {
+			if (this.getConfig().isAutoUpgradeEntityTables()) {
+				this.entityEngine.setupCocitDBTables();
+			}
+			if (this.getConfig().isAutoUpgradeEntityDefinition()) {
 				this.entityEngine.setupCocitFromPackage();
 			}
+
 		} catch (Throwable e) {
 			log.error("初始化Cocit数据出错！", e);
 		}
@@ -331,14 +338,28 @@ public class CocitImpl extends Cocit {
 	}
 
 	public <T> T getBean(String name) {
-		return (T) beanFactory.getBean(name);
+		try {
+			ApplicationContext appContext = this.getApplicationContext();
+			if (appContext != null) {
+				Object obj = appContext.getBean(name);
+				if (obj != null) {
+					return (T) obj;
+				}
+			}
+
+			return (T) beanFactory.getBean(name);
+		} catch (Throwable e) {
+			log.error(e);
+		}
+
+		return null;
 	}
 
 	public <T> T getBean(Class<T> type) {
 		return beanFactory.getBean(type);
 	}
 
-	public EntityServiceFactory getEntityServiceFactory() {
+	public IEntityInfoFactory getEntityServiceFactory() {
 		return entityServiceFactory;
 	}
 
@@ -350,7 +371,7 @@ public class CocitImpl extends Cocit {
 		return beanFactory.getViews();
 	}
 
-	public DataManagerFactory getDataManagerFactory() {
+	public IDataManagerFactory getDataManagerFactory() {
 		return dataManagerFactory;
 	}
 
@@ -378,16 +399,21 @@ public class CocitImpl extends Cocit {
 		return stopWatchHolder.get();
 	}
 
-	public Orm getProxiedORM() {
-		Orm orm = orm();
+	// public Orm getProxiedORM() {
+	// Orm orm = orm();
+	//
+	// if (orm instanceof ProxyOrm)
+	// return ((ProxyOrm) orm).getProxiedOrm();
+	//
+	// return orm;
+	// }
 
-		if (orm instanceof ProxyOrm)
-			return ((ProxyOrm) orm).getProxiedOrm();
+	public IOrm orm() {
+		IOrm orm = this.getBean("orm");
+		if (orm != null) {
+			return orm;
+		}
 
-		return orm;
-	}
-
-	public Orm orm() {
 		ExtHttpContext ctx = (ExtHttpContext) getHttpContext();
 		IDSConfig db = null;
 
@@ -408,26 +434,27 @@ public class CocitImpl extends Cocit {
 	 *            数据库配置
 	 * @return
 	 */
-	public Orm getORM(IDSConfig dsConfig) {
+	public IOrm getORM(IDSConfig dsConfig) {
 		synchronized (ormMap) {
-			ExtOrm orm = ormMap.get(dsConfig);
+			IExtOrm orm = ormMap.get(dsConfig);
 
 			if (orm == null) {
 				EntityListeners ls = listeners;
-				orm = new ProxyOrm(new OrmImpl(dsConfig, entityHolder, entityMaker, ls));
+				orm = new OrmImpl(dsConfig, entityHolder, entityMaker, ls);
+				// orm = new ProxyOrm(new OrmImpl(dsConfig, entityHolder, entityMaker, ls));
 				ormMap.put(dsConfig, orm);
 			}
 
-			ExtHttpContext ctx = (ExtHttpContext) getHttpContext();
-			if (ctx != null) {
-				LoginSession login = ctx.getLoginSession();
-				if (login != null) {
-					if (this.cocconfig.getCocitSystemKey().equals(login.getSystem().getKey())) {
-						ProxyOrm proxyOrm = (ProxyOrm) orm;
-						return proxyOrm.getProxiedOrm();
-					}
-				}
-			}
+			// ExtHttpContext ctx = (ExtHttpContext) getHttpContext();
+			// if (ctx != null) {
+			// LoginSession login = ctx.getLoginSession();
+			// if (login != null) {
+			// if (this.cocconfig.getCocitSystemCode().equals(login.getSystem().getCode())) {
+			// ProxyOrm proxyOrm = (ProxyOrm) orm;
+			// return proxyOrm.getProxiedOrm();
+			// }
+			// }
+			// }
 
 			return orm;
 		}
@@ -446,7 +473,8 @@ public class CocitImpl extends Cocit {
 	// * 数据库登录密码
 	// * @return
 	// */
-	// public ExtOrm orm(String url, String driver, String database, String user, String pwd) {
+	// public ExtOrm orm(String url, String driver, String database, String
+	// user, String pwd) {
 	// return orm(new CommonDataSourceConfig(url, driver, user, pwd));
 	// }
 
@@ -492,7 +520,7 @@ public class CocitImpl extends Cocit {
 	 * @preserve
 	 * @return
 	 */
-	public EntityEngine getEntityEngine() {
+	public IDataModelEngine getEntityEngine() {
 		return entityEngine;
 	}
 
@@ -505,7 +533,7 @@ public class CocitImpl extends Cocit {
 	 * @preserve
 	 * @return
 	 */
-	public SecurityEngine getSecurityEngine() {
+	public SecurityService getSecurityEngine() {
 		return securityEngine;
 	}
 
@@ -522,7 +550,12 @@ public class CocitImpl extends Cocit {
 	}
 
 	@Override
-	public PatternAdapters getPatternAdapters() {
+	public ICommandInterceptors getCommandInterceptors() {
+		return beanFactory.getCommandInterceptors();
+	}
+
+	@Override
+	public IPatternAdapters getPatternAdapters() {
 		return beanFactory.getPatternAdapters();
 	}
 
@@ -536,4 +569,13 @@ public class CocitImpl extends Cocit {
 		return beanFactory.getEntityGenerators();
 	}
 
+	@Override
+	public LogService getLogService() {
+		return beanFactory.getBean("logService");
+	}
+
+	@Override
+	public ApplicationContext getApplicationContext() {
+		return WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+	}
 }

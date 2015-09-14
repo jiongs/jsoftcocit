@@ -34,6 +34,31 @@ public class DataGridTag extends BodyTagSupport {
 	protected String paramUI = null;
 	protected String dataUrl = null;
 	protected String modelName;
+	protected String name;
+
+	protected boolean rownumbers;
+	protected boolean checkbox;
+	protected boolean singleSelect;
+	protected boolean pageSize;
+	protected boolean pageIndex;
+	protected boolean pageOptions;
+	protected boolean pagination;
+	protected boolean selectOnCheck;
+	protected boolean checkOnSelect;
+	protected boolean showFooter;
+	protected boolean showHeader;
+	protected boolean sortExpr;
+
+	protected String onBeforeLoad;
+	protected String onSelect;
+	protected String onUnselect;
+	protected String onUnselectAll;
+	protected String onCheck;
+	protected String onUncheck;
+	protected String onCheckAll;
+	protected String onUncheckAll;
+	protected String onHeaderContextMenu;
+	protected String onDblClickRow;
 
 	public int doStartTag() throws JspException {
 
@@ -43,11 +68,12 @@ public class DataGridTag extends BodyTagSupport {
 		/*
 		 * 准备参数
 		 */
-		if (StringUtil.isBlank(modelName)) {
-			modelName = ViewKeys.UI_MODEL_KEY;
-		}
-		List<String> fieldList = StringUtil.toList(fields);
-		List<String> actionList = StringUtil.toList(rowActions);
+		List<String> fieldList = null;
+		if (fields != null)
+			fieldList = StringUtil.toList(fields);
+		List<String> actionList = null;
+		if (rowActions != null)
+			actionList = StringUtil.toList(rowActions);
 
 		/*
 		 * 准备 HttpContext
@@ -60,6 +86,9 @@ public class DataGridTag extends BodyTagSupport {
 		/*
 		 * 获取 UIGrid
 		 */
+		if (StringUtil.isBlank(modelName)) {
+			modelName = ViewKeys.UI_MODEL_KEY;
+		}
 		UIModel uiModel = (UIModel) pageContext.getAttribute(modelName, PageContext.REQUEST_SCOPE);
 		if (uiModel != null) {
 			if (uiModel instanceof UIEntity) {
@@ -72,13 +101,15 @@ public class DataGridTag extends BodyTagSupport {
 		/*
 		 * 准备 OpContext
 		 */
-		OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.REQUEST_KEY_OPCONTEXT, PageContext.REQUEST_SCOPE);
-		if (opContext == null && StringUtil.hasContent(funcExpr)) {
+		OpContext opContext;
+		if (StringUtil.hasContent(funcExpr)) {
 			opContext = OpContext.make(funcExpr, null, null);
+		} else {
+			opContext = (OpContext) pageContext.getAttribute(OpContext.REQUEST_KEY_HTTPCOMMAND, PageContext.REQUEST_SCOPE);
 		}
 		if (opContext != null) {
 			UIModelFactory uiFactory = coc.getUiModelFactory();
-			if ((fieldList != null && fieldList.size() > 0) || (actionList != null && actionList.size() > 0)) {
+			if (fieldList != null || actionList != null) {
 				model = uiFactory.getGrid(opContext.getSystemMenu(), opContext.getCocEntity(), fieldList, actionList);
 			}
 
@@ -111,6 +142,9 @@ public class DataGridTag extends BodyTagSupport {
 			if (StringUtil.hasContent(dataUrl)) {
 				model.setDataLoadUrl(dataUrl);
 			}
+			if (StringUtil.hasContent(name)) {
+				model.putAttribute("name", name);
+			}
 
 			/*
 			 * 处理 resultUI
@@ -134,6 +168,30 @@ public class DataGridTag extends BodyTagSupport {
 				for (String str : list) {
 					model.addParamUI(str);
 				}
+			}
+			if(this.onBeforeLoad!=null){
+				model.set("onBeforeLoad", onBeforeLoad);
+			}
+			if(this.onSelect!=null){
+				model.set("onSelect", onSelect);
+			}
+			if(this.onUnselect!=null){
+				model.set("onUnselect", onUnselect);
+			}
+			if(this.onUnselectAll!=null){
+				model.set("onUnselectAll", onUnselectAll);
+			}
+			if(this.onCheck!=null){
+				model.set("onCheck", onCheck);
+			}
+			if(this.onUncheck!=null){
+				model.set("onUncheck", onUncheck);
+			}
+			if(this.onCheckAll!=null){
+				model.set("onCheckAll", onCheckAll);
+			}
+			if(this.onDblClickRow!=null){
+				model.set("onDblClickRow", onDblClickRow);
 			}
 
 			model.render(out);
@@ -228,6 +286,190 @@ public class DataGridTag extends BodyTagSupport {
 
 	public void setModelName(String modelName) {
 		this.modelName = modelName;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public boolean isRownumbers() {
+		return rownumbers;
+	}
+
+	public void setRownumbers(boolean rownumbers) {
+		this.rownumbers = rownumbers;
+	}
+
+	public boolean isCheckbox() {
+		return checkbox;
+	}
+
+	public void setCheckbox(boolean checkbox) {
+		this.checkbox = checkbox;
+	}
+
+	public boolean isSingleSelect() {
+		return singleSelect;
+	}
+
+	public void setSingleSelect(boolean singleSelect) {
+		this.singleSelect = singleSelect;
+	}
+
+	public boolean isPageSize() {
+		return pageSize;
+	}
+
+	public void setPageSize(boolean pageSize) {
+		this.pageSize = pageSize;
+	}
+
+	public boolean isPageIndex() {
+		return pageIndex;
+	}
+
+	public void setPageIndex(boolean pageIndex) {
+		this.pageIndex = pageIndex;
+	}
+
+	public boolean isPageOptions() {
+		return pageOptions;
+	}
+
+	public void setPageOptions(boolean pageOptions) {
+		this.pageOptions = pageOptions;
+	}
+
+	public boolean isPagination() {
+		return pagination;
+	}
+
+	public void setPagination(boolean pagination) {
+		this.pagination = pagination;
+	}
+
+	public boolean isSelectOnCheck() {
+		return selectOnCheck;
+	}
+
+	public void setSelectOnCheck(boolean selectOnCheck) {
+		this.selectOnCheck = selectOnCheck;
+	}
+
+	public boolean isCheckOnSelect() {
+		return checkOnSelect;
+	}
+
+	public void setCheckOnSelect(boolean checkOnSelect) {
+		this.checkOnSelect = checkOnSelect;
+	}
+
+	public boolean isShowFooter() {
+		return showFooter;
+	}
+
+	public void setShowFooter(boolean showFooter) {
+		this.showFooter = showFooter;
+	}
+
+	public boolean isShowHeader() {
+		return showHeader;
+	}
+
+	public void setShowHeader(boolean showHeader) {
+		this.showHeader = showHeader;
+	}
+
+	public boolean isSortExpr() {
+		return sortExpr;
+	}
+
+	public void setSortExpr(boolean sortExpr) {
+		this.sortExpr = sortExpr;
+	}
+
+	public String getOnBeforeLoad() {
+		return onBeforeLoad;
+	}
+
+	public void setOnBeforeLoad(String onBeforeLoad) {
+		this.onBeforeLoad = onBeforeLoad;
+	}
+
+	public String getOnSelect() {
+		return onSelect;
+	}
+
+	public void setOnSelect(String onSelect) {
+		this.onSelect = onSelect;
+	}
+
+	public String getOnUnselect() {
+		return onUnselect;
+	}
+
+	public void setOnUnselect(String onUnselect) {
+		this.onUnselect = onUnselect;
+	}
+
+	public String getOnUnselectAll() {
+		return onUnselectAll;
+	}
+
+	public void setOnUnselectAll(String onUnselectAll) {
+		this.onUnselectAll = onUnselectAll;
+	}
+
+	public String getOnCheck() {
+		return onCheck;
+	}
+
+	public void setOnCheck(String onCheck) {
+		this.onCheck = onCheck;
+	}
+
+	public String getOnUncheck() {
+		return onUncheck;
+	}
+
+	public void setOnUncheck(String onUncheck) {
+		this.onUncheck = onUncheck;
+	}
+
+	public String getOnCheckAll() {
+		return onCheckAll;
+	}
+
+	public void setOnCheckAll(String onCheckAll) {
+		this.onCheckAll = onCheckAll;
+	}
+
+	public String getOnUncheckAll() {
+		return onUncheckAll;
+	}
+
+	public void setOnUncheckAll(String onUncheckAll) {
+		this.onUncheckAll = onUncheckAll;
+	}
+
+	public String getOnHeaderContextMenu() {
+		return onHeaderContextMenu;
+	}
+
+	public void setOnHeaderContextMenu(String onHeaderContextMenu) {
+		this.onHeaderContextMenu = onHeaderContextMenu;
+	}
+
+	public String getOnDblClickRow() {
+		return onDblClickRow;
+	}
+
+	public void setOnDblClickRow(String onDblClickRow) {
+		this.onDblClickRow = onDblClickRow;
 	}
 
 }

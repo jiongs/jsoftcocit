@@ -14,7 +14,7 @@ import org.nutz.dao.pager.Pager;
 import org.nutz.lang.Strings;
 
 import com.jsoft.cocimpl.orm.nutz.EnColumnMappingImpl;
-import com.jsoft.cocit.orm.Dao;
+import com.jsoft.cocit.orm.IDao;
 import com.jsoft.cocit.orm.expr.CndExpr;
 import com.jsoft.cocit.orm.expr.CndType;
 import com.jsoft.cocit.orm.expr.CombCndExpr;
@@ -32,7 +32,7 @@ import com.jsoft.cocit.util.LogUtil;
 import com.jsoft.cocit.util.ObjectUtil;
 import com.jsoft.cocit.util.StringUtil;
 
-abstract class Cnds {
+public abstract class Cnds {
 	public static Condition toCnd(CndExpr expr) {
 		CocCnd cnd = cnd(expr);
 		if (expr != null) {
@@ -60,7 +60,7 @@ abstract class Cnds {
 		return cnd;
 	}
 
-	public static Pager toPager(Dao dao, CndExpr expr) {
+	public static Pager toPager(IDao dao, CndExpr expr) {
 		if (expr == null) {
 			return null;
 		}

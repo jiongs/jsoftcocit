@@ -20,6 +20,8 @@ public class UIEntity extends UIControlModel implements UIEntityModel {
 	private UISearchBox searchBox;// 检索框
 	private byte searchBoxPos;
 
+	private boolean isForm;// 是否是一个表单？
+
 	public void release() {
 		super.release();
 		if (filter != null) {
@@ -101,6 +103,14 @@ public class UIEntity extends UIControlModel implements UIEntityModel {
 
 	public void setSearchBoxPos(byte searchBoxPos) {
 		this.searchBoxPos = searchBoxPos;
+	}
+
+	public boolean isForm() {
+		return isForm;
+	}
+
+	public void setForm(boolean isForm) {
+		this.isForm = isForm;
 	}
 
 }

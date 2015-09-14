@@ -12,5 +12,5 @@ interface EntityConst {
 	 */
 	static final int STRING_BOX_MIN_LENGTH = 200;
 
-	static final String[] ENTITY_PACKAGES = new String[] { "com.jsoft.cocit.entity.impl" };
+	static final String[] ENTITY_PACKAGES = new String[] { "com.jsoft.cocit.entity" };
 }

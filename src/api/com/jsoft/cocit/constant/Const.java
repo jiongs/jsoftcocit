@@ -1,6 +1,6 @@
 package com.jsoft.cocit.constant;
 
-public interface Const extends EntityConst, TableNames, FieldNames, FieldTypes, StatusCodes, MenuTypes, OpCodes, EntityKeys, PrincipalTypes {
+public interface Const extends EntityConst, TableNames, FieldNames, FieldTypes, StatusCodes, MenuTypes, OpCodes, EntityCodes, PrincipalTypes {
 
 	/**
 	 * top框架高度
@@ -64,8 +64,9 @@ public interface Const extends EntityConst, TableNames, FieldNames, FieldTypes, 
 
 	static final String REQUEST_KEY_CLIENT_WIDTH = "clientWidth";
 	static final String REQUEST_KEY_CLIENT_HEIGHT = "clientHeight";
+	
 
-	static final String TEST_TABLE_NAME = "coc_test_c3p0";
+	static final String TEST_TABLE_NAME = "COC_TEST_C3P0";
 
 	static final String CONTENT_TYPE_HTML = "text/html; charset=UTF-8";
 	static final String CONTENT_TYPE_JSON = "text/json; charset=UTF-8";

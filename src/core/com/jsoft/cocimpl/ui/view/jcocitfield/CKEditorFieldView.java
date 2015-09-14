@@ -2,9 +2,9 @@ package com.jsoft.cocimpl.ui.view.jcocitfield;
 
 import java.io.Writer;
 
-import com.jsoft.cocimpl.ui.view.BaseFieldView;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.ui.model.UIFieldModel;
+import com.jsoft.cocit.ui.view.BaseFieldView;
 import com.jsoft.cocit.util.StringUtil;
 
 public class CKEditorFieldView extends BaseFieldView {

@@ -20,19 +20,20 @@ import org.nutz.dao.entity.Entity;
 import org.nutz.lang.Mirror;
 
 import com.jsoft.cocimpl.orm.DMLSession;
-import com.jsoft.cocimpl.orm.Pager;
 import com.jsoft.cocimpl.orm.dialect.Dialect;
 import com.jsoft.cocimpl.orm.generator.INamingStrategy;
 import com.jsoft.cocimpl.orm.listener.EntityListeners;
 import com.jsoft.cocimpl.orm.nutz.EnMappingHolder;
 import com.jsoft.cocimpl.orm.nutz.EnMappingMaker;
 import com.jsoft.cocimpl.util.Assert;
+import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.config.IDSConfig;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.exception.CocDBException;
 import com.jsoft.cocit.orm.ConnCallback;
-import com.jsoft.cocit.orm.ExtDao;
-import com.jsoft.cocit.orm.ExtOrm;
+import com.jsoft.cocit.orm.IExtDao;
+import com.jsoft.cocit.orm.IExtOrm;
+import com.jsoft.cocit.orm.PageResult;
 import com.jsoft.cocit.orm.expr.CndExpr;
 import com.jsoft.cocit.orm.expr.Expr;
 import com.jsoft.cocit.orm.expr.NullCndExpr;
@@ -44,20 +45,28 @@ import com.jsoft.cocit.util.LogUtil;
 import com.jsoft.cocit.util.StringUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
-public class OrmImpl implements ExtOrm {
+public class OrmImpl implements IExtOrm {
 
 	// 依赖注入
-	private ExtDao dao;
+	private IExtDao dao;
+
+	public OrmImpl(DataSource datasource) {
+		dao = new ExtDaoImpl(datasource, EnMappingHolder.make(), EnMappingMaker.make(), EntityListeners.make());
+	}
 
 	public OrmImpl(IDSConfig config, EnMappingHolder holder, EnMappingMaker maker, EntityListeners listeners) {
 		try {
-			dao = new ExtDaoImpl(getComboPooledDataSource(config), holder, maker, listeners);
+			DataSource datasource = (DataSource) Cocit.me().getBean("dataSource");
+			if (datasource == null) {
+				datasource = this.getComboPooledDataSource(config);
+			}
+			dao = new ExtDaoImpl(datasource, holder, maker, listeners);
 		} catch (Throwable e) {
 			throw new CocDBException(ExceptionUtil.msg(e));
 		}
 	}
 
-	protected DataSource getComboPooledDataSource(IDSConfig config) {
+	private DataSource getComboPooledDataSource(IDSConfig config) {
 		ComboPooledDataSource ds = new ComboPooledDataSource();
 		ds.setJdbcUrl(config.getUrl());
 		try {
@@ -255,7 +264,8 @@ public class OrmImpl implements ExtOrm {
 	}
 
 	public int delete(Object obj) {
-		Assert.notNull(obj, "ORM.delete: obj cannot be null!");
+		if (obj == null)
+			return 0;
 
 		if (LogUtil.isTraceEnabled()) {
 
@@ -366,7 +376,7 @@ public class OrmImpl implements ExtOrm {
 	public Object get(Class classOfEntity, String key) {
 		Assert.notNull(classOfEntity, "ORM.get: classOfEntity cannot be null!");
 
-		return load(classOfEntity, Expr.eq(Const.F_KEY, key));
+		return load(classOfEntity, Expr.eq(Const.F_CODE, key));
 	}
 
 	public Object get(Class classOfEntity, Serializable id, CndExpr fieldRexpr) {
@@ -548,7 +558,7 @@ public class OrmImpl implements ExtOrm {
 		return dao.getNamingStrategy();
 	}
 
-	public ExtDao getDao() {
+	public IExtDao getDao() {
 		return dao;
 	}
 
@@ -579,7 +589,7 @@ public class OrmImpl implements ExtOrm {
 		return (list == null || list.size() == 0) ? null : list.get(0);
 	}
 
-	public List query(Pager pager) {
+	public List query(PageResult pager) {
 		Assert.notNull(pager, "ORM.query: pager cannot be null!");
 
 		CndExpr expr = pager.getQueryExpr();
@@ -662,7 +672,10 @@ public class OrmImpl implements ExtOrm {
 						while (rst.next()) {
 							obj = new HashMap();
 							for (String column : columnNames) {
-								String prop = columnToPropMap.get(column);
+								String prop = null;
+								if (columnToPropMap != null) {
+									prop = columnToPropMap.get(column);
+								}
 								if (prop == null || prop.trim().length() == 0) {
 									prop = column;
 								}
@@ -683,7 +696,10 @@ public class OrmImpl implements ExtOrm {
 							obj = me.born();
 
 							for (String column : columnNames) {
-								String prop = columnToPropMap.get(column);
+								String prop = null;
+								if (columnToPropMap != null) {
+									prop = columnToPropMap.get(column);
+								}
 								if (prop == null || prop.trim().length() == 0) {
 									prop = column;
 								}

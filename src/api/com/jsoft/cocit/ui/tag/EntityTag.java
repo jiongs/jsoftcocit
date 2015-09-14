@@ -9,14 +9,14 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-import com.jsoft.cocimpl.ui.UIView;
-import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.action.OpContext;
 import com.jsoft.cocit.constant.ViewKeys;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.exception.CocException;
+import com.jsoft.cocit.ui.UIView;
+import com.jsoft.cocit.ui.UIViews;
 import com.jsoft.cocit.ui.model.UIModel;
 import com.jsoft.cocit.ui.model.control.UIEntity;
 import com.jsoft.cocit.util.ExceptionUtil;
@@ -47,7 +47,7 @@ public class EntityTag extends BodyTagSupport {
 		try {
 			out = pageContext.getOut();
 
-			if (mainModel == null && StringUtil.hasContent(funcExpr)) {
+			if (StringUtil.hasContent(funcExpr)) {
 
 				HttpContext httpContext = Cocit.me().getHttpContext();
 				if (httpContext == null) {

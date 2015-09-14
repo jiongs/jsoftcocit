@@ -1,13 +1,30 @@
 package com.jsoft.cocimpl.action;
 
+import org.nutz.mvc.annotation.At;
 import org.nutz.mvc.annotation.Fail;
 import org.nutz.mvc.annotation.Ok;
 
+import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.HttpContext;
+import com.jsoft.cocit.dmengine.info.ISystemInfo;
 import com.jsoft.cocit.mvc.UIModelView;
+import com.jsoft.cocit.ui.model.JSPModel;
 
 @Ok(UIModelView.VIEW_TYPE)
 @Fail(UIModelView.VIEW_TYPE)
 public class ConfigAction {
+
+	@At("/admin/config/systempreference/*")
+	public JSPModel getSystemConfig(boolean isAjax) {
+		HttpContext ctx = Cocit.me().getHttpContext();
+		ISystemInfo systemService = ctx.getLoginSystem();
+
+		JSPModel jsp = JSPModel.make(ctx.getRequest(), ctx.getResponse(), "/WEB-INF/jsp/coc/config/system_preference.jsp").setAjax(isAjax);
+		jsp.put("system", systemService);
+
+		return jsp;
+	}
+
 	//
 	// @At("/config/clrmapping")
 	// public synchronized Status clearMapping() throws DemsyException {
@@ -282,7 +299,7 @@ public class ConfigAction {
 	// }
 	// }
 	//
-	// 
+	//
 	// public void run() {
 	// super.run();
 	// this.execute();

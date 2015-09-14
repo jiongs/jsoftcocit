@@ -28,7 +28,7 @@ public interface ExtHttpContext extends HttpContext {
 
 	int getServerPort();
 
-	String getLoginLogKey();
+	String getLoginLogCode();
 
 	IDSConfig getLoginTenantDataSource();
 

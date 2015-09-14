@@ -22,7 +22,7 @@ import com.jsoft.cocimpl.mvc.servlet.StaticResourceFilter;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.ExtHttpContext;
 import com.jsoft.cocit.config.ICocConfig;
-import com.jsoft.cocit.constant.UrlAPI;
+import com.jsoft.cocit.constant.CocUrl;
 import com.jsoft.cocit.exception.CocConfigException;
 import com.jsoft.cocit.exception.CocUnloginException;
 import com.jsoft.cocit.log.Log;
@@ -65,6 +65,9 @@ public class CocFilter implements Filter {
 	}
 
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+		Cocit coc = Cocit.me();
+		coc.makeStopWatch();
+
 		HttpServletRequest req = (HttpServletRequest) request;
 		HttpServletResponse resp = (HttpServletResponse) response;
 
@@ -102,8 +105,6 @@ public class CocFilter implements Filter {
 
 		doPostEncoding(req, resp, chain);
 
-		Cocit.me().makeStopWatch();
-
 		if (!this.doStaticFilters(req, resp, chain, uri, url)) {
 
 			try {
@@ -111,10 +112,10 @@ public class CocFilter implements Filter {
 					chain.doFilter(req, resp);
 				}
 			} catch (CocConfigException e) {
-				resp.sendRedirect(MVCUtil.makeUrl(UrlAPI.URL_ADMIN_CONFIG));
+				resp.sendRedirect(MVCUtil.makeUrl(CocUrl.URL_ADMIN_CONFIG));
 				resp.flushBuffer();
 			} catch (CocUnloginException e) {
-				resp.sendRedirect(MVCUtil.makeUrl(UrlAPI.URL_ADMIN_LOGIN));
+				resp.sendRedirect(MVCUtil.makeUrl(CocUrl.URL_ADMIN_LOGIN));
 				resp.flushBuffer();
 			}
 		}
@@ -127,11 +128,13 @@ public class CocFilter implements Filter {
 	}
 
 	protected boolean doCocFilter(HttpServletRequest req, HttpServletResponse resp, FilterChain chain, String url) throws IOException, ServletException {
+		Cocit coc = Cocit.me();
+
 		ExtHttpContext ctx = null;
 		try {
-			ctx = (ExtHttpContext) Cocit.me().makeHttpContext(req, resp);
+			ctx = (ExtHttpContext) coc.makeHttpContext(req, resp);
 
-			CocActionHandler handler = Cocit.me().actionHandler();
+			CocActionHandler handler = coc.actionHandler();
 
 			if (handler.execute(req, resp)) {
 
@@ -148,7 +151,7 @@ public class CocFilter implements Filter {
 			if (ctx != null)
 				ctx.release();
 
-			Cocit.me().releaseHttpConext();
+			coc.releaseHttpConext();
 		}
 
 		return false;

@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import com.jsoft.cocimpl.ui.view.BaseModelView;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.constant.StatusCodes;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.ui.model.control.UITree;
 import com.jsoft.cocit.ui.model.datamodel.UITreeData;
+import com.jsoft.cocit.ui.view.BaseModelView;
 import com.jsoft.cocit.util.ClassUtil;
 import com.jsoft.cocit.util.JsonUtil;
 import com.jsoft.cocit.util.LogUtil;
@@ -49,6 +49,9 @@ public abstract class UITreeViews {
 			Integer width = model.get("width", ctx.getClientUIWidth());
 			Integer height = model.get("height", ctx.getClientUIHeight());
 
+			Map<String, Object> props = model.getContext();
+			String attrName = model.getAttributes().getProperty("name");
+			
 			// Tree容器：DIV
 			write(out, "<div id=\"filterTree_%s\" style=\"height: %spx; width: %spx; overflow: hidden;\" class=\"tree_container\">", token, height - 2, width - 2);
 
@@ -64,7 +67,6 @@ public abstract class UITreeViews {
 			/*
 			 * 树属性
 			 */
-			Map<String, Object> props = model.getContext();
 			Iterator keys = props.keySet().iterator();
 			while (keys.hasNext()) {
 				String key = (String) keys.next();
@@ -100,8 +102,9 @@ public abstract class UITreeViews {
 			/*
 			 * 输出树型UI
 			 */
-			write(out, "<ul id=\"%s\" class=\"jCocit-ui jCocit-tree\" style=\"position: absolute; left: 0; top: 0; width: %spx; \" data-options=\"%s\"></ul>", //
+			write(out, "<ul id=\"%s\" name=\"%s\" class=\"jCocit-ui jCocit-tree\" style=\"position: absolute; left: 0; top: 0; width: %spx; \" data-options=\"%s\"></ul>", //
 			        model.getId(),//
+			        attrName == null ? "" : attrName,//
 			        width,//
 			        treeOptions//
 			);

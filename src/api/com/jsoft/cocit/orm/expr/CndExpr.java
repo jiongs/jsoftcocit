@@ -38,6 +38,7 @@ import com.jsoft.cocit.util.StringUtil;
  * @preserve public
  */
 public abstract class CndExpr extends Expr {
+	
 	// 排序表达式集合
 	protected List<OrderExpr> orderExprs = new ArrayList();
 
@@ -107,7 +108,11 @@ public abstract class CndExpr extends Expr {
 	}
 
 	public CndExpr setPager(NullCndExpr exp) {
-		this.pagerExpr = exp.getPagerExpr();
+		if (exp == null)
+			this.pagerExpr = null;
+		else
+			this.pagerExpr = exp.getPagerExpr();
+
 		return this;
 	}
 

@@ -76,6 +76,7 @@
 		$tree.tree($.extend({}, opts, {
 			checkbox : opts.multiple,
 			height : opts.panelMaxHeight - 5,
+			combo: $combo,
 			onLoadSuccess : function(node, rows, times) {
 
 				if (times == 1)

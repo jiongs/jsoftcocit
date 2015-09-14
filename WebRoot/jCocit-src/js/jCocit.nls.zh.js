@@ -54,8 +54,8 @@
 	if ($.fn.datagrid)
 		$e($.fn.datagrid.defaults, {
 			loadMsg : '正在加载数据，请稍待...',
-			editSaveButton: '保存',
-			editCancelButton: '取消'
+			editSaveButton : '保存',
+			editCancelButton : '取消'
 		});
 
 	if ($.fn.pagination)
@@ -67,8 +67,8 @@
 
 	if ($.fn.validatebox)
 		$e($.fn.validatebox.defaults, {
-			missingMessage: '字段值不能为空！',
-			rules: {
+			missingMessage : '字段值不能为空！',
+			rules : {
 				email : {
 					validator : function(strValue) {
 						return /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(strValue);
@@ -131,6 +131,6 @@
 			unselectedAny : "您尚未选中任何记录，请先选中一条或多条记录！",
 			unselectedOne : "您尚未选中任何记录，请先选中一条记录！",
 			onlySelectedOne : "只能选中一条记录，请重新选择！",
-			promptSave: "您正在编辑的数据尚未保存，请先保存！"
+			promptSave : "您正在编辑的数据尚未保存，请先保存！"
 		});
 })(jQuery, jCocit);

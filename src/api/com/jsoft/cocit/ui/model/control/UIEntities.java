@@ -14,7 +14,7 @@ import com.jsoft.cocit.util.StringUtil;
  */
 public class UIEntities extends UIControlModel {
 
-	private List<UIEntityContainer> panels;
+	private List<UIPanel> panels;
 
 	private List<String> cols = null;
 	private List<String> rows = null;
@@ -26,7 +26,7 @@ public class UIEntities extends UIControlModel {
 
 	public void release() {
 		super.release();
-		for (UIEntityContainer p : panels) {
+		for (UIPanel p : panels) {
 			p.release();
 		}
 		if (panels != null) {
@@ -42,11 +42,11 @@ public class UIEntities extends UIControlModel {
 		return viewName;
 	}
 
-	public List<UIEntityContainer> getPanels() {
+	public List<UIPanel> getPanels() {
 		return panels;
 	}
 
-	public void addPanel(UIEntityContainer panel) {
+	public void addPanel(UIPanel panel) {
 		panel.setAjax(true);
 
 		panels.add(panel);
@@ -68,7 +68,7 @@ public class UIEntities extends UIControlModel {
 		this.rows = rows;
 	}
 
-	public void setPanels(List<UIEntityContainer> panels) {
+	public void setPanels(List<UIPanel> panels) {
 		this.panels = panels;
 	}
 }

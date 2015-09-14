@@ -8,16 +8,16 @@ import java.util.Map;
 
 import org.lilystudio.util.StringWriter;
 
-import com.jsoft.cocimpl.ui.UIViews;
-import com.jsoft.cocimpl.ui.view.BaseModelView;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.orm.expr.Expr;
+import com.jsoft.cocit.ui.UIViews;
 import com.jsoft.cocit.ui.model.UIFieldModel;
 import com.jsoft.cocit.ui.model.control.UIActions;
 import com.jsoft.cocit.ui.model.control.UIGrid;
 import com.jsoft.cocit.ui.model.datamodel.UIGridData;
+import com.jsoft.cocit.ui.view.BaseModelView;
 import com.jsoft.cocit.ui.view.StyleRule;
 import com.jsoft.cocit.ui.view.UICellView;
 import com.jsoft.cocit.util.JsonUtil;
@@ -172,7 +172,7 @@ public abstract class UITreeGridViews {
 			write(out, "<table id=\"%s\" class=\"jCocit-ui jCocit-%s entity-%s\" title=\"%s\" style=\"height: %spx; width:%spx;\" data-options=\"",//
 			        model.getId(), //
 			        (StringUtil.hasContent(treeField) ? "treegrid" : "datagrid"),//
-			        model.getEntityKey(),//
+			        model.getEntityCode(),//
 			        title,//
 			        height,//
 			        gridWidth//
@@ -204,7 +204,7 @@ public abstract class UITreeGridViews {
 				write(out, ",treeField: 'name'");
 			}
 
-			write(out, ", entityKey: '%s'", model.getEntityKey());
+			write(out, ", entityCode: '%s'", model.getEntityCode());
 			write(out, ", resultUI: %s", StringUtil.toJSArray(model.getResultUI()));
 			write(out, ", paramUI: %s", StringUtil.toJSArray(model.getParamUI()));
 			write(out, ", refFields: %s", StringUtil.toJSArray(model.getFkFields()));
@@ -306,15 +306,15 @@ public abstract class UITreeGridViews {
 			}
 
 			for (Object obj : rows) {
-				String key = ObjectUtil.getValue(obj, "key");
+				String key = ObjectUtil.getValue(obj, "code");
 				Object parent = ObjectUtil.getValue(obj, treeField);
-				String parentKey;
+				String parentCode;
 				if (parent == null) {
-					parentKey = "";
+					parentCode = "";
 				} else {
-					parentKey = parent.toString();
+					parentCode = parent.toString();
 				}
-				tree.addNode(parentKey, key).setName(obj.toString()).setReferObj(obj);
+				tree.addNode(parentCode, key).setName(obj.toString()).setReferObj(obj);
 			}
 
 			this.queryParents(tree, treeField, depth);
@@ -331,21 +331,21 @@ public abstract class UITreeGridViews {
 				Node parentNode = node.getParent();
 				if (parentNode != null) {
 					Object obj = node.getReferObj();
-					String parentKey = (String) ObjectUtil.getValue(obj, treeField);
-					if (parentNode.getReferObj() == null && StringUtil.hasContent(parentKey)) {
+					String parentCode = (String) ObjectUtil.getValue(obj, treeField);
+					if (parentNode.getReferObj() == null && StringUtil.hasContent(parentCode)) {
 						empty.add(obj);
 					}
 				}
 			}
 
 			if (empty.size() > 0) {
-				List<String> parentKeys = new ArrayList();
+				List<String> parentCodes = new ArrayList();
 				for (Object obj : empty) {
-					String parentKey = ObjectUtil.getValue(obj, treeField);
-					if (!parentKeys.contains(parentKey))
-						parentKeys.add(parentKey);
+					String parentCode = ObjectUtil.getValue(obj, treeField);
+					if (!parentCodes.contains(parentCode))
+						parentCodes.add(parentCode);
 				}
-				List parentRows = Cocit.me().orm().query(empty.get(0).getClass(), Expr.in("key", parentKeys));
+				List parentRows = Cocit.me().orm().query(empty.get(0).getClass(), Expr.in("code", parentCodes));
 				this.makeNodes(tree, parentRows, treeField, ++depth);
 			}
 		}

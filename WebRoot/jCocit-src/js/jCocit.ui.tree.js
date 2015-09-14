@@ -643,8 +643,8 @@
 			append = subtreeUL.append;
 			subtreeUL = subtreeUL.target || selfUL;
 		}
-		
-		if(dataRows == null)
+
+		if (dataRows == null)
 			return;
 
 		/**
@@ -1553,7 +1553,10 @@
 		var nodes = [];
 		$f(selector, $(selfUL)).each(function() {
 			var $node = $p($(this));
-			nodes.push(getNode(selfUL, $node[0]));
+			var node = getNode(selfUL, $node[0]);
+			if(!node.uncheckable){
+				nodes.push(node);
+			}
 		});
 
 		return nodes;
@@ -1586,8 +1589,12 @@
 		var nodes = [];
 		$f("span.TrC1", $(selfUL)).each(function() {
 			var $node = $p($(this));
-			if (!opts.onlyLeafValue || _isLeafNode($node))
-				nodes.push(getNode(selfUL, $node[0]));
+			if (!opts.onlyLeafValue || _isLeafNode($node)) {
+				var node = getNode(selfUL, $node[0]);
+				if (!node.unvalueable) {
+					nodes.push(node);
+				}
+			}
 		});
 
 		return nodes;
@@ -2948,6 +2955,7 @@
 		 * the URL is remote address used to ajax load tree data.
 		 */
 		dataURL : null,
+		url : null,
 		/**
 		 * this is request method, used to request data from remote server.
 		 * <p>
@@ -3066,7 +3074,7 @@
 		loader : function(folderNode, queryData, onLoadSuccess, onLoadError) {
 			var opts = $(this).tree("options");
 
-			var dataURL = opts.dataURL;
+			var dataURL = opts.dataURL || opts.url;
 
 			if (folderNode && $.type(folderNode.childrenURL) == "string")
 				dataURL = folderNode.childrenURL;

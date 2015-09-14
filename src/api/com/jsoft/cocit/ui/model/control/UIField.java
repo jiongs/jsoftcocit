@@ -5,9 +5,9 @@ import java.util.List;
 
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.constant.FieldModes;
-import com.jsoft.cocit.entityengine.PatternAdapter;
-import com.jsoft.cocit.entityengine.service.CocEntityService;
-import com.jsoft.cocit.entityengine.service.CocFieldService;
+import com.jsoft.cocit.dmengine.IPatternAdapter;
+import com.jsoft.cocit.dmengine.info.ICocEntityInfo;
+import com.jsoft.cocit.dmengine.info.ICocFieldInfo;
 import com.jsoft.cocit.ui.model.UIControlModel;
 import com.jsoft.cocit.ui.model.UIFieldModel;
 import com.jsoft.cocit.ui.view.StyleRule;
@@ -16,8 +16,8 @@ import com.jsoft.cocit.util.StringUtil;
 
 public class UIField extends UIControlModel implements UIFieldModel {
 
-	private CocFieldService fieldService;
-	private PatternAdapter adapter;
+	private ICocFieldInfo fieldService;
+	private IPatternAdapter adapter;
 	private String propName;
 	private String align;
 	private String halign;
@@ -26,6 +26,8 @@ public class UIField extends UIControlModel implements UIFieldModel {
 	private String pattern;
 	private int fieldType;
 	private int mode;
+	private int modeToAddGridRow;
+	private int modeToEditGridRow;
 	private List<UIField> hiddenChildren;
 	private List<UIField> visibleChildren;
 	private byte labelPos;
@@ -164,11 +166,11 @@ public class UIField extends UIControlModel implements UIFieldModel {
 		return this;
 	}
 
-	public CocFieldService getFieldService() {
+	public ICocFieldInfo getFieldService() {
 		return fieldService;
 	}
 
-	public UIField setFieldService(CocFieldService fieldService) {
+	public UIField setFieldService(ICocFieldInfo fieldService) {
 		this.fieldService = fieldService;
 		this.title = fieldService.getName();
 		this.propName = fieldService.getFieldName();
@@ -204,7 +206,7 @@ public class UIField extends UIControlModel implements UIFieldModel {
 		return adapter.format(fieldValue);
 	}
 
-	public void setAdapter(PatternAdapter adapter) {
+	public void setAdapter(IPatternAdapter adapter) {
 		this.adapter = adapter;
 	}
 
@@ -233,7 +235,7 @@ public class UIField extends UIControlModel implements UIFieldModel {
 
 	@Override
 	public String getFkComboTreeUrl() {
-		CocEntityService fkTargetModule = fieldService.getFkTargetEntity();
+		ICocEntityInfo fkTargetModule = fieldService.getFkTargetEntity();
 		if (fkTargetModule == null)
 			return null;
 
@@ -243,7 +245,7 @@ public class UIField extends UIControlModel implements UIFieldModel {
 	}
 
 	public String getFkComboGridUrl() {
-		CocEntityService fkTargetModule = fieldService.getFkTargetEntity();
+		ICocEntityInfo fkTargetModule = fieldService.getFkTargetEntity();
 		if (fkTargetModule == null)
 			return null;
 
@@ -253,7 +255,7 @@ public class UIField extends UIControlModel implements UIFieldModel {
 	}
 
 	public String getFkComboListUrl() {
-		CocEntityService fkTargetModule = fieldService.getFkTargetEntity();
+		ICocEntityInfo fkTargetModule = fieldService.getFkTargetEntity();
 		if (fkTargetModule == null)
 			return null;
 
@@ -262,7 +264,7 @@ public class UIField extends UIControlModel implements UIFieldModel {
 		return list.getDataLoadUrl();
 	}
 
-	public PatternAdapter getAdapter() {
+	public IPatternAdapter getAdapter() {
 		return adapter;
 	}
 
@@ -375,6 +377,22 @@ public class UIField extends UIControlModel implements UIFieldModel {
 
 	public void setSupportHtml(boolean supportHtml) {
 		this.supportHtml = supportHtml;
+
 	}
 
+	public int getModeToAddGridRow() {
+		return modeToAddGridRow;
+	}
+
+	public void setModeToAddGridRow(int modeOfAddGridRow) {
+		this.modeToAddGridRow = modeOfAddGridRow;
+	}
+
+	public int getModeToEditGridRow() {
+		return modeToEditGridRow;
+	}
+
+	public void setModeToEditGridRow(int modeOfEditGridRow) {
+		this.modeToEditGridRow = modeOfEditGridRow;
+	}
 }

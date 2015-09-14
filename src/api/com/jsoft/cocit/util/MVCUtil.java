@@ -9,12 +9,12 @@ import javax.servlet.http.HttpServletRequest;
 import org.nutz.json.Json;
 
 import com.jsoft.cocit.Cocit;
+import com.jsoft.cocit.baseentity.security.ITenantEntity;
 import com.jsoft.cocit.config.ICocConfig;
 import com.jsoft.cocit.constant.Const;
-import com.jsoft.cocit.entity.security.ITenant;
-import com.jsoft.cocit.entityengine.service.CocActionService;
-import com.jsoft.cocit.entityengine.service.CocEntityService;
-import com.jsoft.cocit.entityengine.service.SystemMenuService;
+import com.jsoft.cocit.dmengine.info.ICocActionInfo;
+import com.jsoft.cocit.dmengine.info.ICocEntityInfo;
+import com.jsoft.cocit.dmengine.info.ISystemMenuInfo;
 
 public abstract class MVCUtil {
 
@@ -47,20 +47,20 @@ public abstract class MVCUtil {
 		// CONTEXT_VARIABLES.put("fontSize", "12px");
 	}
 
-	public static String makeUrl(String path, SystemMenuService menu) {
+	public static String makeUrl(String path, ISystemMenuInfo menu) {
 
 		StringBuffer sb = new StringBuffer();
 
 		String str = "";
 		if (menu != null) {
-			str = "" + menu.getKey();
+			str = "" + menu.getCode();
 		}
 		sb.append(str);
 
 		return makeUrl(path, sb.toString());
 	}
 
-	public static String makeUrl(String path, SystemMenuService menu, CocEntityService module) {
+	public static String makeUrl(String path, ISystemMenuInfo menu, ICocEntityInfo module) {
 		StringBuffer sb = new StringBuffer();
 
 		if (menu == null && module != null) {
@@ -69,24 +69,24 @@ public abstract class MVCUtil {
 
 		String str = "";
 		if (menu != null) {
-			str = "" + menu.getKey();
+			str = "" + menu.getCode();
 		}
 		sb.append(str + ":");
 
 		str = "";
 		if (module != null) {
-			str = "" + module.getKey();
+			str = "" + module.getCode();
 		}
 		sb.append(str);
 
 		return makeUrl(path, sb.toString());
 	}
 
-	public static String makeUrl(String path, SystemMenuService menuService, CocEntityService entityService, CocActionService action) {
-		return makeUrl(path, menuService, entityService, action.getKey());
+	public static String makeUrl(String path, ISystemMenuInfo menuService, ICocEntityInfo entityService, ICocActionInfo action) {
+		return makeUrl(path, menuService, entityService, action.getCode());
 	}
 
-	public static String makeUrl(String path, SystemMenuService menuService, CocEntityService entityService, String action) {
+	public static String makeUrl(String path, ISystemMenuInfo menuService, ICocEntityInfo entityService, String action) {
 		StringBuffer sb = new StringBuffer();
 
 		if (menuService == null && entityService != null) {
@@ -95,13 +95,13 @@ public abstract class MVCUtil {
 
 		String str = "";
 		if (menuService != null) {
-			str = "" + menuService.getKey();
+			str = "" + menuService.getCode();
 		}
 		sb.append(str + ":");
 
 		str = "";
 		if (entityService != null) {
-			str = "" + entityService.getKey();
+			str = "" + entityService.getCode();
 		}
 		sb.append(str + ":");
 
@@ -242,11 +242,11 @@ public abstract class MVCUtil {
 			uploadFolder = "/" + uploadFolder;
 		}
 
-		ITenant tenant = Cocit.me().getHttpContext().getLoginTenant();
+		ITenantEntity tenant = Cocit.me().getHttpContext().getLoginTenant();
 		if (tenant == null || tenant.getId() == null)
 			return uploadFolder + "/0";
 
-		String tenantKey = tenant.getKey();
+		String tenantKey = tenant.getCode();
 		String tenantPath = tenantKey.replace('.', '_');
 
 		return uploadFolder + "/" + tenantPath;

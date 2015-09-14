@@ -2,7 +2,6 @@ package com.jsoft.cocit.ui.model.control;
 
 import com.jsoft.cocit.ui.model.UIActionsModel;
 import com.jsoft.cocit.ui.model.UIControlModel;
-import com.jsoft.cocit.util.StringUtil;
 import com.jsoft.cocit.util.Tree;
 import com.jsoft.cocit.util.Tree.Node;
 
@@ -40,18 +39,11 @@ public class UIActions extends UIControlModel implements UIActionsModel {
 		return this;
 	}
 
-	public Node findAction(String key, String val) {
+	public Node findNode(String key, String val) {
 		if (data == null)
 			return null;
 
-		for (Node node : data.getAll()) {
-			String str = (String) node.get(key);
-			if (StringUtil.hasContent(str) && str.equals(val)) {
-				return node;
-			}
-		}
-
-		return null;
+		return data.findNode(key, val);
 	}
 
 	// public UISearchBox getSearchBox() {

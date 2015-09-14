@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-import com.jsoft.cocimpl.ui.view.BaseModelView;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.constant.StatusCodes;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.ui.model.control.UIActions;
+import com.jsoft.cocit.ui.view.BaseModelView;
 import com.jsoft.cocit.util.ObjectUtil;
 import com.jsoft.cocit.util.StringUtil;
 import com.jsoft.cocit.util.Tree;
@@ -74,8 +74,11 @@ public class UIActionsButtonView extends BaseModelView<UIActions> {
 			} else {
 				String title = node.get("title", "");
 				write(out, "<button title=\"%s\" onClick=\"jCocit.entity.doAction(this)\" data-options=\"", title == null ? "" : StringUtil.escapeHtml(title));
-				write(out, "name:'%s'", node.getName());
-				write(out, ", token:'%s'", token);
+				write(out, "name: '%s'", node.getName());
+				if (node.get("noHeader") != null) {
+					write(out, ", noHeader: true");
+				}
+				write(out, ", token: '%s'", token);
 
 				if (resultUI.length() > 0) {
 					write(out, ", resultUI: [%s]", resultUI);// 菜单通过该令牌获取DataGrid对象
@@ -93,6 +96,9 @@ public class UIActionsButtonView extends BaseModelView<UIActions> {
 				String str = node.get("opUrlTarget", "");
 				if (!StringUtil.isBlank(str))
 					write(out, ", opUrlTarget: '%s'", str);
+				str = node.get("dialogStyle", "");
+				if (!StringUtil.isBlank(str))
+					write(out, ", dialogStyle: '%s'", str);
 
 				String opMode = node.get("opMode", "");
 				if (!StringUtil.isBlank(opMode))

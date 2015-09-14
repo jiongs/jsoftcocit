@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.jsoft.cocit.constant.Const;
+import com.jsoft.cocit.dmengine.field.RichTextField;
+import com.jsoft.cocit.dmengine.field.TextField;
+import com.jsoft.cocit.dmengine.field.UploadField;
 
 public abstract class ConstUtil implements Const {
 
@@ -21,9 +24,9 @@ public abstract class ConstUtil implements Const {
 		FIELD_TYPE_MAP.put("bigdecimal", FIELD_TYPE_DECIMAL);
 		FIELD_TYPE_MAP.put("number", FIELD_TYPE_NUMBER);
 		FIELD_TYPE_MAP.put("string", FIELD_TYPE_STRING);
-		FIELD_TYPE_MAP.put("text", FIELD_TYPE_TEXT);
-		FIELD_TYPE_MAP.put("upload", FIELD_TYPE_UPLOAD);
-		FIELD_TYPE_MAP.put("richtext", FIELD_TYPE_RICHTEXT);
+		FIELD_TYPE_MAP.put(TextField.class.getSimpleName().toLowerCase(), FIELD_TYPE_TEXT);
+		FIELD_TYPE_MAP.put(UploadField.class.getSimpleName().toLowerCase(), FIELD_TYPE_UPLOAD);
+		FIELD_TYPE_MAP.put(RichTextField.class.getSimpleName().toLowerCase(), FIELD_TYPE_RICHTEXT);
 		FIELD_TYPE_MAP.put("list", FIELD_TYPE_ONE2MANY);
 	}
 
@@ -40,9 +43,9 @@ public abstract class ConstUtil implements Const {
 		FIELD_TYPECODE_MAP.put(FIELD_TYPE_DECIMAL, "BigDecimal");
 		FIELD_TYPECODE_MAP.put(FIELD_TYPE_NUMBER, "Number");
 		FIELD_TYPECODE_MAP.put(FIELD_TYPE_STRING, "String");
-		FIELD_TYPECODE_MAP.put(FIELD_TYPE_TEXT, "Text");
-		FIELD_TYPECODE_MAP.put(FIELD_TYPE_UPLOAD, "Upload");
-		FIELD_TYPECODE_MAP.put(FIELD_TYPE_RICHTEXT, "RichText");
+		FIELD_TYPECODE_MAP.put(FIELD_TYPE_TEXT, TextField.class.getSimpleName());
+		FIELD_TYPECODE_MAP.put(FIELD_TYPE_UPLOAD, UploadField.class.getSimpleName());
+		FIELD_TYPECODE_MAP.put(FIELD_TYPE_RICHTEXT, RichTextField.class.getSimpleName());
 		FIELD_TYPECODE_MAP.put(FIELD_TYPE_ONE2MANY, "List");
 	}
 

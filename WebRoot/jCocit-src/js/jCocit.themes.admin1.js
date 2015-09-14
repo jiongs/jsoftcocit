@@ -2,22 +2,29 @@ var doOpenTab = function(tabs, title, linkUrl) {
 	jCocit.util.openTab(tabs, title, linkUrl);
 }
 var doSelectTab = function(tabTitle, tabIndex) {
-	var $uiList = $(".jCocit-ui", this);
-	$uiList.each(function() {
-		var $ui = $(this);
-		if ($ui.hasClass("jCocit-datagrid") || $ui.hasClass("jCocit-treegrid")) {
-			var uiOpts = $ui.datagrid("options");
-			if (uiOpts.expired) {
-				$ui.datagrid("reload")
-				uiOpts.expired = false;
-			} else {
-				var $view = $ui.datagrid("getPanel").find("div.datagrid-view");
-				if ($view.height() == 0) {
-					$ui.datagrid("reload");
+//	if (tabIndex == 0 && tabTitle == '个人工作台') {
+//		var $tab = $(this).tabs("getTab", tabIndex);
+//		if ($tab.length) {
+//			$tab.panel("refresh");
+//		}
+//	} else {
+		var $uiList = $(".jCocit-ui", this);
+		$uiList.each(function() {
+			var $ui = $(this);
+			if ($ui.hasClass("jCocit-datagrid") || $ui.hasClass("jCocit-treegrid")) {
+				var uiOpts = $ui.datagrid("options");
+				if (uiOpts.expired) {
+					$ui.datagrid("reload")
+					uiOpts.expired = false;
+				} else {
+					var $view = $ui.datagrid("getPanel").find("div.datagrid-view");
+					if ($view.height() == 0) {
+						$ui.datagrid("reload");
+					}
 				}
 			}
-		}
-	});
+		});
+//	}
 }
 
 var doInitIndex = function(indexID) {
@@ -27,10 +34,11 @@ var doInitIndex = function(indexID) {
 	$(".menu_item", $index).click(function() {
 		var $this = $(this);
 
+		var options = $.parseOptions($this);
 		var linkURL = $this.attr("linkURL");
 		var title = $this.find(".title").text();
 
-		doOpenTab($(".jCocit-tabs", $index), title, linkURL);
+		jCocit.util.openTab($(".jCocit-tabs", $index), title, linkURL);
 	});
 
 	$(".menu2", $tree).click(function() {
@@ -125,10 +133,61 @@ var doInitIndex = function(indexID) {
 
 }
 jCocit.admin1 = {
-	func1 : function() {
-
+	openWindow : function(btn) {
+		var $btn = $(btn);
+		jCocit.util.openWindow(btn, null, {
+			onClose : function() {
+				var tabs = $btn.closest(".coc-tabs");
+				var tab = tabs.find(".coc-tabs-header .coc-tab-header-selected");
+				tab.click();
+			}
+		});
 	},
-	func2 : function() {
+	loadScheduleHTML : function(event, htmlContainer) {
+		var btn = $(event.target).closest(".coc-tab-header");
+		if (btn.length) {
+			var options = $.parseOptions(btn);
+			var url = options.opUrl;
+			if (url) {
+				var tabs = btn.closest(".coc-tabs");
 
+				var data = {};
+				var cal = tabs.find(".jCocit-calendar");
+				if (cal.length) {
+					try {
+						var dateObj = cal.calendar("getValue");
+						data["dateFrom"] = dateObj.getTime();
+					} catch (e) {
+					}
+				}
+				$(htmlContainer).doLoad({
+					type : "POST",
+					async : true,
+					url : url,
+					data : data
+				});
+				btn.closest(".coc-tabs-header").find(".coc-tab-header-selected").removeClass("coc-tab-header-selected");
+				btn.addClass("coc-tab-header-selected");
+			}
+		}
+
+		if (event.stopPropagation) {
+			event.stopPropagation();
+		} else if (event.preventDefault) {
+			event.preventDefault();
+		}
+	},
+	newPlanCalendar : function(date) {
+
+		var cal = $(this);
+		var tabs = cal.closest(".coc-tabs");
+		var isDepSch = tabs.find(".coc-tab-header-selected").hasClass("sch_department");
+		var current = cal.calendar('getValue');
+		var strDate = current.getFullYear() + '-' + (current.getMonth() + 1) + '-' + current.getDate();
+		if (isDepSch) {
+			jCocit.util.openWindow(this, jCocit.contextPath + '/cocentity/getFormToSave/XZSW_RC_BM:XZSW_RC:dc/0?entity.qssj=' + strDate);
+		} else {
+			jCocit.util.openWindow(this, jCocit.contextPath + '/cocentity/getFormToSave/XZSW_RC_GR:XZSW_RC:pc/0?entity.qssj=' + strDate, {});
+		}
 	}
 }

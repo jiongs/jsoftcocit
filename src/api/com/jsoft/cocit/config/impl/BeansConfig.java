@@ -11,6 +11,7 @@ public class BeansConfig implements IBeansConfig {
 	private List<String> views;
 	private List<String> cellViews;
 	private List<String> patternAdapters;
+	private List<String> commandInterceptors;
 	private List<String> entityGenerators;
 	private List<String> actionPackages;
 
@@ -69,5 +70,13 @@ public class BeansConfig implements IBeansConfig {
 
 	public void setActionPackages(List<String> actionPackages) {
 		this.actionPackages = actionPackages;
+	}
+
+	public List<String> getCommandInterceptors() {
+		return commandInterceptors;
+	}
+
+	public void setCommandInterceptors(List<String> commandReceivers) {
+		this.commandInterceptors = commandReceivers;
 	}
 }

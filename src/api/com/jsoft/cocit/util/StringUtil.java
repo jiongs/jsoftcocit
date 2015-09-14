@@ -23,7 +23,7 @@ import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 import com.jsoft.cocimpl.util.ResponseUtil;
-import com.jsoft.cocit.entity.IDataEntity;
+import com.jsoft.cocit.baseentity.IDataEntity;
 import com.jsoft.cocit.exception.CocException;
 
 /**
@@ -438,7 +438,7 @@ public abstract class StringUtil {
 	}
 
 	public static String join(List list, String fld, String seperator) {
-		if (list == null) {
+		if (list == null || list.size() == 0) {
 			return "";
 		}
 		if (seperator == null) {
@@ -489,7 +489,7 @@ public abstract class StringUtil {
 				buf.insert(i++, '_');
 			}
 		}
-		return buf.toString().toLowerCase();
+		return buf.toString().toUpperCase();
 	}
 
 	public static String toUpperCase(String str) {
@@ -639,7 +639,7 @@ public abstract class StringUtil {
 			return toString((List) obj);
 
 		if (obj instanceof IDataEntity) {
-			return obj == null ? "<NULL>" : ((IDataEntity) obj).toJson();
+			return obj == null ? "<NULL>" : ((IDataEntity) obj).toJsonString();
 		}
 
 		return obj == null ? "<NULL>" : obj.toString();

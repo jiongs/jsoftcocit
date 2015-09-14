@@ -8,8 +8,9 @@ import com.jsoft.cocit.ui.model.UIControlModel;
 
 public class UIFieldGroup extends UIControlModel {
 
-	private List<UIField> hiddenFields;
-	private List<UIField> visibleFields;
+	private List<List<String>>	fields;			// 行字段：将所有字段分解成多少行？每行显示哪些字段？
+	private List<UIField>		hiddenFields;
+	private List<UIField>		visibleFields;
 
 	public UIFieldGroup() {
 		super();
@@ -50,6 +51,14 @@ public class UIFieldGroup extends UIControlModel {
 
 	public List<UIField> getHiddenFields() {
 		return hiddenFields;
+	}
+
+	public List<List<String>> getFields() {
+		return fields;
+	}
+
+	public void setFields(List<List<String>> fields) {
+		this.fields = fields;
 	}
 
 }

@@ -28,22 +28,32 @@ import com.jsoft.cocimpl.orm.metadata.TableMetadata;
 import com.jsoft.cocimpl.orm.nutz.EnColumnMappingImpl;
 import com.jsoft.cocimpl.orm.nutz.EnMappingHolder;
 import com.jsoft.cocimpl.orm.nutz.EnMappingImpl;
-import com.jsoft.cocit.entityengine.annotation.CocColumn;
-import com.jsoft.cocit.entityengine.field.IExtField;
+import com.jsoft.cocit.dmengine.annotation.CocColumn;
+import com.jsoft.cocit.dmengine.field.IExtField;
 import com.jsoft.cocit.exception.CocException;
+import com.jsoft.cocit.log.Log;
+import com.jsoft.cocit.log.Logs;
 import com.jsoft.cocit.orm.ConnCallback;
+import com.jsoft.cocit.orm.IOrm;
 import com.jsoft.cocit.orm.mapping.EnMapping;
 import com.jsoft.cocit.util.ClassUtil;
 import com.jsoft.cocit.util.ExceptionUtil;
-import com.jsoft.cocit.util.LogUtil;
 import com.jsoft.cocit.util.StringUtil;
 
 public class DMLSessionImpl implements DMLSession {
+
+	private static Log log = Logs.getLog(IOrm.class);
+
 	private ExtDaoImpl extDao;
 
 	private Dialect dialect;
 
 	private EnMappingHolder mappingHolder;
+
+	/*
+	 * 是否支持外键：如果不支持外键，则不会创建物理外键关联。如果支持外键则会自动创建外键关联。
+	 */
+	private boolean supportFK = false;
 
 	DMLSessionImpl(ExtDaoImpl dao) {
 		extDao = dao;
@@ -71,27 +81,22 @@ public class DMLSessionImpl implements DMLSession {
 		if (sqls == null || sqls.size() == 0) {
 			return;
 		}
-		LogUtil.debug("执行<%s>条SQL......", sqls.size());
+		log.debugf("执行(%s)条SQL......", sqls.size());
 		Sql sql = null;
 		int len = sqls.size();
 		for (int i = 0; i < len; i++) {
 			sql = sqls.get(i);
 			try {
 				this.extDao.execute(sql);
-			} catch (RuntimeException e) {
-				if (!igloreError) {
-					LogUtil.warn("执行<%s>SQL出错: %s", sqls.size(), ExceptionUtil.msg(e));
-					throw e;
-				} else {
-					LogUtil.warn("执行SQL出错! %s", sql);
-				}
+				log.infof("执行SQL成功(%s)", sql);
+			} catch (Throwable e) {
+				log.warnf("执行SQL出错(%s): %s", sql, ExceptionUtil.msg(e));
 			}
 		}
-		LogUtil.info("执行<%s>条SQL: 成功.", sqls.size());
 	}
 
 	public void clear() {
-		LogUtil.debug("清空数据库......");
+		log.debugf("清空数据库......");
 
 		final StringBuffer res = new StringBuffer();
 		Trans.exec(new Atom() {
@@ -101,7 +106,7 @@ public class DMLSessionImpl implements DMLSession {
 				execSqls(sqls, false);
 			}
 		});
-		LogUtil.debug("清空数据库: 结束. [sqlSize: %s]", res);
+		log.debugf("清空数据库: 结束. [sqlSize: %s]", res);
 	}
 
 	public void createOrAlterTable(final EnMapping<?> entity, final boolean syncRefTable) {
@@ -111,7 +116,7 @@ public class DMLSessionImpl implements DMLSession {
 		EnMappingImpl enImp = (EnMappingImpl) entity;
 
 		String enInfo = ClassUtil.getDisplayName(entity.getType());
-		LogUtil.debug("同步%s数据库表......[syncRefTable=%s]", enInfo, syncRefTable);
+		log.debugf("同步%s数据库表......[syncRefTable=%s]", enInfo, syncRefTable);
 
 		try {
 			Trans.exec(new Atom() {
@@ -120,7 +125,7 @@ public class DMLSessionImpl implements DMLSession {
 				}
 			});
 
-			LogUtil.debug("同步%s实体表: 结束.", enInfo);
+			log.debugf("同步%s实体表: 结束.", enInfo);
 
 			enImp.setSyncedTable(true);
 			enImp.setSyncedRefTable(syncRefTable);
@@ -130,7 +135,7 @@ public class DMLSessionImpl implements DMLSession {
 
 			e.printStackTrace();
 
-			LogUtil.error("同步%s实体表出错: [syncRefTable=%s] %s", ClassUtil.getDisplayName(entity.getType()), syncRefTable, ExceptionUtil.msg(e));
+			log.errorf("同步%s实体表出错: [syncRefTable=%s] %s", ClassUtil.getDisplayName(entity.getType()), syncRefTable, ExceptionUtil.msg(e));
 		}
 	}
 
@@ -141,16 +146,18 @@ public class DMLSessionImpl implements DMLSession {
 
 		// 表已经存在: 检查外键、字段
 		if (this.extDao.exists(entity.getTableName())) {
-			LogUtil.debug("同步%s数据库表: 检查新增字段", enInfo);
+			log.debugf("同步%s数据库表: 检查新增字段", enInfo);
 			this.execSqls(makeSqlToCreateColumns(entity), false);
 
-			LogUtil.debug("同步%s数据库表: 检查外键 [syncRefTable=%s]", enInfo, alterFkTable);
-			this.execSqls(makeSqlToAlterFKs(entity, alterFkTable), true);
+			if (supportFK) {
+				log.debugf("同步%s数据库表: 检查外键 [syncRefTable=%s]", enInfo, alterFkTable);
+				this.execSqls(makeSqlToAlterFKs(entity, alterFkTable), true);
+			}
 
-			LogUtil.debug("同步%s数据库表: 检查更新字段", enInfo);
+			log.debugf("同步%s数据库表: 检查更新字段", enInfo);
 			this.execSqls(makeSqlToAlterColumns(entity), true);
 
-			LogUtil.debug("同步%s数据库表: 检查索引", enInfo);
+			log.debugf("同步%s数据库表: 检查索引", enInfo);
 			this.execSqls(makeSqlToAlterIndexs(entity), true);
 
 			// TODO: 取消 删除字段 功能
@@ -158,24 +165,26 @@ public class DMLSessionImpl implements DMLSession {
 		}
 		// 实体表不存在: 创建表、主键、外键
 		else {
-			LogUtil.debug("同步%s数据库表: 创建数据库表 [syncRefTable=%s]", enInfo, alterFkTable);
+			log.debugf("同步%s数据库表: 创建数据库表 [syncRefTable=%s]", enInfo, alterFkTable);
 			this.execSqls(makeSqlToCreateTableWithPkFkIndex(entity), false);
 
-			LogUtil.debug("同步%s数据库表: 创建外键 [syncRefTable=%s]", enInfo, alterFkTable);
-			this.execSqls(makeSqlToCreateFKs(entity, alterFkTable), false);
+			if (supportFK) {
+				log.debugf("同步%s数据库表: 创建外键 [syncRefTable=%s]", enInfo, alterFkTable);
+				this.execSqls(makeSqlToCreateFKs(entity, alterFkTable), false);
+			}
 		}
 
 		// 检查多对多的中间表
 		List<Link> links = entity.getManyMany(null);
-		LogUtil.debug("同步%s数据库表: 检查<%s>个多对多关联表... [syncRefTable=%s]", enInfo, links.size(), alterFkTable);
+		log.debugf("同步%s数据库表: 检查<%s>个多对多关联表... [syncRefTable=%s]", enInfo, links.size(), alterFkTable);
 		for (Link link : links) {
 			if (!extDao.exists(link.getRelation())) {
-				LogUtil.debug("同步%s数据库表: 创建多对多关联表 [columnName=%s, syncRefTable=%s]", enInfo, ClassUtil.getDisplayName(link.getOwnField()), alterFkTable);
+				log.debugf("同步%s数据库表: 创建多对多关联表 [columnName=%s, syncRefTable=%s]", enInfo, ClassUtil.getDisplayName(link.getOwnField()), alterFkTable);
 				this.execSqls(makeSqlToCreateTableAndRelation(entity, link, alterFkTable), false);
 			} else
-				LogUtil.debug("同步%s数据库表: <多对多关联表已经存在>", enInfo);
+				log.debugf("同步%s数据库表: <多对多关联表已经存在>", enInfo);
 		}
-		LogUtil.debug("同步%s数据库表: 检查<%s>个多对多关联表: 结束. [syncRefTable=%s]", enInfo, links.size(), alterFkTable);
+		log.debugf("同步%s数据库表: 检查<%s>个多对多关联表: 结束. [syncRefTable=%s]", enInfo, links.size(), alterFkTable);
 	}
 
 	public void dropTable(final EnMapping mapping) {
@@ -183,7 +192,7 @@ public class DMLSessionImpl implements DMLSession {
 			return;
 		}
 		String enInfo = ClassUtil.getDisplayName(mapping.getType());
-		LogUtil.debug("删除%s数据库表......", enInfo);
+		log.debugf("删除%s数据库表......", enInfo);
 
 		final EnMappingImpl entity = (EnMappingImpl) mapping;
 		try {
@@ -193,9 +202,9 @@ public class DMLSessionImpl implements DMLSession {
 				}
 			});
 
-			LogUtil.debug("删除%s数据库表: 结束.", enInfo);
+			log.debugf("删除%s数据库表: 结束.", enInfo);
 		} catch (Exception e) {
-			LogUtil.warn("删除%s数据库表出错: %s", enInfo, e);
+			log.warnf("删除%s数据库表出错: %s", enInfo, e);
 		}
 	}
 
@@ -205,28 +214,28 @@ public class DMLSessionImpl implements DMLSession {
 
 		// 删除实体多对多关联表
 		List<Link> links = entity.getManyMany(null);
-		LogUtil.debug("删除%s数据库表: 删除<%s>个多对多关联表...", enInfo, links.size());
+		log.debugf("删除%s数据库表: 删除<%s>个多对多关联表...", enInfo, links.size());
 
 		for (Link link : links) {
 			if (extDao.exists(link.getRelation())) {
 				this.execSqls(makeSqlToDropTableAndRelation(entity, link), false);
-				LogUtil.debug("删除%s数据库表: 删除多对多关联表成功! [columnName=%s]", enInfo, ClassUtil.getDisplayName(link.getOwnField()));
+				log.debugf("删除%s数据库表: 删除多对多关联表成功! [columnName=%s]", enInfo, ClassUtil.getDisplayName(link.getOwnField()));
 			}
 		}
 		// 删除实体表
 		if (extDao.exists(entity.getTableName())) {
 			this.execSqls(makeSqlToDropTable(entity), false);
-			LogUtil.debug("删除%s数据库表: 删除实体数据库表结束! ", enInfo);
+			log.debugf("删除%s数据库表: 删除实体数据库表结束! ", enInfo);
 		} else
-			LogUtil.debug("删除%s数据库表: <实体数据库表不存在> ", enInfo);
+			log.debugf("删除%s数据库表: <实体数据库表不存在> ", enInfo);
 	}
 
 	private String toSqlType(EnColumnMappingImpl col) {
 		String type = col.getSqlType();
 		String sqlType;
 		sqlType = toSqlType(type, col.getLength(), col.getPrecision(), col.getScale());
-		if (LogUtil.isTraceEnabled()) {
-			LogUtil.trace("SQL类型转换: %s %s [columnType=%s, length=%s, precision=%s, scale=%s]", col.getName(), sqlType, type, col.getLength(), col.getPrecision(), col.getScale());
+		if (log.isTraceEnabled()) {
+			log.tracef("SQL类型转换: %s %s [columnType=%s, length=%s, precision=%s, scale=%s]", col.getName(), sqlType, type, col.getLength(), col.getPrecision(), col.getScale());
 		}
 		return sqlType;
 	}
@@ -243,8 +252,8 @@ public class DMLSessionImpl implements DMLSession {
 		}
 		Class type = fld.getType();
 		String sqlType = this.toSqlType(type, l, p, s);
-		if (LogUtil.isTraceEnabled()) {
-			LogUtil.trace("SQL类型转换: %s [fieldName=%s,fieldType=%s, length=%s, precision=%s, scale=%s]", sqlType, fld.getName(), type, l, p, s);
+		if (log.isTraceEnabled()) {
+			log.tracef("SQL类型转换: %s [fieldName=%s,fieldType=%s, length=%s, precision=%s, scale=%s]", sqlType, fld.getName(), type, l, p, s);
 		}
 		return sqlType;
 	}
@@ -379,7 +388,7 @@ public class DMLSessionImpl implements DMLSession {
 
 	private List<Sql> makeSqlToCreateTableWithPkFkIndex(EnMapping mapping) {
 		String enInfo = ClassUtil.getDisplayName(mapping.getType());
-		LogUtil.debug("同步%s数据库表: 创建生成SQL...", enInfo);
+		log.debugf("同步%s数据库表: 创建生成SQL...", enInfo);
 
 		EnMappingImpl entity = (EnMappingImpl) mapping;
 		List<Sql> sqls = new ArrayList();
@@ -389,7 +398,7 @@ public class DMLSessionImpl implements DMLSession {
 		 * 创建实体表
 		 */
 		String sqlStr = this.makeSqlToCreateTable(entity);
-		if (LogUtil.isInfoEnabled()) {
+		if (log.isInfoEnabled()) {
 			logBuf.append(String.format("\n%s", sqlStr));
 		}
 		sqls.add(Sqls.create(sqlStr));
@@ -413,7 +422,7 @@ public class DMLSessionImpl implements DMLSession {
 		}
 		sqlStr = dialect.sqlAddPk(entity.getTableName(), "PK_" + entity.getTableName(), primaryKey);
 		if (!StringUtil.isBlank(sqlStr)) {
-			if (LogUtil.isInfoEnabled()) {
+			if (log.isInfoEnabled()) {
 				logBuf.append(String.format("\n%s", sqlStr));
 			}
 			sqls.add(Sqls.create(sqlStr));
@@ -426,7 +435,7 @@ public class DMLSessionImpl implements DMLSession {
 		for (String[] fields : list) {
 			sqlStr = dialect.sqlAddUnique(entity.getTableName(), "UNIQUE_" + StringUtil.join(fields, "_", true), fields);
 			if (!StringUtil.isBlank(sqlStr)) {
-				if (LogUtil.isInfoEnabled()) {
+				if (log.isInfoEnabled()) {
 					logBuf.append(String.format("\n%s", sqlStr));
 				}
 				sqls.add(Sqls.create(sqlStr));
@@ -440,14 +449,14 @@ public class DMLSessionImpl implements DMLSession {
 		for (String[] fields : list) {
 			sqlStr = dialect.sqlAddIndex(entity.getTableName(), "INDEX_" + StringUtil.join(fields, "_", true), fields);
 			if (!StringUtil.isBlank(sqlStr)) {
-				if (LogUtil.isInfoEnabled()) {
+				if (log.isInfoEnabled()) {
 					logBuf.append(String.format("\n%s", sqlStr));
 				}
 				sqls.add(Sqls.create(sqlStr));
 			}
 		}
 
-		LogUtil.info("同步%s数据库表: 创建表生成SQL结束. %s", enInfo, logBuf);
+		log.infof("同步%s数据库表: 创建表生成SQL结束. %s", enInfo, logBuf);
 
 		return sqls;
 	}
@@ -458,7 +467,7 @@ public class DMLSessionImpl implements DMLSession {
 
 			public Object invoke(Connection conn) throws Exception {
 				String enInfo = ClassUtil.getDisplayName(mapping.getType());
-				LogUtil.debug("删除%s数据库表: 生成SQL...", enInfo);
+				log.debugf("删除%s数据库表: 生成SQL...", enInfo);
 
 				EnMappingImpl entity = (EnMappingImpl) mapping;
 				List<Sql> sqls = new ArrayList();
@@ -475,7 +484,7 @@ public class DMLSessionImpl implements DMLSession {
 						continue;
 					}
 					sqlStrs.add(sqlStr);
-					if (LogUtil.isInfoEnabled()) {
+					if (log.isInfoEnabled()) {
 						logBuf.append(String.format("\nIMPORT FK: %s", sqlStr));
 					}
 					sqls.add(Sqls.create(sqlStr));
@@ -488,19 +497,19 @@ public class DMLSessionImpl implements DMLSession {
 						continue;
 					}
 					sqlStrs.add(sqlStr);
-					if (LogUtil.isInfoEnabled()) {
+					if (log.isInfoEnabled()) {
 						logBuf.append(String.format("\nEXPORT FK: %s", sqlStr));
 					}
 					sqls.add(Sqls.create(sqlStr));
 				}
 
 				String sqlStr = dialect.sqlDropTable(entity.getTableName());
-				if (LogUtil.isInfoEnabled()) {
+				if (log.isInfoEnabled()) {
 					logBuf.append(String.format("\nTABLE: %s", sqlStr));
 				}
 				sqls.add(Sqls.create(sqlStr));
 
-				LogUtil.info("删除%s数据库表: 生成SQL结束. %s", enInfo, logBuf);
+				log.infof("删除%s数据库表: 生成SQL结束. %s", enInfo, logBuf);
 
 				return sqls;
 			}
@@ -513,7 +522,7 @@ public class DMLSessionImpl implements DMLSession {
 
 			public Object invoke(Connection conn) throws Exception {
 				String enInfo = ClassUtil.getDisplayName(mapping.getType());
-				LogUtil.debug("删除%s多对多关联表: 生成SQL...[columnName=%s]", enInfo, ClassUtil.getDisplayName(link.getOwnField()));
+				log.debugf("删除%s多对多关联表: 生成SQL...[columnName=%s]", enInfo, ClassUtil.getDisplayName(link.getOwnField()));
 
 				EnMappingImpl entity = (EnMappingImpl) mapping;
 				List<Sql> sqls = new ArrayList();
@@ -525,20 +534,20 @@ public class DMLSessionImpl implements DMLSession {
 				while (fks.hasNext()) {
 					ForeignKeyMetadata fk = fks.next();
 					String sqlStr = dialect.sqlDropFk(link.getRelation(), fk.getName());
-					if (LogUtil.isInfoEnabled())
+					if (log.isInfoEnabled())
 						logBuf.append(String.format("\nFK: %s", sqlStr));
 
 					sqls.add(Sqls.create(sqlStr));
 				}
 
 				String sqlStr = dialect.sqlDropTable(link.getRelation());
-				if (LogUtil.isInfoEnabled())
+				if (log.isInfoEnabled())
 					logBuf.append(String.format("\nTABLE: %s", sqlStr));
 
 				sqls.add(Sqls.create(sqlStr));
 
-				if (LogUtil.isInfoEnabled())
-					LogUtil.info("删除%s多对多关联表: 生成SQL结束. [columnName=%s] %s", entity.getMirror().getType().getName(), link.getOwnField().getName(), logBuf);
+				if (log.isInfoEnabled())
+					log.infof("删除%s多对多关联表: 生成SQL结束. [columnName=%s] %s", entity.getMirror().getType().getName(), link.getOwnField().getName(), logBuf);
 
 				return sqls;
 			}
@@ -551,7 +560,7 @@ public class DMLSessionImpl implements DMLSession {
 
 			public Object invoke(Connection conn) throws Exception {
 				String enInfo = ClassUtil.getDisplayName(mapping.getType());
-				LogUtil.debug("删除%s多余字段: 生成SQL...", enInfo);
+				log.debugf("删除%s多余字段: 生成SQL...", enInfo);
 
 				EnMappingImpl entity = (EnMappingImpl) mapping;
 				List<Sql> sqls = new ArrayList();
@@ -574,16 +583,16 @@ public class DMLSessionImpl implements DMLSession {
 							continue;
 						}
 						String sqlStr = dialect.sqlDropColumn(tableName, columnInfo.getName());
-						if (LogUtil.isInfoEnabled()) {
+						if (log.isInfoEnabled()) {
 							logBuf.append(String.format("\n%s", sqlStr));
 						}
 						sqls.add(Sqls.create(sqlStr));
 					}
 				}
 				if (logBuf.length() == 0)
-					LogUtil.debug("删除%s多余字段: 生成SQL结束. %s", enInfo, "<删除0个多余字段>");
+					log.debugf("删除%s多余字段: 生成SQL结束. %s", enInfo, "<删除0个多余字段>");
 				else
-					LogUtil.info("删除%s多余字段: 生成SQL结束. %s", enInfo, logBuf);
+					log.infof("删除%s多余字段: 生成SQL结束. %s", enInfo, logBuf);
 
 				return sqls;
 			}
@@ -597,7 +606,7 @@ public class DMLSessionImpl implements DMLSession {
 
 			public Object invoke(Connection conn) throws Exception {
 				String enInfo = ClassUtil.getDisplayName(mapping.getType());
-				LogUtil.debug("删除%s垃圾字段: 生成SQL...", enInfo);
+				log.debugf("删除%s垃圾字段: 生成SQL...", enInfo);
 				EnMappingImpl entity = (EnMappingImpl) mapping;
 				List<Sql> sqls = new ArrayList();
 				StringBuffer logBuf = new StringBuffer();
@@ -613,7 +622,7 @@ public class DMLSessionImpl implements DMLSession {
 					EnColumnMappingImpl field = CocitEntity.getFieldByColumn(column.getName());
 					if (field == null) {// 删除多余的字段
 						String sqlStr = dialect.sqlDropColumn(tableName, column.getName());
-						if (LogUtil.isInfoEnabled()) {
+						if (log.isInfoEnabled()) {
 							logBuf.append(String.format("\n%s", sqlStr));
 						}
 						sqls.add(Sqls.create(sqlStr));
@@ -621,9 +630,9 @@ public class DMLSessionImpl implements DMLSession {
 				}
 
 				if (logBuf.length() == 0)
-					LogUtil.debug("删除%s垃圾字段: 生成SQL结束. %s", enInfo, "<删除0个垃圾字段>");
+					log.debugf("删除%s垃圾字段: 生成SQL结束. %s", enInfo, "<删除0个垃圾字段>");
 				else
-					LogUtil.info("删除%s垃圾字段: 生成SQL结束. %s", enInfo, logBuf);
+					log.infof("删除%s垃圾字段: 生成SQL结束. %s", enInfo, logBuf);
 
 				return sqls;
 			}
@@ -637,7 +646,7 @@ public class DMLSessionImpl implements DMLSession {
 
 			public Object invoke(Connection conn) throws Exception {
 				String enInfo = ClassUtil.getDisplayName(mapping.getType());
-				LogUtil.debug("同步%s数据库表: 检查更新字段生成SQL...", enInfo);
+				log.debugf("同步%s数据库表: 检查更新字段生成SQL...", enInfo);
 
 				EnMappingImpl entity = (EnMappingImpl) mapping;
 				List<Sql> sqls = new ArrayList();
@@ -663,7 +672,7 @@ public class DMLSessionImpl implements DMLSession {
 							continue;
 						}
 						String sqlStr = dialect.sqlAlterColumnType(tableName, columnInfo.getName(), sqlType);
-						if (LogUtil.isInfoEnabled()) {
+						if (log.isInfoEnabled()) {
 							logBuf.append(String.format("\n%s:  [sqlOldType=%s, sqlType=%s] %s", field.getName(), sqlTypeOld, sqlType, sqlStr));
 						}
 						sqls.add(Sqls.create(sqlStr));
@@ -680,9 +689,9 @@ public class DMLSessionImpl implements DMLSession {
 				}
 
 				if (logBuf.length() == 0)
-					LogUtil.debug("同步%s数据库表: 检查更新字段生成SQL结束. %s", enInfo, "<更新0个字段>");
+					log.debugf("同步%s数据库表: 检查更新字段生成SQL结束. %s", enInfo, "<更新0个字段>");
 				else
-					LogUtil.info("同步%s数据库表: 检查更新字段生成SQL结束. %s", enInfo, logBuf);
+					log.infof("同步%s数据库表: 检查更新字段生成SQL结束. %s", enInfo, logBuf);
 
 				return sqls;
 			}
@@ -732,7 +741,7 @@ public class DMLSessionImpl implements DMLSession {
 
 			public Object invoke(Connection conn) throws Exception {
 				final String enInfo = ClassUtil.getDisplayName(mapping.getType());
-				LogUtil.debug("同步%s数据库表: 检查新增字段生成SQL...", enInfo);
+				log.debugf("同步%s数据库表: 检查新增字段生成SQL...", enInfo);
 
 				final EnMappingImpl entity = (EnMappingImpl) mapping;
 				final List<Sql> sqls = new ArrayList();
@@ -751,7 +760,7 @@ public class DMLSessionImpl implements DMLSession {
 					String columnName = f.getColumnName();
 					if (tableInfo.getColumnMetadata(columnName) == null) {
 						String sqlStr = dialect.sqlAddColumn(tableName, columnName, toSqlType(f));
-						if (LogUtil.isInfoEnabled()) {
+						if (log.isInfoEnabled()) {
 							logBuf.append(String.format("\n%s:  %s", f.getName(), sqlStr));
 						}
 						sqls.add(Sqls.create(sqlStr));
@@ -759,9 +768,9 @@ public class DMLSessionImpl implements DMLSession {
 				}
 
 				if (logBuf.length() == 0)
-					LogUtil.debug("同步%s数据库表: 检查新增字段生成SQL结束. %s", enInfo, "<新增0个字段>");
+					log.debugf("同步%s数据库表: 检查新增字段生成SQL结束. %s", enInfo, "<新增0个字段>");
 				else
-					LogUtil.info("同步%s数据库表: 检查新增字段生成SQL结束. %s", enInfo, logBuf);
+					log.infof("同步%s数据库表: 检查新增字段生成SQL结束. %s", enInfo, logBuf);
 
 				return sqls;
 
@@ -778,7 +787,7 @@ public class DMLSessionImpl implements DMLSession {
 					return new ArrayList();
 				}
 				String enInfo = ClassUtil.getDisplayName(mapping.getType());
-				LogUtil.debug("同步%s数据库表: 检查外键生成SQL...[syncRefTable=%s]", enInfo, syncRefTable);
+				log.debugf("同步%s数据库表: 检查外键生成SQL...[syncRefTable=%s]", enInfo, syncRefTable);
 
 				EnMappingImpl entity = (EnMappingImpl) mapping;
 				List<Sql> sqls = new ArrayList();
@@ -803,7 +812,7 @@ public class DMLSessionImpl implements DMLSession {
 						}
 						String fkName = fkInfo.getName();
 						String sqlStr = dialect.sqlDropFk(tableName, fkName);
-						if (LogUtil.isInfoEnabled()) {
+						if (log.isInfoEnabled()) {
 							logBuf.append(String.format("\n[%s.%s-->%s]:  %s", CocitEntity.getTableName(), fkInfo.getColumnName(), fkInfo.getRefTableName(), sqlStr));
 						}
 						sqls.add(Sqls.create(sqlStr));
@@ -819,15 +828,15 @@ public class DMLSessionImpl implements DMLSession {
 						continue;
 					}
 					Class targetClass = link.getTargetClass();
-					if (LogUtil.isDebugEnabled())
-						LogUtil.debug("同步%s数据库表: 检查外键 获取外键%s关联实体%s", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
+					if (log.isDebugEnabled())
+						log.debugf("同步%s数据库表: 检查外键 获取外键%s关联实体%s", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
 					EnMappingImpl refEntity = (EnMappingImpl) mappingHolder.getEnMapping(targetClass);
 					if (refEntity == null) {
 						if (syncRefTable) {
-							LogUtil.debug("同步%s数据库表: 检查外键 加载外键%s关联实体%s...", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
+							log.debugf("同步%s数据库表: 检查外键 加载外键%s关联实体%s...", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
 							refEntity = extDao.loadEntity(targetClass, true);
-							LogUtil.debug("同步%s数据库表: 检查外键 加载外键%s关联实体%s结束.", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
-						} else if (LogUtil.isInfoEnabled()) {
+							log.debugf("同步%s数据库表: 检查外键 加载外键%s关联实体%s结束.", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
+						} else if (log.isInfoEnabled()) {
 							logBuf.append(String.format("\n%s:  外键关联实体%s未加载", ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass)));
 							continue;
 						}
@@ -841,7 +850,7 @@ public class DMLSessionImpl implements DMLSession {
 						String[] foreignKey = new String[1];
 						foreignKey[0] = ef.getColumnName();
 						String sqlStr = dialect.sqlAddFk(tableName, fkName, foreignKey, refTableName, null, true);
-						if (LogUtil.isInfoEnabled()) {
+						if (log.isInfoEnabled()) {
 							logBuf.append(String.format("\n%s:  %s", ClassUtil.getDisplayName(link.getOwnField()), sqlStr));
 						}
 						sqls.add(Sqls.create(sqlStr));
@@ -849,9 +858,9 @@ public class DMLSessionImpl implements DMLSession {
 				}
 
 				if (logBuf.length() == 0)
-					LogUtil.debug("同步%s数据库表: 检查外键 生成SQL结束. %s", enInfo, "<新增0个外键>");
+					log.debugf("同步%s数据库表: 检查外键 生成SQL结束. %s", enInfo, "<新增0个外键>");
 				else
-					LogUtil.info("同步%s数据库表: 检查外键 生成SQL结束. %s", enInfo, logBuf);
+					log.infof("同步%s数据库表: 检查外键 生成SQL结束. %s", enInfo, logBuf);
 
 				return sqls;
 			}
@@ -861,7 +870,7 @@ public class DMLSessionImpl implements DMLSession {
 
 	private List<Sql> makeSqlToCreateFKs(EnMapping entity, boolean syncTargetTable) {
 		String enInfo = ClassUtil.getDisplayName(entity.getType());
-		LogUtil.debug("同步%s数据库表: 创建外键生成SQL...[syncRefTable=%s]", enInfo, syncTargetTable);
+		log.debugf("同步%s数据库表: 创建外键生成SQL...[syncRefTable=%s]", enInfo, syncTargetTable);
 
 		List<Sql> sqls = new ArrayList();
 		StringBuffer logBuf = new StringBuffer();
@@ -882,11 +891,11 @@ public class DMLSessionImpl implements DMLSession {
 				EnMappingImpl tergetEntity = mappingHolder.getEnMapping(targetClass);
 				if (tergetEntity == null) {
 					if (syncTargetTable) {
-						LogUtil.debug("同步%s数据库表: 创建外键加载外键%s关联实体%s...", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
+						log.debugf("同步%s数据库表: 创建外键加载外键%s关联实体%s...", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
 						tergetEntity = extDao.loadEntity(targetClass, true);
-						LogUtil.debug("同步%s数据库表: 创建外键 加载外键%s关联实体%s结束.", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
+						log.debugf("同步%s数据库表: 创建外键 加载外键%s关联实体%s结束.", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
 					} else {
-						if (LogUtil.isInfoEnabled()) {
+						if (log.isInfoEnabled()) {
 							logBuf.append(String.format("\n%s: 外键关联实体%s未加载", ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass)));
 						}
 						continue;
@@ -899,12 +908,13 @@ public class DMLSessionImpl implements DMLSession {
 				if (link.getTo() != null) {
 					targetPKColumnNames[0] = link.getTo();
 				} else if (link.get("to") != null) {
-					targetPKColumnNames[0] = link.get("to").toString();
+					String toField = link.get("to").toString();
+					targetPKColumnNames[0] = tergetEntity.getField(toField).getColumnName();
 				} else {
 					targetPKColumnNames[0] = tergetEntity.getIdField().getColumnName();
 				}
 				String sqlStr = dialect.sqlAddFk(tableName, fkName, fkColumnNames, targetTable, targetPKColumnNames, false);
-				if (LogUtil.isInfoEnabled()) {
+				if (log.isInfoEnabled()) {
 					logBuf.append(String.format("\n%s: %s", ClassUtil.getDisplayName(link.getOwnField()), sqlStr));
 				}
 				sqls.add(Sqls.create(sqlStr));
@@ -912,9 +922,9 @@ public class DMLSessionImpl implements DMLSession {
 		}
 
 		if (logBuf.length() == 0)
-			LogUtil.debug("同步%s数据库表: 创建外键生成SQL结束. %s", enInfo, "<创建0个外键>");
+			log.debugf("同步%s数据库表: 创建外键生成SQL结束. %s", enInfo, "<创建0个外键>");
 		else
-			LogUtil.info("同步%s数据库表: 创建外键生成SQL结束. %s", enInfo, logBuf);
+			log.infof("同步%s数据库表: 创建外键生成SQL结束. %s", enInfo, logBuf);
 
 		return sqls;
 	}
@@ -926,7 +936,7 @@ public class DMLSessionImpl implements DMLSession {
 
 			public Object invoke(Connection conn) throws Exception {
 				final String enInfo = ClassUtil.getDisplayName(mapping.getType());
-				LogUtil.debug("删除%s实体外键: 生成SQL...", enInfo);
+				log.debugf("删除%s实体外键: 生成SQL...", enInfo);
 
 				final EnMappingImpl entity = (EnMappingImpl) mapping;
 				final List<Sql> sqls = new ArrayList();
@@ -943,16 +953,16 @@ public class DMLSessionImpl implements DMLSession {
 					ForeignKeyMetadata fkInfo = fkInfos.next();
 					String fkName = fkInfo.getName();
 					String sqlStr = dialect.sqlDropFk(tableName, fkName);
-					if (LogUtil.isInfoEnabled()) {
+					if (log.isInfoEnabled()) {
 						logBuf.append("\n" + sqlStr);
 					}
 					sqls.add(Sqls.create(sqlStr));
 				}
 
 				if (logBuf.length() == 0)
-					LogUtil.debug("删除%s实体外键: 生成SQL结束. %s", "<删除0个外键>");
+					log.debugf("删除%s实体外键: 生成SQL结束. %s", "<删除0个外键>");
 				else
-					LogUtil.info("删除%s实体外键: 生成SQL结束. %s", enInfo, logBuf);
+					log.infof("删除%s实体外键: 生成SQL结束. %s", enInfo, logBuf);
 
 				return sqls;
 			}
@@ -962,7 +972,7 @@ public class DMLSessionImpl implements DMLSession {
 
 	private List<Sql> makeSqlToCreateTableAndRelation(EnMapping mapping, Link link, boolean syncRefTable) {
 		String enInfo = ClassUtil.getDisplayName(mapping.getType());
-		LogUtil.debug("同步%s数据库表: 创建多对多关联表生成SQL...[link=%s, syncRefTable=%s]", enInfo, ClassUtil.getDisplayName(link.getOwnField()), syncRefTable);
+		log.debugf("同步%s数据库表: 创建多对多关联表生成SQL...[link=%s, syncRefTable=%s]", enInfo, ClassUtil.getDisplayName(link.getOwnField()), syncRefTable);
 
 		EnMappingImpl entity = (EnMappingImpl) mapping;
 		if (!link.isManyMany()) {
@@ -975,11 +985,11 @@ public class DMLSessionImpl implements DMLSession {
 		EnMappingImpl targetEntity = mappingHolder.getEnMapping(targetClass);
 		if (targetEntity == null) {
 			if (syncRefTable) {
-				LogUtil.debug("同步%s数据库表: 创建多对多关联表加载%s关联实体%s...", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
+				log.debugf("同步%s数据库表: 创建多对多关联表加载%s关联实体%s...", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
 				targetEntity = extDao.loadEntity(targetClass, true);
-				LogUtil.debug("同步%s数据库表: 创建多对多关联表加载%s关联实体%s结束.", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
+				log.debugf("同步%s数据库表: 创建多对多关联表加载%s关联实体%s结束.", enInfo, ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass));
 			} else {
-				if (LogUtil.isInfoEnabled()) {
+				if (log.isInfoEnabled()) {
 					logBuf.append(String.format("\n%s: 关联实体%s未加载", ClassUtil.getDisplayName(link.getOwnField()), ClassUtil.getDisplayName(targetClass)));
 				}
 			}
@@ -990,7 +1000,7 @@ public class DMLSessionImpl implements DMLSession {
 			StringBuffer buf = new StringBuffer(dialect.getCreateTableString()).append(' ').append(link.getRelation()).append(" (\n");
 			buf.append("\t").append(link.getFrom()).append(' ').append(toSqlType(link.getReferField())).append(" not null").append(",\n");
 			buf.append("\t").append(link.getTo()).append(' ').append(toSqlType(link.getTargetField())).append(" not null").append("\n)");
-			if (LogUtil.isInfoEnabled()) {
+			if (log.isInfoEnabled()) {
 				logBuf.append(String.format("\n%s", buf));
 			}
 			sqls.add(Sqls.create(buf.toString()));
@@ -1001,7 +1011,7 @@ public class DMLSessionImpl implements DMLSession {
 			foreignKey[0] = link.getFrom();
 			String constraintName = entity.getNaming().fkName(link.getRelation(), StringUtil.join("_", foreignKey), tableName);
 			String sqlStr = dialect.sqlAddFk(link.getRelation(), constraintName, foreignKey, tableName, null, true);
-			if (LogUtil.isInfoEnabled()) {
+			if (log.isInfoEnabled()) {
 				logBuf.append(String.format("\n主表外键<%s.%s>: %s", enInfo, ClassUtil.getDisplayName(link.getOwnField()), sqlStr));
 			}
 			sqls.add(Sqls.create(sqlStr));
@@ -1012,14 +1022,14 @@ public class DMLSessionImpl implements DMLSession {
 			foreignKey[0] = link.getTo();
 			constraintName = entity.getNaming().fkName(link.getRelation(), StringUtil.join("_", foreignKey), tableName);
 			sqlStr = dialect.sqlAddFk(link.getRelation(), constraintName, foreignKey, tableName, null, true);
-			if (LogUtil.isInfoEnabled()) {
+			if (log.isInfoEnabled()) {
 				logBuf.append(String.format("\n从表外键<%s>: %s", ClassUtil.getDisplayName(link.getTargetClass()), sqlStr));
 			}
 			sqls.add(Sqls.create(sqlStr));
 		}
 
-		if (LogUtil.isInfoEnabled())
-			LogUtil.info("同步%s数据库表: 创建多对多关联表生成SQL结束. [columnName=%s, syncRefTable=%s] %s", enInfo, ClassUtil.getDisplayName(link.getOwnField()), syncRefTable, logBuf);
+		if (log.isInfoEnabled())
+			log.infof("同步%s数据库表: 创建多对多关联表生成SQL结束. [columnName=%s, syncRefTable=%s] %s", enInfo, ClassUtil.getDisplayName(link.getOwnField()), syncRefTable, logBuf);
 
 		return sqls;
 	}
@@ -1028,7 +1038,7 @@ public class DMLSessionImpl implements DMLSession {
 		return (List<Sql>) extDao.run(new ConnCallback() {
 
 			public Object invoke(Connection conn) throws Exception {
-				LogUtil.debug("清空数据库: 生成SQL...");
+				log.debugf("清空数据库: 生成SQL...");
 				List<Sql> sqls = new ArrayList();
 				StringBuffer logBuf = new StringBuffer();
 
@@ -1047,7 +1057,7 @@ public class DMLSessionImpl implements DMLSession {
 						String fkName = fk.getName();
 						String sqlStr = dialect.sqlDropFk(tablename, fkName);
 
-						if (LogUtil.isInfoEnabled()) {
+						if (log.isInfoEnabled()) {
 							logBuf.append("\n" + sqlStr);
 						}
 
@@ -1061,7 +1071,7 @@ public class DMLSessionImpl implements DMLSession {
 						String idxName = idx.getName();
 						String sqlStr = dialect.sqlDropIndex(tablename, idxName);
 
-						if (LogUtil.isInfoEnabled()) {
+						if (log.isInfoEnabled()) {
 							logBuf.append("\n" + sqlStr);
 						}
 
@@ -1071,14 +1081,14 @@ public class DMLSessionImpl implements DMLSession {
 					// 删除表
 					String sqlStr = dialect.sqlDropTable(tablename);
 
-					if (LogUtil.isInfoEnabled()) {
+					if (log.isInfoEnabled()) {
 						logBuf.append("\n" + sqlStr);
 					}
 
 					sqls.add(Sqls.create(sqlStr));
 				}
 
-				LogUtil.info("清空数据库: 生成SQL清除<%s>张表. %s", (mp == null ? 0 : mp.size()), logBuf);
+				log.infof("清空数据库: 生成SQL清除<%s>张表. %s", (mp == null ? 0 : mp.size()), logBuf);
 
 				return sqls;
 			}

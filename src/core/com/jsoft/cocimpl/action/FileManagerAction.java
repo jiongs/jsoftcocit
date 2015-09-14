@@ -13,12 +13,12 @@ import org.nutz.mvc.annotation.Ok;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.ExtHttpContext;
 import com.jsoft.cocit.constant.Const;
-import com.jsoft.cocit.constant.UrlAPI;
+import com.jsoft.cocit.constant.CocUrl;
 import com.jsoft.cocit.mvc.UIModelView;
 import com.jsoft.cocit.ui.model.control.UIActions;
 import com.jsoft.cocit.ui.model.control.UIEntities;
 import com.jsoft.cocit.ui.model.control.UIEntity;
-import com.jsoft.cocit.ui.model.control.UIEntityContainer;
+import com.jsoft.cocit.ui.model.control.UIPanel;
 import com.jsoft.cocit.ui.model.control.UIField;
 import com.jsoft.cocit.ui.model.control.UIGrid;
 import com.jsoft.cocit.ui.model.control.UITree;
@@ -36,7 +36,7 @@ import com.jsoft.cocit.util.Tree.Node;
 @Fail(UIModelView.VIEW_TYPE)
 public class FileManagerAction {
 
-	@At(UrlAPI.GET_FILE_MANAGER)
+	@At(CocUrl.GET_FILE_MANAGER)
 	@Fail("redirect:/login/form")
 	public UIEntities getFileManager(String dir) {
 		Cocit.me().getSecurityEngine().checkLoginUserType(Const.USER_ROOT);
@@ -54,12 +54,12 @@ public class FileManagerAction {
 
 		UIEntity tableUI = new UIEntity();
 		UIGrid grid = this.getGridWidget(dir);
-		grid.setDataLoadUrl(UrlAPI.GET_FILE_GRID_JSON.replace("*", StringUtil.encodeHex(dir)));
+		grid.setDataLoadUrl(CocUrl.GET_FILE_GRID_JSON.replace("*", StringUtil.encodeHex(dir)));
 		grid.set("pagination", "true");
 		tableUI.setGrid(grid);
 
 		UITree tree = new UITree();
-		tree.setDataLoadUrl(UrlAPI.GET_FILE_TREE_JSON.replace("*", StringUtil.encodeHex(dir)));
+		tree.setDataLoadUrl(CocUrl.GET_FILE_TREE_JSON.replace("*", StringUtil.encodeHex(dir)));
 		tree.set("checkbox", "true");
 		tree.set("cascadeCheck", "false");
 		tableUI.setFilter(tree);
@@ -70,7 +70,7 @@ public class FileManagerAction {
 		opDelete.setName("删除");
 		opDelete.set("opMode", "r");
 		opDelete.set("opCode", "299");
-		opDelete.set("actionPath", UrlAPI.DEL_DISK_FILES.replace("*", ""));
+		opDelete.set("actionPath", CocUrl.DEL_DISK_FILES.replace("*", ""));
 		Node opRename = opMenu.addNode(null, "rename");
 		opRename.setName("重命名");
 		opRename.set("opMode", "e");
@@ -80,7 +80,7 @@ public class FileManagerAction {
 		menu.setData(opMenu);
 		tableUI.setActions(menu);
 
-		UIEntityContainer panel = UIEntityContainer.make(tableUI);
+		UIPanel panel = UIPanel.make(tableUI);
 
 		UIEntities ret = new UIEntities();
 		ret.addPanel(panel);
@@ -89,7 +89,7 @@ public class FileManagerAction {
 		return ret;
 	}
 
-	@At(UrlAPI.GET_FILE_GRID_JSON)
+	@At(CocUrl.GET_FILE_GRID_JSON)
 	public UIGridData getFileGridData(String dir, String fileType) {
 		Cocit.me().getSecurityEngine().checkLoginUserType(Const.USER_ROOT);
 
@@ -129,7 +129,7 @@ public class FileManagerAction {
 		return ret;
 	}
 
-	@At(UrlAPI.GET_FILE_TREE_JSON)
+	@At(CocUrl.GET_FILE_TREE_JSON)
 	public UITreeData getFileTreeData(String dir) {
 		Cocit.me().getSecurityEngine().checkLoginUserType(Const.USER_ROOT);
 
@@ -151,7 +151,7 @@ public class FileManagerAction {
 		return ret;
 	}
 
-	@At(UrlAPI.DEL_DISK_FILES)
+	@At(CocUrl.DEL_DISK_FILES)
 	public AlertModel deleteDiskFiles(String dirs) {
 		Cocit.me().getSecurityEngine().checkLoginUserType(Const.USER_ROOT);
 
@@ -279,7 +279,7 @@ public class FileManagerAction {
 						continue;
 					}
 					node = tree.addNode(folderID, "folder:" + StringUtil.encodeHex(file.getAbsolutePath()));
-					node.setChildrenURL(UrlAPI.GET_FILE_TREE_JSON.replace("*", StringUtil.encodeHex(file.getAbsolutePath())));
+					node.setChildrenURL(CocUrl.GET_FILE_TREE_JSON.replace("*", StringUtil.encodeHex(file.getAbsolutePath())));
 					node.setName(file.getName());
 				}
 			}

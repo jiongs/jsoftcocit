@@ -94,6 +94,8 @@
 	-moz-border-radius: 2px 2px 2px 2px;
 	-webkit-border-radius: 2px 2px 2px 2px;
 	border-radius: 2px 2px 2px 2px;
+	-moz-user-select: none; /* for Firefox */
+	-webkit-user-select: none; /* for Chrome */
 }
 
 .calendar-other-month {
@@ -182,14 +184,6 @@
 	border-color: #95B8E7;
 }
 
-.calendar {
-	border-color: #95B8E7;
-}
-
-.calendar-header {
-	background: #E0ECFF;
-}
-
 .calendar-body,.calendar-menu {
 	background: #ffffff;
 }
@@ -199,7 +193,6 @@
 }
 
 .calendar-hover,.calendar-nav-hover,.calendar-menu-hover {
-	background-color: #eaf2ff;
 	color: #000000;
 }
 
@@ -209,8 +202,6 @@
 }
 
 .calendar-selected {
-	background-color: #FBEC88;
 	color: #000000;
-	border: 1px solid #E2C608;
 	padding: 0;
 }

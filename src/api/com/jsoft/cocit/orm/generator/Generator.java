@@ -2,15 +2,22 @@ package com.jsoft.cocit.orm.generator;
 
 import java.io.Serializable;
 
-import com.jsoft.cocit.entityengine.annotation.CocEntity;
-import com.jsoft.cocit.orm.ExtDao;
+import com.jsoft.cocit.dmengine.annotation.CocEntity;
+import com.jsoft.cocit.orm.IExtDao;
 import com.jsoft.cocit.orm.mapping.EnColumnMapping;
 import com.jsoft.cocit.orm.mapping.EnMapping;
 
+/**
+ * 字段生成器接口，该接口以单例模式运行。
+ * 
+ * @author Ji Yongshan
+ * 
+ * @param <T>
+ */
 public interface Generator<T> {
 
 	/**
-	 * 关联到{@link CocEntity#generator()}
+	 * 关联到{@link CocEntity#auto()}
 	 */
 	public String getName();
 
@@ -28,6 +35,6 @@ public interface Generator<T> {
 	 *            参数
 	 * @return
 	 */
-	public Serializable generate(ExtDao dao, EnMapping entity, EnColumnMapping column, Object dataObject, String... params);
+	public Serializable generate(IExtDao dao, EnMapping entity, EnColumnMapping column, Object dataObject, String... params);
 
 }

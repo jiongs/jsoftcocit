@@ -51,4 +51,6 @@ public interface FieldTypes {
 
 	static final int FIELD_TYPE_ONE2MANY = 101;
 
+	static final int FIELD_TYPE_EXT = 199;
+
 }

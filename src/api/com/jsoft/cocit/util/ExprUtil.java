@@ -29,21 +29,21 @@ public abstract class ExprUtil {
 		/*
 		 * 平台管理系统
 		 */
-		if (config.getCocitSystemKey().equals(systemKey)) {
-			return Expr.eq(Const.F_SYSTEM_KEY, systemKey);
+		if (config.getCocitSystemCode().equals(systemKey)) {
+			return Expr.eq(Const.F_SYSTEM_CODE, systemKey);
 		}
 
 		/*
 		 * 支持多应用系统
 		 */
 		if (config.isMultiSystem()) {
-			return Expr.eq(Const.F_SYSTEM_KEY, systemKey);
+			return Expr.eq(Const.F_SYSTEM_CODE, systemKey);
 		}
 		/*
 		 * 不支持多应用系统
 		 */
 		else {
-			return Expr.ne(Const.F_SYSTEM_KEY, config.getCocitSystemKey());
+			return Expr.ne(Const.F_SYSTEM_CODE, config.getCocitSystemCode());
 		}
 	}
 
@@ -53,7 +53,7 @@ public abstract class ExprUtil {
 		/*
 		 * 平台用户
 		 */
-		if (config.getCocitTenantKey().equals(tenantKey)) {
+		if (config.getCocitTenantCode().equals(tenantKey)) {
 			return null;
 		}
 
@@ -61,7 +61,7 @@ public abstract class ExprUtil {
 		 * 支持多租
 		 */
 		if (config.isMultiTenant()) {
-			return Expr.eq(Const.F_TENANT_KEY, tenantKey);
+			return Expr.eq(Const.F_TENANT_CODE, tenantKey);
 		}
 		/*
 		 * 不支持多租
@@ -272,6 +272,97 @@ public abstract class ExprUtil {
 				} else {
 					retExpr = retExpr.and(Expr.eq(prop, str));
 				}
+			}
+		}
+
+		return retExpr;
+	}
+	
+
+	public static CndExpr makeInExprFromJson(String jsonExpr, StringBuffer logExpr) {
+
+		if (StringUtil.isBlank(jsonExpr)) {
+			return null;
+		}
+		if (jsonExpr.charAt(0) != '{') {
+			return Expr.rules(jsonExpr);
+		}
+
+		CndExpr retExpr = null;
+
+		Map map = JsonUtil.loadFromJson(Map.class, jsonExpr);
+		Iterator<String> exprs = map.keySet().iterator();
+		while (exprs.hasNext()) {
+			String prop = exprs.next().trim();
+
+			String fld = prop;
+			String op = "";
+			Object value = map.get(prop);
+
+			int idx = prop.indexOf(" ");
+			if (idx > 0) {
+				fld = prop.substring(0, idx);
+				op = prop.substring(idx + 1);
+			}
+
+			idx = fld.indexOf(".");
+			if (idx > -1) {
+				fld = fld.substring(0, idx);
+			}
+
+			if (value instanceof List) {
+				retExpr = makeExpr(retExpr, fld, op, (List) value);
+			} else {
+				retExpr = makeExpr(retExpr, fld, op, value.toString());
+			}
+		}
+
+		return retExpr;
+	}
+
+	public static CndExpr makeExpr(CndExpr retExpr, String fld, String op, List valueList) {
+		if (valueList == null || valueList.size() == 0) {
+			return retExpr;
+		}
+
+		if (valueList.size() == 1) {
+			return makeExpr(retExpr, fld, op, valueList.get(0).toString());
+		}
+
+		if (StringUtil.isBlank(op)) {
+			op = "in";
+		}
+
+		if (retExpr == null) {
+			retExpr = Expr.rule(fld, op, valueList);
+		} else {
+			retExpr = retExpr.and(Expr.rule(fld, op, valueList));
+		}
+
+		return retExpr;
+	}
+
+	public static CndExpr makeExpr(CndExpr retExpr, String fld, String op, String value) {
+		if (value == null || value.trim().length() == 0) {
+			return retExpr;
+		}
+
+		if ("-keywords-".equals(fld)) {
+			if (retExpr == null) {
+				retExpr = Expr.contains(Const.F_NAME, value).or(Expr.contains(Const.F_CODE, value));
+			} else {
+				retExpr = retExpr.and(Expr.contains(Const.F_NAME, value).or(Expr.contains(Const.F_CODE, value)));
+			}
+		} else {
+
+			if (StringUtil.isBlank(op)) {
+				op = "eq";
+			}
+
+			if (retExpr == null) {
+				retExpr = Expr.rule(fld, op, value);
+			} else {
+				retExpr = retExpr.and(Expr.rule(fld, op, value));
 			}
 		}
 

@@ -12,4 +12,12 @@ public abstract class WriteUtil {
 		else
 			out.write(String.format(format, args));
 	}
+
+	public static void write(StringBuffer out, String format, Object... args) throws IOException {
+		// out.append("\n");
+		if (args.length == 0)
+			out.append(format);
+		else
+			out.append(String.format(format, args));
+	}
 }

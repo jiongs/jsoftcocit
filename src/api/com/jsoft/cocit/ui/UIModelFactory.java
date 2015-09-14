@@ -2,10 +2,10 @@ package com.jsoft.cocit.ui;
 
 import java.util.List;
 
-import com.jsoft.cocit.entityengine.service.CocActionService;
-import com.jsoft.cocit.entityengine.service.CocEntityService;
-import com.jsoft.cocit.entityengine.service.CocFieldService;
-import com.jsoft.cocit.entityengine.service.SystemMenuService;
+import com.jsoft.cocit.dmengine.info.ICocActionInfo;
+import com.jsoft.cocit.dmengine.info.ICocEntityInfo;
+import com.jsoft.cocit.dmengine.info.ICocFieldInfo;
+import com.jsoft.cocit.dmengine.info.ISystemMenuInfo;
 import com.jsoft.cocit.orm.expr.CndExpr;
 import com.jsoft.cocit.ui.model.control.UIActions;
 import com.jsoft.cocit.ui.model.control.UIEntities;
@@ -26,9 +26,9 @@ import com.jsoft.cocit.ui.model.datamodel.UITreeData;
  * 
  */
 public interface UIModelFactory {
-	UIEntities getMains(SystemMenuService menuService);
+	UIEntities getMains(ISystemMenuInfo menuService);
 
-	UIEntity getMain(SystemMenuService menuService, CocEntityService entityService, boolean usedToSubEntity);
+	UIEntity getMain(ISystemMenuInfo menuService, ICocEntityInfo entityService, boolean usedToSubEntity);
 
 	// /**
 	// * @deprecated 用{@link #getUIEntity(SystemMenuService, CocEntityService, boolean)}代替
@@ -40,33 +40,33 @@ public interface UIModelFactory {
 	// */
 	// UIEntity getUIEntityWithButtons(SystemMenuService menuService, CocEntityService entityService, boolean usedToSubEntity);
 
-	UIForm getForm(SystemMenuService menuService, CocEntityService entityService, CocActionService entityAction, Object dataObject);
+	UIForm getForm(ISystemMenuInfo menuService, ICocEntityInfo entityService, ICocActionInfo entityAction, Object dataObject);
 
-	UIForm getForm(SystemMenuService menuService, CocEntityService entityService, CocActionService entityAction, Object dataObject, List<String> fieldList);
+	UIForm getForm(ISystemMenuInfo menuService, ICocEntityInfo entityService, ICocActionInfo entityAction, Object dataObject, List<String> fieldList);
 
-	UIGrid getGrid(SystemMenuService menuService, CocEntityService entityService);
+	UIGrid getGrid(ISystemMenuInfo menuService, ICocEntityInfo entityService);
 
-	UIGrid getGrid(SystemMenuService menuService, CocEntityService entityService, List<String> fieldList, List<String> rowActionList);
+	UIGrid getGrid(ISystemMenuInfo menuService, ICocEntityInfo entityService, List<String> fieldList, List<String> rowActionList);
 
-	UIGrid getComboGrid(SystemMenuService targetMenuService, CocEntityService targetEntityService, CocFieldService fkFieldService);
+	UIGrid getComboGrid(ISystemMenuInfo targetMenuService, ICocEntityInfo targetEntityService, ICocFieldInfo fkFieldService);
 
-	UIList getComboList(SystemMenuService targetMenuService, CocEntityService targetEntityService, CocFieldService fkFieldService);
+	UIList getComboList(ISystemMenuInfo targetMenuService, ICocEntityInfo targetEntityService, ICocFieldInfo fkFieldService);
 
-	UITree getComboTree(SystemMenuService targetMenuService, CocEntityService targetEntityService, CocFieldService fkFieldService);
+	UITree getComboTree(ISystemMenuInfo targetMenuService, ICocEntityInfo targetEntityService, ICocFieldInfo fkFieldService);
 
-	UITreeData getComboTreeData(SystemMenuService systemMenu, CocEntityService cocEntity, CndExpr expr);
+	UITreeData getComboTreeData(ISystemMenuInfo systemMenu, ICocEntityInfo cocEntity, CndExpr expr);
 
-	UITree getTree(SystemMenuService menuService, CocEntityService entityService);
+	UITree getTree(ISystemMenuInfo menuService, ICocEntityInfo entityService);
 
-	UITreeData getTreeData(SystemMenuService menuService, CocEntityService entityService);
+	UITreeData getTreeData(ISystemMenuInfo menuService, ICocEntityInfo entityService, CndExpr expr);
 
-	UISearchBox getSearchBox(SystemMenuService menuService, CocEntityService entityService);
+	UISearchBox getSearchBox(ISystemMenuInfo menuService, ICocEntityInfo entityService);
 
-	UISearchBox getSearchBox(SystemMenuService menuService, CocEntityService entityService, List<String> fields);
+	UISearchBox getSearchBox(ISystemMenuInfo menuService, ICocEntityInfo entityService, List<String> fields);
 
-	UIActions getActions(SystemMenuService menuService, CocEntityService entityService);
+	UIActions getActions(ISystemMenuInfo menuService, ICocEntityInfo entityService);
 
-	UIActions getActions(SystemMenuService menuService, CocEntityService entityService, List<String> actionKeys);
+	UIActions getActions(ISystemMenuInfo menuService, ICocEntityInfo entityService, List<String> actionKeys);
 
 	// /**
 	// * @deprecated 用{@link #getUIActions(SystemMenuService, CocEntityService)}代替
@@ -78,13 +78,13 @@ public interface UIModelFactory {
 	// */
 	// UIActions getUIActionsButtons(SystemMenuService menuService, CocEntityService entityService);
 
-	UITree getFilter(SystemMenuService menuService, CocEntityService entityService, boolean usedToSubEntity);
+	UITree getFilter(ISystemMenuInfo menuService, ICocEntityInfo entityService, boolean usedToSubEntity);
 
-	UITreeData getFilterData(SystemMenuService menuService, CocEntityService entityService, boolean usedToSubEntity);
+	UITreeData getFilterData(ISystemMenuInfo menuService, ICocEntityInfo entityService, boolean usedToSubEntity);
 
-	UITreeData getRowsAuthData(SystemMenuService menuService, CocEntityService entityService);
+	UITreeData getRowsAuthData(ISystemMenuInfo menuService, ICocEntityInfo entityService);
 
-	UITreeData getActionsData(SystemMenuService menuService, CocEntityService entityService);
+	UITreeData getActionsData(ISystemMenuInfo menuService, ICocEntityInfo entityService);
 
 	UIGridData makeGridData();
 

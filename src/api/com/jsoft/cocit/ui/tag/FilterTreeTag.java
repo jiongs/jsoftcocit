@@ -28,6 +28,7 @@ public class FilterTreeTag extends BodyTagSupport {
 	protected String fields = null;
 	protected String funcExpr = null;
 	protected String resultUI = null;
+	protected String name;
 
 	public int doStartTag() throws JspException {
 
@@ -38,13 +39,13 @@ public class FilterTreeTag extends BodyTagSupport {
 		if (uiModel != null && uiModel instanceof UIEntity) {
 			mainModel = (UIEntity) uiModel;
 		}
-		
+
 		// List<String> fieldList = StringUtil.toList(fields);
 		Writer out = null;
 		try {
 			out = pageContext.getOut();
 
-			if (mainModel == null && StringUtil.hasContent(funcExpr)) {
+			if (StringUtil.hasContent(funcExpr)) {
 
 				HttpContext httpContext = Cocit.me().getHttpContext();
 				if (httpContext == null) {
@@ -83,6 +84,9 @@ public class FilterTreeTag extends BodyTagSupport {
 					model.set("height", height);
 				if (StringUtil.hasContent(id)) {
 					model.setId(id);
+				}
+				if (StringUtil.hasContent(name)) {
+					model.putAttribute("name", name);
 				}
 
 				/*
@@ -165,4 +169,12 @@ public class FilterTreeTag extends BodyTagSupport {
 	public void setHeight(int height) {
 		this.height = height;
 	}
+
+	public String getName() {
+    	return name;
+    }
+
+	public void setName(String name) {
+    	this.name = name;
+    }
 }

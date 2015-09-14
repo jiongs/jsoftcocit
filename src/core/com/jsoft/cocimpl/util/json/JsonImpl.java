@@ -29,7 +29,7 @@ import org.nutz.lang.Mirror;
 import org.nutz.lang.Strings;
 
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.entity.IDataEntity;
+import com.jsoft.cocit.baseentity.IDataEntity;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.util.ClassUtil;
 import com.jsoft.cocit.util.DateUtil;
@@ -105,7 +105,7 @@ public class JsonImpl {
 			} else if (obj instanceof IDataEntity) {
 				IDataEntity en = (IDataEntity) obj;
 				writer.append("{key : ");
-				string2Json(en.getKey());
+				string2Json(en.getCode());
 				writer.append("}");
 			} else {
 				pojo2Json(obj);
@@ -391,7 +391,7 @@ public class JsonImpl {
 
 					// 安装软件特有的数据
 					if (Cocit.me().getHttpContext().getLoginTenant() != null) {
-						String path2 = Cocit.me().getConfig().getConfigDir() + "/" + Cocit.me().getHttpContext().getLoginTenant().getKey() + "/" + json;
+						String path2 = Cocit.me().getConfig().getConfigDir() + "/" + Cocit.me().getHttpContext().getLoginTenant().getCode() + "/" + json;
 						is2 = Files.findFileAsStream(path2);
 					}
 				}

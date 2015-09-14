@@ -1,7 +1,7 @@
 
 /* 全局样式 */
 body, a{
-	font: nomal 14px "微软雅黑", Arial, Times;
+	font-family: "微软雅黑", Arial, Times;
 }
 
 body {
@@ -27,6 +27,7 @@ a.close_tabs:hover button{
 /* 首页全局 */
 .admin_index a{
     text-decoration: none;
+    color: #000000;
 }
 .admin_index a:hover{
     text-decoration: underline;
@@ -134,18 +135,31 @@ a.close_tabs:hover button{
     color: #333333;
     padding: 8px;
 }
-.wf_stat .total .num{
+.wf_stat .total a .num{
     padding: 0 5px 0 5px;
-}
-.wf_stat .total .num a{
     color: #0267b5;
     font-weight: bold;
 }
+.wf_stat .total a:hover, .wf_stat .total a:hover .num{
+	color: #ff9900;
+}
+.wf_stat .total a.coc-tab-header-selected, .wf_stat .total a.coc-tab-header-selected .num{
+	color: #ff9900;
+	font-weight: bold;
+}
+
 .wf_stat .items .item{
 	position: relative;
 	height: 35px; 
 	background-color: #d7d7d7;
 	margin: 8px;
+	cursor: pointer;
+}
+.wf_stat .items .item:hover{
+	background-color: #e0f0ff;
+}
+.wf_stat .items .coc-tab-header-selected, .wf_stat .items .coc-tab-header-selected:hover{
+	background-color: #95cdff;
 }
 .wf_stat .items .logo{
 	position: absolute;
@@ -160,6 +174,13 @@ a.close_tabs:hover button{
 	padding-top: 8px;
     font-size: 14px;
 }
+.wf_stat .items .item:hover .text{
+	color: #ff9900;
+}
+.wf_stat .items .coc-tab-header-selected .text{
+	color: #ff9900;
+	font-weight: bold;
+}
 .wf_stat .items .num{
 	position: absolute;
 	top: 0;
@@ -171,7 +192,13 @@ a.close_tabs:hover button{
     padding: 5px 0 0 15px;
     text-align: center;
 }
-.wf_stat .items .num a{
+.wf_stat .items .item:hover .num{
+	background-image: url(../images/admin1/index_num_bg_hover.png);
+}
+.wf_stat .items .coc-tab-header-selected .num, .wf_stat .items .coc-tab-header-selected:hover .num{
+	background-image: url(../images/admin1/index_num_bg_selected.png);
+}
+.wf_stat .items .num{
     font-weight: bold;
     font-size: 18px;
     color: #ffffff;
@@ -335,10 +362,10 @@ a.close_tabs:hover button{
 }
 .sch_calendar .sch-calendar{
 	position: relative;
-	margin: 10px 0;
+	margin: 10px 0 0 0;
 }
 .sch_calendar .sch_button{
-	padding: 3px 18px 4px 18px;
+	padding: 3px 18px 5px 18px;
 	margin-right: 2px;
 	background-image: url(../images/admin1/index_sch_buttons.png);
 	background-position: 0 0;
@@ -346,7 +373,7 @@ a.close_tabs:hover button{
 	cursor: pointer;
 	font-size: 14px;
 }
-.sch_calendar .sch_button_selected{
+.sch_calendar .coc-tab-header-selected{
 	background-position: 0 -27px;
 	color: #ffffff;
 }
@@ -364,17 +391,16 @@ a.close_tabs:hover button{
 	position: absolute;
 	left: 0;
 	top: 0;
-	width: 60px; 
-	height: 25px;
+	width: 80px; 
+	height: 22px;
 	padding-top: 2px;
-	background-image: url(../images/admin1/index_sch_buttons.png);
-	background-position: 0 -53px;
-	background-repeat: no-repeat;
+	border: 1px solid #b7b7b7;
+	background: #eae9e9;
 	text-align: center;
 }
 .sch_tasks  .text{
 	position: absolute;
-	left: 65px;
+	left: 90px;
 	top: 0;
 	padding-top: 2px;
 }

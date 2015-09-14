@@ -51,7 +51,7 @@ public class ActionsTag extends BodyTagSupport {
 		try {
 			out = pageContext.getOut();
 
-			if (mainModel == null && StringUtil.hasContent(funcExpr)) {
+			if (StringUtil.hasContent(funcExpr)) {
 
 				HttpContext httpContext = Cocit.me().getHttpContext();
 				if (httpContext == null) {
@@ -71,7 +71,7 @@ public class ActionsTag extends BodyTagSupport {
 			} else {
 				if (actionsList != null && actionsList.size() > 0) {
 
-					OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.REQUEST_KEY_OPCONTEXT, PageContext.REQUEST_SCOPE);
+					OpContext opContext = (OpContext) pageContext.getAttribute(OpContext.REQUEST_KEY_HTTPCOMMAND, PageContext.REQUEST_SCOPE);
 					model = Cocit.me().getUiModelFactory().getActions(opContext.getSystemMenu(), opContext.getCocEntity(), actionsList);
 
 				} else {

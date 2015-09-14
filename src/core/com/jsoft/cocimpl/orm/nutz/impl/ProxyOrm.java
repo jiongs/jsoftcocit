@@ -6,35 +6,36 @@ import java.util.List;
 import java.util.Map;
 
 import com.jsoft.cocimpl.orm.DMLSession;
-import com.jsoft.cocimpl.orm.Pager;
 import com.jsoft.cocimpl.orm.dialect.Dialect;
 import com.jsoft.cocimpl.orm.generator.INamingStrategy;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.HttpContext;
+import com.jsoft.cocit.baseentity.IOfSystemEntity;
+import com.jsoft.cocit.baseentity.IOfTenantEntity;
+import com.jsoft.cocit.baseentity.IOfTenantEntityExt;
+import com.jsoft.cocit.baseentity.security.ISystemEntity;
+import com.jsoft.cocit.baseentity.security.ITenantEntity;
 import com.jsoft.cocit.constant.Const;
-import com.jsoft.cocit.entity.IExtTenantOwnerEntity;
-import com.jsoft.cocit.entity.ISystemOwnerEntity;
-import com.jsoft.cocit.entity.ITenantOwnerEntity;
-import com.jsoft.cocit.entity.security.ISystem;
-import com.jsoft.cocit.entity.security.ITenant;
 import com.jsoft.cocit.orm.ConnCallback;
-import com.jsoft.cocit.orm.ExtOrm;
+import com.jsoft.cocit.orm.IDao;
+import com.jsoft.cocit.orm.IExtOrm;
+import com.jsoft.cocit.orm.PageResult;
 import com.jsoft.cocit.orm.expr.CndExpr;
 import com.jsoft.cocit.orm.expr.Expr;
 import com.jsoft.cocit.orm.expr.NullCndExpr;
 import com.jsoft.cocit.orm.mapping.EnMapping;
-import com.jsoft.cocit.securityengine.LoginSession;
+import com.jsoft.cocit.securityengine.ILoginSession;
 import com.jsoft.cocit.util.ExprUtil;
 import com.jsoft.cocit.util.ObjectUtil;
 
-public class ProxyOrm implements ExtOrm {
+public class ProxyOrm implements IExtOrm {
 	private OrmImpl orm;
 
 	public ProxyOrm(OrmImpl orm) {
 		this.orm = orm;
 	}
 
-	private String getLoginTenantKey() {
+	private String getLoginTenantCode() {
 		if (!Cocit.me().getConfig().isMultiTenant()) {
 			return null;
 		}
@@ -43,48 +44,48 @@ public class ProxyOrm implements ExtOrm {
 		if (ctx == null)
 			return null;
 
-		LoginSession login = ctx.getLoginSession();
+		ILoginSession login = ctx.getLoginSession();
 		if (login == null) {
 			return "";
 		}
 
-		ISystem system = login.getSystem();
+		ISystemEntity system = login.getSystem();
 		if (system == null) {
 			return "";
 		}
 
-		ITenant tenant = login.getTenant();
+		ITenantEntity tenant = login.getTenant();
 		if (tenant == null) {
 			return "";
 		}
 
-		return tenant.getKey();
+		return tenant.getCode();
 	}
 
-	private String getLoginSystemKey() {
+	private String getLoginSystemCode() {
 
 		HttpContext ctx = Cocit.me().getHttpContext();
 		if (ctx == null)
 			return null;
 
-		LoginSession login = ctx.getLoginSession();
+		ILoginSession login = ctx.getLoginSession();
 		if (login == null) {
 			return "";
 		}
 
-		ISystem system = login.getSystem();
+		ISystemEntity system = login.getSystem();
 		if (system == null) {
 			return "";
 		}
 
-		return system.getKey();
+		return system.getCode();
 	}
 
 	private void setSystemTenantToObj(Object obj) {
-		if (obj instanceof IExtTenantOwnerEntity) {
-			String tenantKey = getLoginTenantKey();
-			if (tenantKey != null) {
-				((IExtTenantOwnerEntity) obj).setTenantKey(tenantKey);
+		if (obj instanceof IOfTenantEntityExt) {
+			String tenantCode = getLoginTenantCode();
+			if (tenantCode != null) {
+				((IOfTenantEntityExt) obj).setTenantCode(tenantCode);
 			}
 		}
 
@@ -111,14 +112,14 @@ public class ProxyOrm implements ExtOrm {
 		}
 
 		CndExpr systemExpr = null;
-		if (ISystemOwnerEntity.class.isAssignableFrom(typeOfEntity)) {
-			String systemKey = getLoginSystemKey();
-			systemExpr = ExprUtil.systemIs(systemKey);
+		if (IOfSystemEntity.class.isAssignableFrom(typeOfEntity)) {
+			String systemCode = getLoginSystemCode();
+			systemExpr = ExprUtil.systemIs(systemCode);
 		}
 		CndExpr tenantExpr = null;
-		if (ITenantOwnerEntity.class.isAssignableFrom(typeOfEntity)) {
-			String tenantKey = getLoginTenantKey();
-			tenantExpr = ExprUtil.tenantIs(tenantKey);
+		if (IOfTenantEntity.class.isAssignableFrom(typeOfEntity)) {
+			String tenantCode = getLoginTenantCode();
+			tenantExpr = ExprUtil.tenantIs(tenantCode);
 		}
 
 		if (tenantExpr != null) {
@@ -202,7 +203,7 @@ public class ProxyOrm implements ExtOrm {
 	}
 
 	public int delete(Class klass, String key) {
-		CndExpr expr = Expr.eq(Const.F_KEY, key);
+		CndExpr expr = Expr.eq(Const.F_CODE, key);
 		expr = filterBySystemTenant(klass, expr);
 
 		return orm.delete(klass, expr);
@@ -236,7 +237,7 @@ public class ProxyOrm implements ExtOrm {
 	}
 
 	public Object get(Class klass, String key) {
-		CndExpr expr = Expr.eq(Const.F_KEY, key);
+		CndExpr expr = Expr.eq(Const.F_CODE, key);
 		expr = filterBySystemTenant(klass, expr);
 
 		return orm.get(klass, expr);
@@ -264,7 +265,7 @@ public class ProxyOrm implements ExtOrm {
 		return orm.query(classOfEntity, expr);
 	}
 
-	public List query(Pager pager) {
+	public List query(PageResult pager) {
 		CndExpr expr = filterBySystemTenant(pager.getType(), pager.getQueryExpr());
 		pager.setQueryExpr(expr);
 
@@ -369,5 +370,10 @@ public class ProxyOrm implements ExtOrm {
 
 	public OrmImpl getProxiedOrm() {
 		return orm;
+	}
+
+	@Override
+	public IDao getDao() {
+		return orm.getDao();
 	}
 }

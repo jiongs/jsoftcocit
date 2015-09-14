@@ -3,11 +3,11 @@ package com.jsoft.cocimpl.ui.view.jcocit;
 import java.io.Writer;
 import java.util.List;
 
-import com.jsoft.cocimpl.ui.view.BaseModelView;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.constant.Const;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.ui.model.control.UISearchBox;
+import com.jsoft.cocit.ui.view.BaseModelView;
 import com.jsoft.cocit.util.ObjectUtil;
 import com.jsoft.cocit.util.Option;
 import com.jsoft.cocit.util.StringUtil;

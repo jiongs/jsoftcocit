@@ -22,7 +22,7 @@ import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.ExtHttpContext;
 import com.jsoft.cocit.HttpContext;
 import com.jsoft.cocit.constant.Const;
-import com.jsoft.cocit.entityengine.service.SystemService;
+import com.jsoft.cocit.dmengine.info.ISystemInfo;
 import com.jsoft.cocit.exception.CocException;
 
 public abstract class HttpUtil {
@@ -272,8 +272,9 @@ public abstract class HttpUtil {
 	}
 
 	public static void renderHTMLHeader(Writer out, String contextPath, String title) throws IOException {
-		HttpContext context = Cocit.me().getHttpContext();
-		SystemService system = context.getLoginSystem();
+		Cocit coc = Cocit.me();
+		HttpContext context = coc.getHttpContext();
+		ISystemInfo system = context.getLoginSystem();
 		String[] themesCSS = StringUtil.toArray(system.getConfigItem(Const.CONFIG_KEY_THEMES_CSS, "blue"), ",");
 		String[] themesJS = StringUtil.toArray(system.getConfigItem(Const.CONFIG_KEY_THEMES_JS, ""), ",");
 
@@ -282,6 +283,9 @@ public abstract class HttpUtil {
 		write(out, "<head>");
 		write(out, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />");
 		write(out, "<title>%s</title>", (title == null ? "" : title));
+
+		ExtHttpContext ctx = (ExtHttpContext) Cocit.me().getHttpContext();
+		boolean isDevHost = ctx.isDevHost();
 
 		/*
 		 * CSS
@@ -300,8 +304,7 @@ public abstract class HttpUtil {
 		/*
 		 * 开发模式
 		 */
-		ExtHttpContext ctx = (ExtHttpContext) Cocit.me().getHttpContext();
-		if (ctx.isDevHost()) {
+		if (isDevHost) {
 			write(out, "<link href=\"%s/jCocit-src/css/jCocit.ui.panel.css\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />", contextPath);
 			write(out, "<link href=\"%s/jCocit-src/css/jCocit.ui.button.css\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />", contextPath);
 			// print(out, "<link href=\"%s/jCocit-src/css/jCocit.ui.combodate.css\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />", contextPath);
@@ -318,6 +321,7 @@ public abstract class HttpUtil {
 
 			//
 			write(out, "<link href=\"%s/jCocit-src/css/jCocit.plugin.entity.css\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />", contextPath);
+			write(out, "<link href=\"%s/jCocit-src/css/jCocit.plugin.workflow.css\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />", contextPath);
 
 			if (themesCSS != null) {
 				for (String theme : themesCSS) {
@@ -334,7 +338,12 @@ public abstract class HttpUtil {
 		 * JS
 		 */
 		write(out, "<script src=\"%s/jQuery.min.js\" type=\"text/javascript\"></script>", MVCUtil.scriptPath);
-		write(out, "<script src=\"%s/jCocit.min.js\" type=\"text/javascript\"></script>", MVCUtil.scriptPath);
+
+		if (isDevHost && new File(coc.getContextDir() + "/jCocit/js/jCocit.src.js").exists()) {
+			write(out, "<script src=\"%s/jCocit.src.js\" type=\"text/javascript\"></script>", MVCUtil.scriptPath);
+		} else {
+			write(out, "<script src=\"%s/jCocit.min.js\" type=\"text/javascript\"></script>", MVCUtil.scriptPath);
+		}
 		if (themesJS != null) {
 			for (String theme : themesJS) {
 				if (theme.equals("ckeditor")) {
@@ -353,23 +362,25 @@ public abstract class HttpUtil {
 			}
 		}
 		write(out, "<script src=\"%s/ext/jCocit.nls.zh.js\" type=\"text/javascript\"></script>", MVCUtil.scriptPath);
-		if (((ExtHttpContext) Cocit.me().getHttpContext()).isDevHost()) {
+		if (isDevHost) {
 			// write(out, "<script src=\"%s/jCocit-src/js/jCocit.core.js\" type=\"text/javascript\"></script>", contextPath);
 			// write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.combo.js\" type=\"text/javascript\"></script>", contextPath);
-			// write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.combodialog.js\" type=\"text/javascript\"></script>", contextPath);
 			// write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.searchbox.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.utils.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.parse.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.alerts.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.ckeditor.js\" type=\"text/javascript\"></script>", contextPath);
-			// write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.dialog.js\" type=\"text/javascript\"></script>", contextPath);
+			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.panel.js\" type=\"text/javascript\"></script>", contextPath);
+			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.calendar.js\" type=\"text/javascript\"></script>", contextPath);
+			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.tabs.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.tree.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.combo.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.combotree.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.datagrid.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.combodialog.js\" type=\"text/javascript\"></script>", contextPath);
+			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.combogrid.js\" type=\"text/javascript\"></script>", contextPath);
 			// write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.pagination.js\" type=\"text/javascript\"></script>", contextPath);
-			 write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.treegrid.js\" type=\"text/javascript\"></script>", contextPath);
+			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.treegrid.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.upload.js\" type=\"text/javascript\"></script>", contextPath);
 			// write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.ckeditor.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.button.js\" type=\"text/javascript\"></script>", contextPath);
@@ -377,6 +388,7 @@ public abstract class HttpUtil {
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.messager.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.ui.pagination.js\" type=\"text/javascript\"></script>", contextPath);
 			write(out, "<script src=\"%s/jCocit-src/js/jCocit.plugin.entity.js\" type=\"text/javascript\"></script>", contextPath);
+			write(out, "<script src=\"%s/jCocit-src/js/jCocit.plugin.workflow.js\" type=\"text/javascript\"></script>", contextPath);
 
 			if (themesJS != null) {
 				for (String theme : themesJS) {
@@ -412,7 +424,7 @@ public abstract class HttpUtil {
 		write(out, "</body></html>");
 	}
 
-	private static void write(Writer out, String format, Object... args) throws IOException {
+	public static void write(Writer out, String format, Object... args) throws IOException {
 		out.write("\n");
 		if (args.length == 0)
 			out.write(format);

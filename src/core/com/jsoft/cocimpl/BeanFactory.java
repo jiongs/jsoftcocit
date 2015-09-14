@@ -10,63 +10,35 @@ import javax.servlet.ServletContext;
 
 import org.nutz.ioc.impl.NutIoc;
 import org.nutz.ioc.loader.json.JsonLoader;
+import org.nutz.resource.Scans;
 
-import com.jsoft.cocimpl.entityengine.impl.PatternAdaptersImpl;
-import com.jsoft.cocimpl.entityengine.impl.pattern.CheckEmailAdapter;
-import com.jsoft.cocimpl.entityengine.impl.pattern.CheckPhoneAdapter;
-import com.jsoft.cocimpl.entityengine.impl.pattern.CodePatternAdapter;
-import com.jsoft.cocimpl.entityengine.impl.pattern.DatePatternAdapter;
-import com.jsoft.cocimpl.entityengine.impl.pattern.DateTimePatternAdapter;
-import com.jsoft.cocimpl.entityengine.impl.pattern.ImagePatternAdapter;
-import com.jsoft.cocimpl.entityengine.impl.pattern.PasswordPatternAdapter;
+import com.jsoft.cocimpl.dmengine.impl.CommandInterceptorsImpl;
+import com.jsoft.cocimpl.dmengine.impl.PatternAdaptersImpl;
+import com.jsoft.cocimpl.dmengine.impl.pattern.CheckEmailAdapter;
+import com.jsoft.cocimpl.dmengine.impl.pattern.CheckPhoneAdapter;
+import com.jsoft.cocimpl.dmengine.impl.pattern.CodePatternAdapter;
+import com.jsoft.cocimpl.dmengine.impl.pattern.DatePatternAdapter;
+import com.jsoft.cocimpl.dmengine.impl.pattern.DateTimePatternAdapter;
+import com.jsoft.cocimpl.dmengine.impl.pattern.ImagePatternAdapter;
+import com.jsoft.cocimpl.dmengine.impl.pattern.PasswordPatternAdapter;
 import com.jsoft.cocimpl.orm.generator.impl.EntityGeneratorsImpl;
 import com.jsoft.cocimpl.orm.generator.impl.TimeSNGenerator;
-import com.jsoft.cocimpl.ui.UIView;
-import com.jsoft.cocimpl.ui.UIViews;
 import com.jsoft.cocimpl.ui.view.JSONView;
 import com.jsoft.cocimpl.ui.view.JSPView;
 import com.jsoft.cocimpl.ui.view.SmartyView;
 import com.jsoft.cocimpl.ui.view.UIViewsImpl;
 import com.jsoft.cocimpl.ui.view.gridcell.LinkCellView;
-import com.jsoft.cocimpl.ui.view.gridcell.LinkToFormCellView;
-import com.jsoft.cocimpl.ui.view.gridcell.ActionsButtonCellView;
-import com.jsoft.cocimpl.ui.view.gridcell.ActionsLinkCellView;
-import com.jsoft.cocimpl.ui.view.gridcell.security.ActionsAuthCellView;
-import com.jsoft.cocimpl.ui.view.gridcell.security.MenuActionsCellView;
-import com.jsoft.cocimpl.ui.view.gridcell.security.MenuDatasCellView;
-import com.jsoft.cocimpl.ui.view.gridcell.security.MenuFieldsCellView;
-import com.jsoft.cocimpl.ui.view.gridcell.security.RowsAuthCellView;
-import com.jsoft.cocimpl.ui.view.jcocit.UIActionsButtonView;
-import com.jsoft.cocimpl.ui.view.jcocit.UIEntitiesView;
 import com.jsoft.cocimpl.ui.view.jcocit.UIEntityView;
-import com.jsoft.cocimpl.ui.view.jcocit.UIFormViews;
-import com.jsoft.cocimpl.ui.view.jcocit.UIGridViews;
-import com.jsoft.cocimpl.ui.view.jcocit.UIActionsLinkButtonView;
-import com.jsoft.cocimpl.ui.view.jcocit.UIListViews;
-import com.jsoft.cocimpl.ui.view.jcocit.UIActionsToolbarView;
-import com.jsoft.cocimpl.ui.view.jcocit.UISearchBoxView;
-import com.jsoft.cocimpl.ui.view.jcocit.UISearchFormView;
-import com.jsoft.cocimpl.ui.view.jcocit.UITreeGridViews;
-import com.jsoft.cocimpl.ui.view.jcocit.UITreeViews;
-import com.jsoft.cocimpl.ui.view.jcocitfield.CKEditorFieldView;
-import com.jsoft.cocimpl.ui.view.jcocitfield.ComboBoxFieldView;
-import com.jsoft.cocimpl.ui.view.jcocitfield.ComboDateFieldView;
-import com.jsoft.cocimpl.ui.view.jcocitfield.ComboDateTimeFieldView;
-import com.jsoft.cocimpl.ui.view.jcocitfield.ComboGridFieldView;
-import com.jsoft.cocimpl.ui.view.jcocitfield.ComboTreeFieldView;
-import com.jsoft.cocimpl.ui.view.jcocitfield.NumberBoxFieldView;
-import com.jsoft.cocimpl.ui.view.jcocitfield.OneToManyFieldView;
-import com.jsoft.cocimpl.ui.view.jcocitfield.PasswordFieldView;
-import com.jsoft.cocimpl.ui.view.jcocitfield.RadioFieldView;
-import com.jsoft.cocimpl.ui.view.jcocitfield.SelectFieldView;
 import com.jsoft.cocimpl.ui.view.jcocitfield.TextFieldView;
-import com.jsoft.cocimpl.ui.view.jcocitfield.TextareaFieldView;
-import com.jsoft.cocimpl.ui.view.jcocitfield.UploadFieldView;
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.entityengine.PatternAdapter;
-import com.jsoft.cocit.entityengine.PatternAdapters;
+import com.jsoft.cocit.dmengine.IPatternAdapter;
+import com.jsoft.cocit.dmengine.IPatternAdapters;
+import com.jsoft.cocit.dmengine.command.ICommandInterceptor;
+import com.jsoft.cocit.dmengine.command.ICommandInterceptors;
 import com.jsoft.cocit.orm.generator.EntityGenerators;
 import com.jsoft.cocit.orm.generator.Generator;
+import com.jsoft.cocit.ui.UIView;
+import com.jsoft.cocit.ui.UIViews;
 import com.jsoft.cocit.ui.view.UICellView;
 import com.jsoft.cocit.ui.view.UIFieldView;
 import com.jsoft.cocit.util.ClassUtil;
@@ -138,96 +110,35 @@ class BeanFactory {
 			views.addView(new JSONView());
 			views.addView(new JSPView());
 			views.addView(new SmartyView());
-			views.addView(new UIActionsLinkButtonView());
-			views.addView(new UIActionsButtonView());
-			views.addView(new UIEntityView());
-			views.addView(new UIFormViews.UIFormView());
-			views.addView(new UIFormViews.UIFormButtonsView());
-			views.addView(new UIFormViews.UIFormFieldsView());
-			views.addView(new UIFormViews.UISubFormView());
-			views.addView(new UIFormViews.UIFormDataView());
-			views.addView(new UIGridViews.UIGridView());
-			views.addView(new UIGridViews.UIGridDataView());
-			views.addView(new UITreeGridViews.UIGridView());
-			views.addView(new UITreeGridViews.UIGridDataView());
-			views.addView(new UIListViews.UIListView());
-			views.addView(new UIListViews.UIListDataView());
-			views.addView(new UIActionsToolbarView());
-			views.addView(new UIEntitiesView());
-			views.addView(new UISearchBoxView());
-			views.addView(new UISearchFormView());
-			views.addView(new UITreeViews.UITreeView());
-			views.addView(new UITreeViews.UITreeDataView());
 
 			/*
 			 * 添加自定义模型视图
 			 */
 			List<String> extViews = Cocit.me().getBeansConfig().getViews();
-			if (extViews != null) {
-				for (String view : extViews) {
-					try {
-						views.addView((UIView) ClassUtil.forName(view).newInstance());
-					} catch (Throwable e) {
-						LogUtil.error("BeanFactory.getViews: Invalid UIView! [viewClassName: %s]", view);
-					}
-				}
+			if (extViews == null) {
+				extViews = new ArrayList();
 			}
-
-			/*
-			 * 添加内置字段视图
-			 */
-			views.addFieldView(new ComboBoxFieldView());
-			views.addFieldView(new ComboDateFieldView());
-			views.addFieldView(new ComboDateTimeFieldView());
-			views.addFieldView(new TextFieldView());
-			views.addFieldView(new NumberBoxFieldView());
-			views.addFieldView(new SelectFieldView());
-			views.addFieldView(new TextareaFieldView());
-			views.addFieldView(new ComboGridFieldView());
-			views.addFieldView(new ComboTreeFieldView());
-			views.addFieldView(new UploadFieldView());
-			views.addFieldView(new CKEditorFieldView());
-			views.addFieldView(new RadioFieldView());
-			views.addFieldView(new PasswordFieldView());
-			views.addFieldView(new OneToManyFieldView());
-
-			/*
-			 * 添加自定义视图
-			 */
-			List<String> fieldViews = Cocit.me().getBeansConfig().getFieldViews();
-			if (fieldViews != null) {
-				for (String view : fieldViews) {
-					try {
-						views.addFieldView((UIFieldView) ClassUtil.forName(view).newInstance());
-					} catch (Throwable e) {
-						LogUtil.error("BeanFactory.getViews: Invalid UIFieldView! [viewClassName: %s]", view);
-					}
-				}
-			}
-
-			/**
-			 * 
-			 */
-			views.addCellView(new LinkToFormCellView());
-			views.addCellView(new LinkCellView());
-			views.addCellView(new ActionsButtonCellView());
-			views.addCellView(new ActionsLinkCellView());
-			views.addCellView(new MenuActionsCellView());
-			views.addCellView(new MenuFieldsCellView());
-			views.addCellView(new MenuDatasCellView());
-			views.addCellView(new ActionsAuthCellView());
-			views.addCellView(new RowsAuthCellView());
-
-			/*
-			 * 添加自定义视图
-			 */
-			List<String> cellViews = Cocit.me().getBeansConfig().getCellViews();
-			if (cellViews != null) {
-				for (String view : cellViews) {
-					try {
-						views.addCellView((UICellView) ClassUtil.forName(view).newInstance());
-					} catch (Throwable e) {
-						LogUtil.error("BeanFactory.getViews: Invalid UIGridCellView! [viewClassName: %s]", view);
+			extViews.add(LinkCellView.class.getPackage().getName());
+			extViews.add(UIEntityView.class.getPackage().getName());
+			extViews.add(TextFieldView.class.getPackage().getName());
+			for (String view : extViews) {
+				List<Class<?>> types = Scans.me().scanPackage(view);
+				for (Class type : types) {
+					if (UIView.class.isAssignableFrom(type)) {
+						try {
+							views.addView((UIView) type.newInstance());
+						} catch (Throwable e1) {
+						}
+					} else if (UIFieldView.class.isAssignableFrom(type)) {
+						try {
+							views.addFieldView((UIFieldView) type.newInstance());
+						} catch (Throwable e1) {
+						}
+					} else if (UICellView.class.isAssignableFrom(type)) {
+						try {
+							views.addCellView((UICellView) type.newInstance());
+						} catch (Throwable e1) {
+						}
 					}
 				}
 			}
@@ -238,8 +149,8 @@ class BeanFactory {
 		return views;
 	}
 
-	PatternAdapters getPatternAdapters() {
-		PatternAdapters patternAdapters = (PatternAdapters) beansMap.get("patternAdapters");
+	IPatternAdapters getPatternAdapters() {
+		IPatternAdapters patternAdapters = (IPatternAdapters) beansMap.get("patternAdapters");
 
 		if (patternAdapters == null) {
 			patternAdapters = new PatternAdaptersImpl();
@@ -262,9 +173,19 @@ class BeanFactory {
 			if (patternAdapters != null) {
 				for (String pa : extPatternAdapters) {
 					try {
-						patternAdapters.addAdapter((PatternAdapter) ClassUtil.forName(pa).newInstance());
+						patternAdapters.addAdapter((IPatternAdapter) ClassUtil.forName(pa).newInstance());
 					} catch (Throwable e) {
-						LogUtil.error("BeanFactory.getViews: Invalid PatternAdapter! [patternName: %s]", pa);
+
+						List<Class<?>> types = Scans.me().scanPackage(pa);
+						for (Class type : types) {
+							if (IPatternAdapter.class.isAssignableFrom(type)) {
+								try {
+									patternAdapters.addAdapter((IPatternAdapter) type.newInstance());
+								} catch (Throwable e1) {
+								}
+							}
+						}
+
 					}
 				}
 			}
@@ -273,6 +194,57 @@ class BeanFactory {
 		}
 
 		return patternAdapters;
+	}
+
+	ICommandInterceptors getCommandInterceptors() {
+		ICommandInterceptors commandInterceptors = (ICommandInterceptors) beansMap.get("commandInterceptors");
+
+		if (commandInterceptors == null) {
+			commandInterceptors = new CommandInterceptorsImpl();
+
+			// /*
+			// * 添加内置CommandReceiver适配器
+			// */
+			// commandInterceptors.addCommandInterceptor(new DeleteCommand());
+			// commandInterceptors.addCommandInterceptor(new QueryCommand());
+			// commandInterceptors.addCommandInterceptor(new SaveCommand());
+			// commandInterceptors.addCommandInterceptor(new GetCommand());
+			// commandInterceptors.addCommandInterceptor(new EvalProxyActionCommand());
+
+			/*
+			 * 添加自定义CommandReceiver适配器
+			 */
+			List<String> packages = Cocit.me().getBeansConfig().getCommandInterceptors();
+			if (packages == null) {
+				packages = new ArrayList();
+			}
+			if (!packages.contains("com.jsoft.cocit.dmengine.command.impl")) {
+				packages.add("com.jsoft.cocit.dmengine.command.impl");
+			}
+			if (commandInterceptors != null) {
+				for (String pa : packages) {
+					try {
+						commandInterceptors.addCommandInterceptor((ICommandInterceptor) ClassUtil.forName(pa).newInstance());
+					} catch (Throwable e) {
+
+						List<Class<?>> types = Scans.me().scanPackage(pa);
+						for (Class type : types) {
+							if (ICommandInterceptor.class.isAssignableFrom(type)) {
+								try {
+									commandInterceptors.addCommandInterceptor((ICommandInterceptor) type.newInstance());
+								} catch (Throwable e1) {
+								}
+							}
+						}
+
+					}
+				}
+			}
+
+			beansMap.put("commandInterceptors", commandInterceptors);
+		}
+
+		return commandInterceptors;
 	}
 
 	public EntityGenerators getEntityGenerators() {
@@ -289,7 +261,17 @@ class BeanFactory {
 					try {
 						entityGenerators.addGenerator((Generator) ClassUtil.forName(str).newInstance());
 					} catch (Throwable e) {
-						LogUtil.error("BeanFactory.getEntityGenerators: Invalid Generator! [name: %s]", str);
+
+						List<Class<?>> types = Scans.me().scanPackage(str);
+						for (Class type : types) {
+							if (Generator.class.isAssignableFrom(type)) {
+								try {
+									entityGenerators.addGenerator((Generator) type.newInstance());
+								} catch (Throwable e1) {
+								}
+							}
+						}
+
 					}
 				}
 			}

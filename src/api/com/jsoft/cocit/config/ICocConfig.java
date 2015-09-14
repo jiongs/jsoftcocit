@@ -88,15 +88,15 @@ public interface ICocConfig extends IConfig {
 
 	String getCocitSystemName();
 
-	String getCocitSystemKey();
+	String getCocitSystemCode();
 
 	String getCocitTenantName();
 
-	String getCocitTenantKey();
+	String getCocitTenantCode();
 
 	String getDefaultSystemName();
 
-	String getDefaultSystemKey();
+	String getDefaultSystemCode();
 
 	/**
 	 * <B>获取数据库默认配置文件：</b>返回类路径下的文件全名。
@@ -311,7 +311,9 @@ public interface ICocConfig extends IConfig {
 
 	boolean isMultiSystem();
 
-	public boolean isAutoUpgrade();
-	
+	public boolean isAutoUpgradeEntityDefinition();
+
+	public boolean isAutoUpgradeEntityTables();
+
 	public ViewConfig getViewConfig();
 }

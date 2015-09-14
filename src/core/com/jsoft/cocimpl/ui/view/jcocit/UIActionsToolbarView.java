@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-import com.jsoft.cocimpl.ui.view.BaseModelView;
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.constant.StatusCodes;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.ui.model.control.UIActions;
+import com.jsoft.cocit.ui.view.BaseModelView;
 import com.jsoft.cocit.util.ObjectUtil;
 import com.jsoft.cocit.util.StringUtil;
 import com.jsoft.cocit.util.Tree;
@@ -58,6 +58,9 @@ public class UIActionsToolbarView extends BaseModelView<UIActions> {
 					String title = node.get("title", "");
 					write(out, "<a href=\"javascript:void(0)\" class=\"jCocit-ui jCocit-toolbar\" title=\"%s\" data-options=\"", title == null ? "" : StringUtil.escapeHtml(title));
 					write(out, "name:'%s'", node.getName());
+					if (node.get("noHeader") != null) {
+						write(out, ", noHeader: true");
+					}
 					write(out, ", token:'%s'", token);
 
 					if (resultUI.length() > 0) {
@@ -76,6 +79,9 @@ public class UIActionsToolbarView extends BaseModelView<UIActions> {
 					String str = node.get("opUrlTarget", "");
 					if (!StringUtil.isBlank(str))
 						write(out, ", opUrlTarget: '%s'", str);
+					str = node.get("dialogStyle", "");
+					if (!StringUtil.isBlank(str))
+						write(out, ", dialogStyle: '%s'", str);
 
 					String opMode = node.get("opMode", "");
 					if (!StringUtil.isBlank(opMode))

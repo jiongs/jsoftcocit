@@ -27,6 +27,24 @@ public class Tree {
 		log = new StringBuffer();
 	}
 
+	public Node findNode(String key, String val) {
+		if (children == null)
+			return null;
+
+		if ("id".equals(key)) {
+			return nodeMap.get(val);
+		} else {
+			for (Node node : children) {
+				String str = (String) node.get(key);
+				if (StringUtil.hasContent(str) && str.equals(val)) {
+					return node;
+				}
+			}
+		}
+
+		return null;
+	}
+
 	public void release() {
 		Iterator keys = this.nodeMap.keySet().iterator();
 		while (keys.hasNext()) {

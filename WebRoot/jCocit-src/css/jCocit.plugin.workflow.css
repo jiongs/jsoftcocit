@@ -1,0 +1,64 @@
+.wfd_node{
+	position: relative;
+}
+.wfd_node_box {
+	position: relative;
+	border: 1px solid #999999;
+	heigth: 32px;
+	width: 202px;
+	background: #ffffff;
+}
+
+.wfd_node_text {
+	border: 1px solid #ffffff;
+	background: #e0f0ff;
+	heigth: 30px;
+	width: 80px;
+	padding: 10px;
+	text-align: center;
+}
+
+.wfd_node_box span {
+	font-family: "微软雅黑", Arial, Times;
+	font-weight: bold;
+	color: #000000;
+}
+.wfd_node_actor{
+	position: absolute;
+	top: 1px;
+	right: 1px;
+	width: 97px;
+	height: 34px;
+	border: 1px solid #cccccc;
+	overflow: hidden;
+}
+.wfd_node_actor .actorName{
+	width: 100%;
+	height: 100%;
+	border: 0;
+	font-family: "微软雅黑", Arial, Times;
+	text-align: center;
+	cursor: pointer;
+	font-size: 14px;
+	vertical-align: center;
+}
+.wfd_node_focus .wfd_node_actor{
+	border-color: #95cdff;
+}
+.wfd_node_actor_existed .wfd_node_actor {
+	border-color: #e0f0ff;
+}
+.wfd_node_actor_existed .actorName{
+	background: #e0f0ff;
+}
+.wfd_node_focus .actorName{
+	background: #95cdff;
+}
+.wfd_node_line {
+	position: relative;
+	height: 80px;
+	width: 202px;
+	background-image: url(images/workflow/node_line.png);
+	background-position: center center;
+	background-repeat: no-repeat;
+}

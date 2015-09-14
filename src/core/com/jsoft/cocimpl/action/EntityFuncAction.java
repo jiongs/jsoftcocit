@@ -15,17 +15,19 @@ import org.nutz.mvc.annotation.Param;
 
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.action.OpContext;
+import com.jsoft.cocit.baseentity.IDataEntity;
+import com.jsoft.cocit.baseentity.IDataEntityExt;
+import com.jsoft.cocit.baseentity.INamedEntity;
+import com.jsoft.cocit.baseentity.INamedEntityExt;
+import com.jsoft.cocit.constant.CocUrl;
+import com.jsoft.cocit.constant.CommandNames;
 import com.jsoft.cocit.constant.Const;
-import com.jsoft.cocit.constant.UrlAPI;
-import com.jsoft.cocit.entity.IDataEntity;
-import com.jsoft.cocit.entity.IExtDataEntity;
-import com.jsoft.cocit.entity.IExtNamedEntity;
-import com.jsoft.cocit.entity.INamedEntity;
-import com.jsoft.cocit.entityengine.service.CocFieldService;
+import com.jsoft.cocit.dmengine.command.WebCommandContext;
+import com.jsoft.cocit.dmengine.info.ICocFieldInfo;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.mvc.CocEntityParam;
 import com.jsoft.cocit.mvc.UIModelView;
-import com.jsoft.cocit.orm.Orm;
+import com.jsoft.cocit.orm.IOrm;
 import com.jsoft.cocit.orm.expr.CndExpr;
 import com.jsoft.cocit.orm.expr.Expr;
 import com.jsoft.cocit.ui.model.UIModel;
@@ -61,7 +63,7 @@ public class EntityFuncAction {
 	 *            Hex加密后的调用参数，参数组成“moduleID”
 	 * @return
 	 */
-	@At(UrlAPI.ENTITY_GET_MAINS_UI)
+	@At(CocUrl.ENTITY_GET_MAINS_UI)
 	public UIEntities mains(String funcExpr, boolean isAjax) {
 		OpContext opContext = OpContext.make(funcExpr, null, null);
 
@@ -84,7 +86,7 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_MAIN_UI)
+	@At(CocUrl.ENTITY_GET_MAIN_UI)
 	public UIEntity main(String funcExpr, boolean isAjax, boolean usedToSubModule) {
 		OpContext opContext = OpContext.make(funcExpr, null, null);
 
@@ -108,7 +110,7 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_GRID)
+	@At(CocUrl.ENTITY_GET_GRID)
 	public UIGrid getGrid(String funcExpr, boolean isAjax) {
 		OpContext opContext = OpContext.make(funcExpr, null, null);
 
@@ -130,7 +132,7 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_ACTIONS)
+	@At(CocUrl.ENTITY_GET_ACTIONS)
 	public UIActions getActions(String funcExpr, boolean isAjax) {
 		OpContext opContext = OpContext.make(funcExpr, null, null);
 
@@ -153,7 +155,7 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_TREE)
+	@At(CocUrl.ENTITY_GET_TREE)
 	public UITree getTree(String funcExpr, boolean isAjax) {
 		OpContext opContext = OpContext.make(funcExpr, null, null);
 
@@ -175,7 +177,7 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_FILTER)
+	@At(CocUrl.ENTITY_GET_FILTER)
 	public UITree getFilter(String funcExpr, boolean isAjax) {
 		OpContext opContext = OpContext.make(funcExpr, null, null);
 
@@ -209,35 +211,35 @@ public class EntityFuncAction {
 	 *            实体数据行参数节点
 	 * @return
 	 */
-	@At(UrlAPI.ENTITY_GET_FORM_TO_SAVE)
+	@At(CocUrl.ENTITY_GET_FORM_TO_SAVE)
 	public UIModel getFormToSave(String funcExpr, String rowID, boolean isAjax, @Param("::entity") CocEntityParam params) {
-		OpContext opContext = OpContext.make(funcExpr, rowID, params, true);
+		WebCommandContext cmdctx = WebCommandContext.make(funcExpr, rowID, params, CommandNames.INTERCEPTOR_TYPE_FORM);
+
+		cmdctx.execute(null, CommandNames.COC_GET, null);
 
 		UIForm uiModel;
-		if (opContext.getException() != null) {
+		if (cmdctx.getException() != null) {
 			if (isAjax) {
-				return AlertModel.makeError(ExceptionUtil.msg(opContext.getException()));
+				return AlertModel.makeError(ExceptionUtil.msg(cmdctx.getException()));
 			}
 
-			uiModel = new UIForm().setException(opContext.getException());
+			uiModel = new UIForm().setException(cmdctx.getException());
 		} else {
-			uiModel = (UIForm) opContext.getUiModelFactory().getForm(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getCocAction(), opContext.getDataObject());
+			uiModel = (UIForm) cmdctx.getUiModelFactory().getForm(cmdctx.getSystemMenu(), cmdctx.getCocEntity(), cmdctx.getCocAction(), cmdctx.getDataObject());
 			uiModel.setAjax(isAjax);
 
-			if (opContext.getCocAction() != null)
-				uiModel.setTitle(opContext.getCocAction().getName());
+			if (cmdctx.getCocAction() != null)
+				uiModel.setTitle(cmdctx.getCocAction().getName());
 
-			uiModel.setSubmitUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_SAVE, opContext.getRuntimeFuncExpr(), rowID));
-			uiModel.setDataObject(opContext.getDataObject());
+			uiModel.setSubmitUrl(MVCUtil.makeUrl(CocUrl.ENTITY_SAVE, cmdctx.getRuntimeFuncExpr(), rowID));
+			uiModel.setDataObject(cmdctx.getDataObject());
 
 		}
-
-		LogUtil.debug("EntityAction.getDataObjectForm: uiModel = %s", uiModel);
 
 		/*
 		 * 及时清理内存
 		 */
-		opContext.release();
+		cmdctx.release();
 
 		return uiModel;
 	}
@@ -254,100 +256,92 @@ public class EntityFuncAction {
 	 *            实体数据行参数节点
 	 * @return
 	 */
-	@At(UrlAPI.ENTITY_SAVE)
+	@At(CocUrl.ENTITY_SAVE)
 	public UIFormData save(String funcExpr, String rowID, @Param("::entity") CocEntityParam params) {
-		OpContext opContext = OpContext.make(funcExpr, rowID, params);
-
 		UIFormData uiModel = new UIFormData();
+		try {
+			WebCommandContext cmdctx = WebCommandContext.make(funcExpr, rowID, params);
 
-		if (opContext.getException() != null) {
-			uiModel.setException(opContext.getException());
-		} else {
-			try {
-				UIForm form = (UIForm) opContext.getUiModelFactory().getForm(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getCocAction(), opContext.getDataObject());
+			List prevInterceptors = new ArrayList();
+			prevInterceptors.add(CommandNames.COC_GET);
+			cmdctx.execute(prevInterceptors, CommandNames.COC_SAVE, null);
+
+			if (cmdctx.getException() != null) {
+				uiModel.setException(cmdctx.getException());
+			} else {
+				UIForm form = (UIForm) cmdctx.getUiModelFactory().getForm(cmdctx.getSystemMenu(), cmdctx.getCocEntity(), cmdctx.getCocAction(), cmdctx.getDataObject());
 
 				uiModel.setModel(form);
-				uiModel.setData(opContext.getDataObject());
+				uiModel.setData(cmdctx.getDataObject());
 
 				// ObjectUtil.setValue(opContext.getDataObject(), Consts.TENANT_KEY, opContext.getContext().getLoginTenantKey());
-				opContext.getDataManager().save(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getDataObject(), opContext.getCocAction().getKey());
+				// cmdctx.getDataManager().save(cmdctx.getSystemMenu(), cmdctx.getCocEntity(), cmdctx.getDataObject(), cmdctx.getCocAction().getCode());
 
-			} catch (Throwable e) {
-				LogUtil.info("EntityAction.saveDataObject： ERROR！ %s", ExceptionUtil.msg(e));
-
-				uiModel.setException(e);
 			}
+		} catch (Throwable e) {
+			LogUtil.info("EntityAction.saveDataObject： ERROR！ %s", ExceptionUtil.msg(e));
+
+			uiModel.setException(e);
 		}
 
 		LogUtil.debug("EntityAction.saveDataObject: uiModel = %s", uiModel);
 
-		/*
-		 * 及时清理内存
-		 */
-		opContext.release();
-
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_FORM_TO_RUN)
+	@At(CocUrl.ENTITY_GET_FORM_TO_RUN)
 	public UIModel getFormToRun(String funcExpr, String rowID, boolean isAjax, @Param("::entity") CocEntityParam params) {
-		OpContext opContext = OpContext.make(funcExpr, rowID, params, true);
+		WebCommandContext cmdctx = WebCommandContext.make(funcExpr, rowID, params, CommandNames.INTERCEPTOR_TYPE_FORM);
+
+		cmdctx.execute(null, CommandNames.COC_GET, null);
 
 		UIForm uiModel;
-		if (opContext.getException() != null) {
+		if (cmdctx.getException() != null) {
 			if (isAjax) {
-				return AlertModel.makeError(ExceptionUtil.msg(opContext.getException()));
+				return AlertModel.makeError(ExceptionUtil.msg(cmdctx.getException()));
 			}
 
-			uiModel = new UIForm().setException(opContext.getException());
+			uiModel = new UIForm().setException(cmdctx.getException());
 		} else {
-			uiModel = (UIForm) opContext.getUiModelFactory().getForm(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getCocAction(), opContext.getDataObject());
+			uiModel = (UIForm) cmdctx.getUiModelFactory().getForm(cmdctx.getSystemMenu(), cmdctx.getCocEntity(), cmdctx.getCocAction(), cmdctx.getDataObject());
 			uiModel.setAjax(isAjax);
 
-			if (opContext.getCocAction() != null)
-				uiModel.setTitle(opContext.getCocAction().getName());
+			if (cmdctx.getCocAction() != null)
+				uiModel.setTitle(cmdctx.getCocAction().getName());
 
-			uiModel.setSubmitUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_RUN, opContext.getRuntimeFuncExpr(), rowID));
-			uiModel.setDataObject(opContext.getDataObject());
+			uiModel.setSubmitUrl(MVCUtil.makeUrl(CocUrl.ENTITY_RUN, cmdctx.getRuntimeFuncExpr(), rowID));
+			uiModel.setDataObject(cmdctx.getDataObject());
 
 		}
-
-		LogUtil.debug("EntityAction.getDataObjectForm: uiModel = %s", uiModel);
 
 		/*
 		 * 及时清理内存
 		 */
-		opContext.release();
+		cmdctx.release();
 
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_RUN)
+	@At(CocUrl.ENTITY_RUN)
 	public AlertModel run(String args, String dataID) {
-		OpContext opContext = OpContext.make(args, dataID, null);
+		WebCommandContext cmdctx = null;
+		AlertModel uiModel = null;
 
-		AlertModel uiModel;
-		if (opContext.getException() != null) {
+		try {
+			cmdctx = WebCommandContext.make(args, dataID, null);
 
-			uiModel = AlertModel.makeError(ExceptionUtil.msg(opContext.getException()));
+			cmdctx.execute((List) null, (String) null, (List) null);
 
-		} else {
-			try {
-				opContext.getDataManager().run(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getDataObject(), opContext.getCocActionID());
+			String msg = cmdctx.getCocAction().getSuccessMessage();
+			uiModel = AlertModel.makeSuccess(msg == null ? "操作成功！" : msg);
+		} catch (Throwable e) {
+			String msg = null;
 
-				String msg = opContext.getCocAction().getSuccessMessage();
-				uiModel = AlertModel.makeSuccess(msg == null ? "操作成功！" : msg);
-			} catch (Throwable e) {
-				String msg = opContext.getCocAction().getErrorMessage();
-				LogUtil.error(msg, e);
-				uiModel = AlertModel.makeError(StringUtil.isBlank(msg) ? ExceptionUtil.msg(e) : msg);
-			}
+			if (cmdctx != null)
+				msg = cmdctx.getCocAction().getErrorMessage();
+
+			uiModel = AlertModel.makeError(StringUtil.isBlank(msg) ? ExceptionUtil.msg(e) : msg);
 		}
-
-		/*
-		 * 及时清理内存
-		 */
-		opContext.release();
 
 		return uiModel;
 	}
@@ -357,7 +351,7 @@ public class EntityFuncAction {
 	 * 
 	 * @return
 	 */
-	@At(UrlAPI.ENTITY_GET_FORM_TO_EXPORT_XLS)
+	@At(CocUrl.ENTITY_GET_FORM_TO_EXPORT_XLS)
 	public UIModel getFormToExportXls(String funcExpr, String dataID, boolean isAjax) {
 		OpContext opContext = OpContext.make(funcExpr, dataID, null);
 
@@ -382,7 +376,7 @@ public class EntityFuncAction {
 			uiModel.set("sortField", StringUtil.escapeHtml(opContext.getHttpContext().getParameterValue("sortField", "")));
 			uiModel.set("sortOrder", StringUtil.escapeHtml(opContext.getHttpContext().getParameterValue("sortOrder", "")));
 
-			uiModel.setSubmitUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_EXPORT_XLS, opContext.getRuntimeFuncExpr()));
+			uiModel.setSubmitUrl(MVCUtil.makeUrl(CocUrl.ENTITY_EXPORT_XLS, opContext.getRuntimeFuncExpr()));
 		}
 
 		/*
@@ -393,7 +387,7 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_EXPORT_XLS)
+	@At(CocUrl.ENTITY_EXPORT_XLS)
 	public void exportXls(String funcExpr, String dataID) {
 		OpContext opContext = OpContext.make(funcExpr, dataID, null);
 
@@ -404,16 +398,16 @@ public class EntityFuncAction {
 			// 生成Excel表头
 			String[] columns = opContext.getHttpContext().getParameterValues("columns");
 			String[] header = new String[columns.length];
-			Map<String, CocFieldService> fields = opContext.getCocEntity().getFieldsMap();
+			Map<String, ICocFieldInfo> fields = opContext.getCocEntity().getFieldsMap();
 			for (int i = 0; i < columns.length; i++) {
 				String col = columns[i];
-				CocFieldService fld = fields.get(col);
+				ICocFieldInfo fld = fields.get(col);
 				header[i] = fld.getName();
 			}
 			excelRows.add(header);
 
 			// 查询数据
-			CndExpr expr = opContext.makeExpr();
+			CndExpr expr = opContext.getQueryExpr();
 			List list = opContext.getDataManager().query(opContext.getSystemMenu(), opContext.getCocEntity(), null, expr);
 
 			// 生成Excel行
@@ -424,10 +418,10 @@ public class EntityFuncAction {
 					String col = columns[i];
 
 					Object value = ObjectUtil.getValue(obj, col);
-					CocFieldService fld = fields.get(col);
+					ICocFieldInfo fld = fields.get(col);
 					String strValue = null;
 					if (value instanceof IDataEntity) {
-						strValue = ((IDataEntity) value).getKey();
+						strValue = ((IDataEntity) value).getCode();
 					}
 					if (StringUtil.isBlank(strValue) && value instanceof INamedEntity) {
 						strValue = ((INamedEntity) value).getName();
@@ -468,7 +462,7 @@ public class EntityFuncAction {
 	 * 
 	 * @return
 	 */
-	@At(UrlAPI.ENTITY_GET_FORM_TO_IMPORT_XLS)
+	@At(CocUrl.ENTITY_GET_FORM_TO_IMPORT_XLS)
 	public UIModel getFormToImportXls(String funcExpr, String dataID, boolean isAjax) {
 		OpContext opContext = OpContext.make(funcExpr, dataID, null);
 
@@ -493,7 +487,7 @@ public class EntityFuncAction {
 			uiModel.set("sortField", StringUtil.escapeHtml(opContext.getHttpContext().getParameterValue("sortField", "")));
 			uiModel.set("sortOrder", StringUtil.escapeHtml(opContext.getHttpContext().getParameterValue("sortOrder", "")));
 
-			uiModel.setSubmitUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_IMPORT_XLS, opContext.getRuntimeFuncExpr()));
+			uiModel.setSubmitUrl(MVCUtil.makeUrl(CocUrl.ENTITY_IMPORT_XLS, opContext.getRuntimeFuncExpr()));
 		}
 
 		/*
@@ -510,7 +504,7 @@ public class EntityFuncAction {
 	 * @param funcExpr
 	 * @param dataID
 	 */
-	@At(UrlAPI.ENTITY_IMPORT_XLS)
+	@At(CocUrl.ENTITY_IMPORT_XLS)
 	public AlertModel importXls(String funcExpr, String dataID) {
 		OpContext opContext = OpContext.make(funcExpr, dataID, null);
 
@@ -534,7 +528,7 @@ public class EntityFuncAction {
 				// ObjectUtil.setValue(row, Consts.TENANT_KEY, tenantKey);
 				// }
 
-				opContext.getDataManager().save(opContext.getSystemMenu(), opContext.getCocEntity(), dataRows, opContext.getCocAction().getKey());
+				opContext.getDataManager().save(opContext.getSystemMenu(), opContext.getCocEntity(), dataRows, opContext.getCocAction().getCode());
 
 				LogUtil.debug("EntityAction.importXls: total = %s", dataRows == null ? 0 : dataRows.size());
 
@@ -564,7 +558,7 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_SORT_MOVE_TOP)
+	@At(CocUrl.ENTITY_SORT_MOVE_TOP)
 	public AlertModel sortMoveTop(String funcExpr, String dataID) {
 		OpContext opContext = OpContext.make(funcExpr, dataID, null);
 
@@ -586,7 +580,7 @@ public class EntityFuncAction {
 			}
 
 			if (listCurrent != null && listCurrent.size() != 0) {
-				List listAll = opContext.query();
+				List listAll = opContext.getDataManager().query(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getCocActionID(), opContext.getQueryExpr());
 				sort(listAll, listCurrent, false, true);
 				opContext.getDataManager().getDataEngine().save(listAll, Expr.fieldRexpr(Const.F_SN));
 			}
@@ -602,7 +596,7 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_SORT_MOVE_UP)
+	@At(CocUrl.ENTITY_SORT_MOVE_UP)
 	public AlertModel sortMoveUp(String funcExpr, String dataID) {
 		OpContext opContext = OpContext.make(funcExpr, dataID, null);
 
@@ -633,7 +627,7 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_SORT_MOVE_DOWN)
+	@At(CocUrl.ENTITY_SORT_MOVE_DOWN)
 	public AlertModel sortMoveDown(String funcExpr, String dataID) {
 		OpContext opContext = OpContext.make(funcExpr, dataID, null);
 
@@ -664,7 +658,7 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_SORT_MOVE_BOTTOM)
+	@At(CocUrl.ENTITY_SORT_MOVE_BOTTOM)
 	public AlertModel sortMoveBottom(String funcExpr, String dataID) {
 		OpContext opContext = OpContext.make(funcExpr, dataID, null);
 
@@ -695,7 +689,7 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_SORT_REVERSE)
+	@At(CocUrl.ENTITY_SORT_REVERSE)
 	public AlertModel sortReverse(String funcExpr, String dataID) {
 		OpContext opContext = OpContext.make(funcExpr, dataID, null);
 
@@ -737,7 +731,7 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_SORT_CANCEL)
+	@At(CocUrl.ENTITY_SORT_CANCEL)
 	public AlertModel sortCancel(String funcExpr, String dataID) {
 		OpContext opContext = OpContext.make(funcExpr, dataID, null);
 
@@ -755,8 +749,8 @@ public class EntityFuncAction {
 
 			if (listCurrent != null && listCurrent.size() > 0) {
 				for (Object one : listCurrent) {
-					if (one instanceof IExtNamedEntity) {
-						((IExtNamedEntity) one).setSn(null);
+					if (one instanceof INamedEntityExt) {
+						((INamedEntityExt) one).setSn(null);
 					} else {
 						ObjectUtil.setValue(one, Const.F_SN, null);
 					}
@@ -777,17 +771,17 @@ public class EntityFuncAction {
 	}
 
 	private List getListAll(OpContext opContext, String dataID) {
-		Orm orm = opContext.getDataManager().getDataEngine().orm();
+		IOrm orm = opContext.getDataManager().getDataEngine().orm();
 		Class classOfEntity = opContext.getCocEntity().getClassOfEntity();
 
-		CndExpr expr = opContext.makeExpr();
+		CndExpr expr = opContext.getQueryExpr();
 		expr = expr.addAsc("sn").addDesc("id").setFieldRexpr(Expr.fieldRexpr("sn|id"));
 
 		return orm.query(classOfEntity, expr);
 	}
 
 	private List getListCurrent(OpContext opContext, String dataID) {
-		Orm orm = opContext.getDataManager().getDataEngine().orm();
+		IOrm orm = opContext.getDataManager().getDataEngine().orm();
 		Class classOfEntity = opContext.getCocEntity().getClassOfEntity();
 
 		String[] array = StringUtil.toArray(dataID);
@@ -805,16 +799,16 @@ public class EntityFuncAction {
 	}
 
 	private Integer getSN(Object obj) {
-		if (obj instanceof IExtNamedEntity) {
-			return ((IExtNamedEntity) obj).getSn();
+		if (obj instanceof INamedEntityExt) {
+			return ((INamedEntityExt) obj).getSn();
 		} else {
 			return ObjectUtil.getValue(obj, Const.F_SN);
 		}
 	}
 
 	private void setSN(Object obj, int orderby) {
-		if (obj instanceof IExtNamedEntity) {
-			((IExtNamedEntity) obj).setSn(orderby);
+		if (obj instanceof INamedEntityExt) {
+			((INamedEntityExt) obj).setSn(orderby);
 		} else {
 			ObjectUtil.setValue(obj, Const.F_SN, orderby);
 		}
@@ -888,40 +882,40 @@ public class EntityFuncAction {
 		}
 	}
 
-	@At(UrlAPI.ENTITY_GET_FORM_TO_REMOVE)
+	@At(CocUrl.ENTITY_GET_FORM_TO_REMOVE)
 	public UIModel getFormToRemove(String funcExpr, String rowID, boolean isAjax, @Param("::entity") CocEntityParam params) {
-		OpContext opContext = OpContext.make(funcExpr, rowID, params, true);
+		WebCommandContext cmdctx = WebCommandContext.make(funcExpr, rowID, params, CommandNames.INTERCEPTOR_TYPE_FORM);
+
+		cmdctx.execute(null, CommandNames.COC_GET, null);
 
 		UIForm uiModel;
-		if (opContext.getException() != null) {
+		if (cmdctx.getException() != null) {
 			if (isAjax) {
-				return AlertModel.makeError(ExceptionUtil.msg(opContext.getException()));
+				return AlertModel.makeError(ExceptionUtil.msg(cmdctx.getException()));
 			}
 
-			uiModel = new UIForm().setException(opContext.getException());
+			uiModel = new UIForm().setException(cmdctx.getException());
 		} else {
-			uiModel = (UIForm) opContext.getUiModelFactory().getForm(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getCocAction(), opContext.getDataObject());
+			uiModel = (UIForm) cmdctx.getUiModelFactory().getForm(cmdctx.getSystemMenu(), cmdctx.getCocEntity(), cmdctx.getCocAction(), cmdctx.getDataObject());
 			uiModel.setAjax(isAjax);
 
-			if (opContext.getCocAction() != null)
-				uiModel.setTitle(opContext.getCocAction().getName());
+			if (cmdctx.getCocAction() != null)
+				uiModel.setTitle(cmdctx.getCocAction().getName());
 
-			uiModel.setSubmitUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_REMOVE, opContext.getRuntimeFuncExpr(), rowID));
-			uiModel.setDataObject(opContext.getDataObject());
+			uiModel.setSubmitUrl(MVCUtil.makeUrl(CocUrl.ENTITY_REMOVE, cmdctx.getRuntimeFuncExpr(), rowID));
+			uiModel.setDataObject(cmdctx.getDataObject());
 
 		}
-
-		LogUtil.debug("EntityAction.getDataObjectForm: uiModel = %s", uiModel);
 
 		/*
 		 * 及时清理内存
 		 */
-		opContext.release();
+		cmdctx.release();
 
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_REMOVE)
+	@At(CocUrl.ENTITY_REMOVE)
 	public AlertModel remove(String funcExpr, String dataID, @Param("::entity") CocEntityParam params) {
 		OpContext opContext = OpContext.make(funcExpr, dataID, params);
 
@@ -935,8 +929,8 @@ public class EntityFuncAction {
 				List list = (List) opContext.getDataObject();
 				if (list != null && list.size() != 0) {
 					for (Object obj : list) {
-						if (obj instanceof IExtDataEntity) {
-							IExtDataEntity data = ((IExtDataEntity) obj);
+						if (obj instanceof IDataEntityExt) {
+							IDataEntityExt data = ((IDataEntityExt) obj);
 							if (data.isArchived()) {
 								throw new CocException("数据已归档，不允许移除！");
 							}
@@ -948,7 +942,7 @@ public class EntityFuncAction {
 					}
 				}
 
-				opContext.save();
+				opContext.getDataManager().save(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getDataObject(), opContext.getCocActionID());
 
 				String msg = opContext.getCocAction().getSuccessMessage();
 				uiModel = AlertModel.makeSuccess(msg == null ? "删除数据成功！" : msg);
@@ -965,49 +959,53 @@ public class EntityFuncAction {
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_FORM_TO_DELETE)
+	@At(CocUrl.ENTITY_GET_FORM_TO_DELETE)
 	public UIModel getFormToDelete(String funcExpr, String rowID, boolean isAjax, @Param("::entity") CocEntityParam params) {
-		OpContext opContext = OpContext.make(funcExpr, rowID, params, true);
+		WebCommandContext cmdctx = WebCommandContext.make(funcExpr, rowID, params, CommandNames.INTERCEPTOR_TYPE_FORM);
+
+		cmdctx.execute(null, CommandNames.COC_GET, null);
 
 		UIForm uiModel;
-		if (opContext.getException() != null) {
+		if (cmdctx.getException() != null) {
 			if (isAjax) {
-				return AlertModel.makeError(ExceptionUtil.msg(opContext.getException()));
+				return AlertModel.makeError(ExceptionUtil.msg(cmdctx.getException()));
 			}
 
-			uiModel = new UIForm().setException(opContext.getException());
+			uiModel = new UIForm().setException(cmdctx.getException());
 		} else {
-			uiModel = (UIForm) opContext.getUiModelFactory().getForm(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getCocAction(), opContext.getDataObject());
+			uiModel = (UIForm) cmdctx.getUiModelFactory().getForm(cmdctx.getSystemMenu(), cmdctx.getCocEntity(), cmdctx.getCocAction(), cmdctx.getDataObject());
 			uiModel.setAjax(isAjax);
 
-			if (opContext.getCocAction() != null)
-				uiModel.setTitle(opContext.getCocAction().getName());
+			if (cmdctx.getCocAction() != null)
+				uiModel.setTitle(cmdctx.getCocAction().getName());
 
-			uiModel.setSubmitUrl(MVCUtil.makeUrl(UrlAPI.ENTITY_DELETE, opContext.getRuntimeFuncExpr(), rowID));
-			uiModel.setDataObject(opContext.getDataObject());
+			uiModel.setSubmitUrl(MVCUtil.makeUrl(CocUrl.ENTITY_DELETE, cmdctx.getRuntimeFuncExpr(), rowID));
+			uiModel.setDataObject(cmdctx.getDataObject());
 		}
-
-		LogUtil.debug("EntityAction.getDataObjectForm: uiModel = %s", uiModel);
 
 		/*
 		 * 及时清理内存
 		 */
-		opContext.release();
+		cmdctx.release();
 
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_DELETE)
+	@At(CocUrl.ENTITY_DELETE)
 	public AlertModel delete(String funcExpr, String dataID, @Param("::entity") CocEntityParam params) {
-		OpContext opContext = OpContext.make(funcExpr, dataID, params);
-
+		WebCommandContext cmdctx = WebCommandContext.make(funcExpr, dataID, params);
 		AlertModel uiModel;
-		if (opContext.getException() != null) {
+		try {
 
-			uiModel = AlertModel.makeError(ExceptionUtil.msg(opContext.getException()));
+			List prevInterceptors = new ArrayList();
+			prevInterceptors.add(CommandNames.COC_GET);
+			cmdctx.execute(prevInterceptors, CommandNames.COC_DELETE, null);
 
-		} else {
-			try {
+			if (cmdctx.getException() != null) {
+
+				uiModel = AlertModel.makeError(ExceptionUtil.msg(cmdctx.getException()));
+
+			} else {
 				// List list = (List) opContext.getDataObject();
 				// if (list != null && list.size() != 0) {
 				// for (Object obj : list) {
@@ -1020,32 +1018,23 @@ public class EntityFuncAction {
 				// }
 				// }
 
-				opContext.delete();
-
-				String msg = opContext.getCocAction().getSuccessMessage();
+				String msg = cmdctx.getCocAction().getSuccessMessage();
 				uiModel = AlertModel.makeSuccess(msg == null ? "永久删除成功！" : msg);
-			} catch (Throwable e) {
-				String msg = opContext.getCocAction().getErrorMessage();
-				if (StringUtil.isBlank(msg)) {
-					msg = ExceptionUtil.msg(e);
-				} else {
-					msg += ExceptionUtil.msg(e);
-				}
-				uiModel = AlertModel.makeError(msg);
 			}
+		} catch (Throwable e) {
+			String msg = cmdctx.getCocAction().getErrorMessage();
+			if (StringUtil.isBlank(msg)) {
+				msg = ExceptionUtil.msg(e);
+			} else {
+				msg += ExceptionUtil.msg(e);
+			}
+			uiModel = AlertModel.makeError(msg);
 		}
-
-		LogUtil.debug("EntityAction.delete: uiModel = %s", uiModel);
-
-		/*
-		 * 及时清理内存
-		 */
-		opContext.release();
 
 		return uiModel;
 	}
 
-	@At(UrlAPI.ENTITY_CLEAR)
+	@At(CocUrl.ENTITY_CLEAR)
 	public AlertModel clear(String funcExpr, String dataID) {
 		OpContext opContext = OpContext.make(funcExpr, dataID, null);
 
@@ -1055,7 +1044,7 @@ public class EntityFuncAction {
 			uiModel = AlertModel.makeError(ExceptionUtil.msg(opContext.getException()));
 
 		} else {
-			Orm orm = opContext.getDataManager().getDataEngine().orm();
+			IOrm orm = opContext.getDataManager().getDataEngine().orm();
 			Class classOfEntity = opContext.getCocEntity().getClassOfEntity();
 
 			orm.clear(classOfEntity, null);

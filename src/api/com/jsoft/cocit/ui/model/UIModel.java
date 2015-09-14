@@ -2,8 +2,8 @@ package com.jsoft.cocit.ui.model;
 
 import java.io.Writer;
 
-import com.jsoft.cocimpl.ui.UIView;
 import com.jsoft.cocit.constant.Const;
+import com.jsoft.cocit.ui.UIView;
 
 /**
  * UI模型：表示界面窗体的逻辑模型。

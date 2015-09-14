@@ -9,20 +9,22 @@ import org.nutz.mvc.annotation.Param;
 
 import com.jsoft.cocit.Cocit;
 import com.jsoft.cocit.action.OpContext;
-import com.jsoft.cocit.constant.UrlAPI;
-import com.jsoft.cocit.entityengine.service.CocEntityService;
-import com.jsoft.cocit.entityengine.service.CocFieldService;
+import com.jsoft.cocit.constant.CocUrl;
+import com.jsoft.cocit.constant.CommandNames;
+import com.jsoft.cocit.dmengine.command.WebCommandContext;
+import com.jsoft.cocit.dmengine.info.ICocEntityInfo;
+import com.jsoft.cocit.dmengine.info.ICocFieldInfo;
 import com.jsoft.cocit.mvc.CocEntityParam;
 import com.jsoft.cocit.mvc.UIModelView;
-import com.jsoft.cocit.orm.expr.CndExpr;
+import com.jsoft.cocit.orm.PageResult;
 import com.jsoft.cocit.ui.model.control.UIForm;
 import com.jsoft.cocit.ui.model.control.UIGrid;
 import com.jsoft.cocit.ui.model.control.UIList;
+import com.jsoft.cocit.ui.model.control.UITree;
 import com.jsoft.cocit.ui.model.datamodel.UIFormData;
 import com.jsoft.cocit.ui.model.datamodel.UIGridData;
 import com.jsoft.cocit.ui.model.datamodel.UIListData;
 import com.jsoft.cocit.ui.model.datamodel.UITreeData;
-import com.jsoft.cocit.util.ExprUtil;
 import com.jsoft.cocit.util.LogUtil;
 import com.jsoft.cocit.util.MVCUtil;
 import com.jsoft.cocit.util.StringUtil;
@@ -44,19 +46,33 @@ public class EntityDataAction {
 	 *            加密后的调用参数，参数组成“systemMenuID:entityModuleID”
 	 * @return
 	 */
-	@At(UrlAPI.ENTITY_GET_GRID_DATA)
+	@At(CocUrl.ENTITY_GET_GRID_DATA)
 	public UIGridData getGridData(String funcExpr, String fields, String rowActions) {
-		OpContext opContext = OpContext.make(funcExpr, null, null);
+		WebCommandContext cmdctx = WebCommandContext.make(funcExpr, null, null, CommandNames.INTERCEPTOR_TYPE_GRID);
+
+		cmdctx.execute(null, CommandNames.COC_QUERY, null);
+
+		if (CocUrl.PATH_PARAM_EMPTY.equals(fields)) {
+			fields = null;
+		}
 
 		UIGridData dataModel = new UIGridData();
-		if (opContext.getException() != null) {
+		if (cmdctx.getException() != null) {
 
-			dataModel.setException(opContext.getException());
+			dataModel.setException(cmdctx.getException());
 
 		} else {
 
 			// 构造Grid数据模型
-			UIGrid grid = (UIGrid) opContext.getUiModelFactory().getGrid(opContext.getSystemMenu(), opContext.getCocEntity(), StringUtil.toList(fields), StringUtil.toList(rowActions));
+			List<String> fieldsList = null;
+			if (fields != null) {
+				fieldsList = StringUtil.toList(fields);
+			}
+			List<String> actionsList = null;
+			if (rowActions != null) {
+				actionsList = StringUtil.toList(rowActions);
+			}
+			UIGrid grid = (UIGrid) cmdctx.getUiModelFactory().getGrid(cmdctx.getSystemMenu(), cmdctx.getCocEntity(), fieldsList, actionsList);
 			// grid.setTreeField(opContext.getTreeField());
 			String view = grid.getViewName();
 			if (StringUtil.hasContent(view)) {
@@ -64,16 +80,14 @@ public class EntityDataAction {
 			}
 
 			dataModel.setModel(grid);
-			// 构造查询条件
-			CndExpr expr = opContext.makeExpr();
 			try {
-				List data = opContext.getDataManager().query(opContext.getSystemMenu(), opContext.getCocEntity(), null, expr);
-				int total = opContext.getDataManager().count(opContext.getSystemMenu(), opContext.getCocEntity(), null, expr);
 
-				dataModel.setData(data);
-				dataModel.setTotal(total);
+				PageResult pageResult = (PageResult) cmdctx.getResult();
 
-				LogUtil.debug("EntityAction.getEntityGridData: total = %s", total);
+				dataModel.setData(pageResult.getResult());
+				dataModel.setTotal(pageResult.getTotalRecord());
+
+				LogUtil.debug("EntityAction.getEntityGridData: total = %s", dataModel.getTotal());
 			} catch (Throwable e) {
 				LogUtil.error("获取网格JSON数据失败！", e);
 
@@ -86,54 +100,42 @@ public class EntityDataAction {
 		/*
 		 * 及时清理内存
 		 */
-		opContext.release();
+		cmdctx.release();
 
 		return dataModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_COMBOGRID_DATA)
+	@At(CocUrl.ENTITY_GET_COMBOGRID_DATA)
 	public UIGridData getComboGridData(String funcExpr, String fkFieldExpr) {
-		OpContext opContext = OpContext.make(funcExpr, null, null);
+		WebCommandContext cmdctx = WebCommandContext.make(funcExpr, null, null, CommandNames.INTERCEPTOR_TYPE_COLUMN);
 
 		String[] array = MVCUtil.decodeArgs(fkFieldExpr);
-		CocEntityService cocEntity = Cocit.me().getEntityServiceFactory().getEntity(array[0]);
-		CocFieldService fkField = cocEntity.getField(array[1]);
+		ICocEntityInfo cocEntity = Cocit.me().getEntityServiceFactory().getEntity(array[0]);
+		ICocFieldInfo fkField = cocEntity.getField(array[1]);
+
+		List<String> prevInterceptors = cmdctx.getCommonPrevInterceptors();
+		prevInterceptors.addAll(StringUtil.toList(fkField.getPrevInterceptors()));
+		List<String> postInterceptors = StringUtil.toList(fkField.getPostInterceptors());
+		postInterceptors.addAll(cmdctx.getCommonPostInterceptors());
+		cmdctx.execute(prevInterceptors, CommandNames.COC_COMBOGRID, postInterceptors);
 
 		UIGridData dataModel = new UIGridData();
-		if (opContext.getException() != null) {
+		if (cmdctx.getException() != null) {
 
-			dataModel.setException(opContext.getException());
+			dataModel.setException(cmdctx.getException());
 
 		} else {
 
 			// 构造Grid数据模型
-			UIGrid grid = (UIGrid) opContext.getUiModelFactory().getComboGrid(opContext.getSystemMenu(), opContext.getCocEntity(), fkField);
+			UIGrid grid = (UIGrid) cmdctx.getUiModelFactory().getComboGrid(cmdctx.getSystemMenu(), cmdctx.getCocEntity(), fkField);
 
 			dataModel.setModel(grid);
 
-			// 构造查询条件
-			CndExpr expr = opContext.makeExpr();
-			CndExpr fkComboExpr = ExprUtil.parseToExpr(fkField.getFkComboWhere());
-			if (fkComboExpr != null) {
-				expr = expr.and(fkComboExpr);
-			}
+			PageResult pageResult = (PageResult) cmdctx.getResult();
 
-			try {
+			dataModel.setData(pageResult.getResult());
+			dataModel.setTotal(pageResult.getTotalRecord());
 
-				List data = opContext.getDataManager().query(opContext.getSystemMenu(), opContext.getCocEntity(), null, expr);
-				int total = opContext.getDataManager().count(opContext.getSystemMenu(), opContext.getCocEntity(), null, expr);
-
-				dataModel.setData(data);
-				dataModel.setTotal(total);
-
-				LogUtil.debug("EntityAction.getEntityGridData: total = %s", total);
-
-			} catch (Throwable e) {
-				LogUtil.error("获取网格JSON数据失败！", e);
-
-				dataModel.setException(e);
-
-			}
 		}
 
 		LogUtil.debug("EntityAction.getEntityComboGridJson: uiModel = %s", dataModel);
@@ -141,99 +143,73 @@ public class EntityDataAction {
 		/*
 		 * 及时清理内存
 		 */
-		opContext.release();
+		cmdctx.release();
 
 		return dataModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_COMBOLIST_DATA)
+	@At(CocUrl.ENTITY_GET_COMBOLIST_DATA)
 	public UIListData getComboListData(String funcExpr, String fkFieldExpr) {
-		OpContext opContext = OpContext.make(funcExpr, null, null);
+		WebCommandContext cmdctx = WebCommandContext.make(funcExpr, null, null, CommandNames.INTERCEPTOR_TYPE_COLUMN);
 
 		String[] array = MVCUtil.decodeArgs(fkFieldExpr);
-		CocEntityService cocEntity = Cocit.me().getEntityServiceFactory().getEntity(array[0]);
-		CocFieldService fkField = cocEntity.getField(array[1]);
+		ICocEntityInfo cocEntity = Cocit.me().getEntityServiceFactory().getEntity(array[0]);
+		ICocFieldInfo fkField = cocEntity.getField(array[1]);
+
+		cmdctx.execute(StringUtil.toList(fkField.getPrevInterceptors()), CommandNames.COC_COMBOLIST, StringUtil.toList(fkField.getPostInterceptors()));
 
 		UIListData dataModel = new UIListData();
-		if (opContext.getException() != null) {
+		if (cmdctx.getException() != null) {
 
-			dataModel.setException(opContext.getException());
+			dataModel.setException(cmdctx.getException());
 
 		} else {
 
 			// 构造数据模型
-			UIList model = opContext.getUiModelFactory().getComboList(opContext.getSystemMenu(), opContext.getCocEntity(), fkField);
+			UIList model = cmdctx.getUiModelFactory().getComboList(cmdctx.getSystemMenu(), cmdctx.getCocEntity(), fkField);
 
 			dataModel.setModel(model);
 
-			// 构造查询条件
-			CndExpr expr = opContext.makeExpr();
-			CndExpr fkComboExpr = ExprUtil.parseToExpr(fkField.getFkComboWhere());
-			if (fkComboExpr != null) {
-				expr = expr.and(fkComboExpr);
-			}
+			dataModel.setData(cmdctx.getResult());
 
-			try {
-
-				List data = opContext.getDataManager().query(opContext.getSystemMenu(), opContext.getCocEntity(), null, expr);
-				// int total = helper.entityManager.count(expr, null);
-
-				dataModel.setData(data);
-
-			} catch (Throwable e) {
-				LogUtil.error("获取列表JSON数据失败！", e);
-
-				dataModel.setException(e);
-			}
 		}
-
-		LogUtil.debug("EntityAction.getEntityComboGridJson: uiModel = %s", dataModel);
 
 		/*
 		 * 及时清理内存
 		 */
-		opContext.release();
+		cmdctx.release();
 
 		return dataModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_COMBOTREE_DATA)
+	@At(CocUrl.ENTITY_GET_COMBOTREE_DATA)
 	public UITreeData getComboTreeData(String funcExpr, String fkFieldExpr) {
-		OpContext opContext = OpContext.make(funcExpr, null, null);
+		WebCommandContext cmdctx = WebCommandContext.make(funcExpr, null, null, CommandNames.INTERCEPTOR_TYPE_COLUMN);
 
-		String[] array = MVCUtil.decodeArgs(fkFieldExpr);
-		CocEntityService cocEntity = Cocit.me().getEntityServiceFactory().getEntity(array[0]);
-		CocFieldService fkField = cocEntity.getField(array[1]);
+		ICocFieldInfo fkField = null;
+		if (StringUtil.hasContent(fkFieldExpr)) {
+			String[] array = MVCUtil.decodeArgs(fkFieldExpr);
+			ICocEntityInfo cocEntity = Cocit.me().getEntityServiceFactory().getEntity(array[0]);
+			fkField = cocEntity.getField(array[1]);
 
-		UITreeData dataModel;
-		if (opContext.getException() != null) {
-			dataModel = (UITreeData) new UITreeData();
-			dataModel.setException(opContext.getException());
+			cmdctx.execute(StringUtil.toList(fkField.getPrevInterceptors()), CommandNames.COC_COMBOTREE, StringUtil.toList(fkField.getPostInterceptors()));
 		} else {
-
-			// 构造查询条件
-			CndExpr expr = opContext.makeExpr();
-			CndExpr fkComboExpr = ExprUtil.parseToExpr(fkField.getFkComboWhere());
-			if (fkComboExpr != null) {
-				expr = expr.and(fkComboExpr);
-			}
-
-			try {
-				dataModel = opContext.getUiModelFactory().getComboTreeData(opContext.getSystemMenu(), opContext.getCocEntity(), expr);
-			} catch (Throwable e) {
-				LogUtil.error("获取树形JSON数据失败！", e);
-
-				dataModel = (UITreeData) new UITreeData();
-				dataModel.setException(opContext.getException());
-			}
+			cmdctx.execute(null, CommandNames.COC_COMBOTREE, null);
 		}
 
-		LogUtil.debug("EntityAction.getEntityComboGridJson: uiModel = %s", dataModel);
+		UITreeData dataModel = new UITreeData();
+		if (cmdctx.getException() != null) {
+			dataModel.setException(cmdctx.getException());
+		} else {
+
+			dataModel.setModel(cmdctx.getUiModelFactory().getComboTree(cmdctx.getSystemMenu(), cmdctx.getCocEntity(), fkField));
+			dataModel.setData(cmdctx.getResult());
+		}
 
 		/*
 		 * 及时清理内存
 		 */
-		opContext.release();
+		cmdctx.release();
 
 		return dataModel;
 	}
@@ -245,37 +221,33 @@ public class EntityDataAction {
 	 *            加密后的调用参数，参数组成“systemMenuID:entityModuleID”
 	 * @return
 	 */
-	@At(UrlAPI.ENTITY_GET_FILTER_DATA)
+	@At(CocUrl.ENTITY_GET_FILTER_DATA)
 	public UITreeData getFilterData(String funcExpr, boolean usedToSubModule) {
-		OpContext opContext = OpContext.make(funcExpr, null, null);
+		WebCommandContext cmdctx = WebCommandContext.make(funcExpr, null, null, CommandNames.INTERCEPTOR_TYPE_COLUMN);
 
-		UITreeData dataModel;
-		if (opContext.getException() != null) {
-			dataModel = (UITreeData) new UITreeData();
-			dataModel.setException(opContext.getException());
+		cmdctx.put("usedToSubModule", usedToSubModule);
+
+		cmdctx.execute(null, CommandNames.COC_FILTERTREE, null);
+
+		UITreeData dataModel = (UITreeData) new UITreeData();
+		if (cmdctx.getException() != null) {
+			dataModel.setException(cmdctx.getException());
 		} else {
-			try {
-				dataModel = opContext.getUiModelFactory().getFilterData(opContext.getSystemMenu(), opContext.getCocEntity(), usedToSubModule);
+			UITree model = cmdctx.getUiModelFactory().getFilter(cmdctx.getSystemMenu(), cmdctx.getCocEntity(), usedToSubModule);
 
-			} catch (Throwable e) {
-				LogUtil.error("获取过滤器JSON数据失败！", e);
-
-				dataModel = (UITreeData) new UITreeData();
-				dataModel.setException(opContext.getException());
-			}
+			dataModel.setModel(model);
+			dataModel.setData(cmdctx.getResult());
 		}
-
-		LogUtil.debug("EntityAction.getEntityComboGridJson: uiModel = %s", dataModel);
 
 		/*
 		 * 及时清理内存
 		 */
-		opContext.release();
+		cmdctx.release();
 
 		return dataModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_ROWS_AUTH_DATA)
+	@At(CocUrl.ENTITY_GET_ROWS_AUTH_DATA)
 	public UITreeData getRowsAuthData(String funcExpr) {
 		OpContext opContext = OpContext.make(funcExpr, null, null);
 
@@ -305,7 +277,7 @@ public class EntityDataAction {
 		return dataModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_ACTIONS_DATA)
+	@At(CocUrl.ENTITY_GET_ACTIONS_DATA)
 	public UITreeData getActionsData(String funcExpr) {
 		OpContext opContext = OpContext.make(funcExpr, null, null);
 
@@ -335,36 +307,22 @@ public class EntityDataAction {
 		return dataModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_TREE_DATA)
+	@At(CocUrl.ENTITY_GET_TREE_DATA)
 	public UITreeData getTreeData(String funcExpr) {
-		OpContext opContext = OpContext.make(funcExpr, null, null);
+		WebCommandContext opContext = WebCommandContext.make(funcExpr, null, null);
 
 		UITreeData dataModel;
-		if (opContext.getException() != null) {
+		try {
+			dataModel = opContext.getUiModelFactory().getTreeData(opContext.getSystemMenu(), opContext.getCocEntity(), opContext.getQueryExpr());
+		} catch (Throwable e) {
 			dataModel = (UITreeData) new UITreeData();
 			dataModel.setException(opContext.getException());
-		} else {
-			try {
-				dataModel = opContext.getUiModelFactory().getTreeData(opContext.getSystemMenu(), opContext.getCocEntity());
-			} catch (Throwable e) {
-				LogUtil.error("获取树形JSON数据失败！", e);
-
-				dataModel = (UITreeData) new UITreeData();
-				dataModel.setException(opContext.getException());
-			}
 		}
-
-		LogUtil.debug("EntityAction.getEntityComboGridJson: uiModel = %s", dataModel);
-
-		/*
-		 * 及时清理内存
-		 */
-		opContext.release();
 
 		return dataModel;
 	}
 
-	@At(UrlAPI.ENTITY_GET_DATAOBJECT)
+	@At(CocUrl.ENTITY_GET_DATAOBJECT)
 	public UIFormData getDataObject(String funcExpr, String rowID, @Param("::entity") CocEntityParam rowNode) {
 		OpContext opContext = OpContext.make(funcExpr, rowID, rowNode);
 

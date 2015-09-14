@@ -19,25 +19,25 @@ import com.jsoft.cocit.orm.mapping.EnMapping;
 import com.jsoft.cocit.util.SortUtil;
 import com.jsoft.cocit.util.StringUtil;
 
-public class EnMappingImpl<T> extends Entity<T> implements EnMapping {
-	Map<String, EnColumnMappingImpl> fieldsMap;// 字段映射:<数据表字段名，字段>
-	Map<String, EnColumnMappingImpl> propsMap;// 字段映射:<Java属性名，字段>
-	private Map<String, Link> fkMap;// 外键映射：<外键名，字段>
-	private List<EntityField> sortedFields;// 按字段名排序后的字段列表
-	private Mirror<? extends T> agentMirror;// 代理类：
-	private Mirror<? extends T> lazyAgentMirror;// 懒加载代理类
+public class EnMappingImpl<T> extends Entity<T>implements EnMapping {
+	Map<String, EnColumnMappingImpl>	fieldsMap;				// 字段映射:<数据表字段名，字段>
+	Map<String, EnColumnMappingImpl>	propsMap;				// 字段映射:<Java属性名，字段>
+	private Map<String, Link>			fkMap;					// 外键映射：<外键名，字段>
+	private List<EntityField>			sortedFields;			// 按字段名排序后的字段列表
+	private Mirror<? extends T>			agentMirror;			// 代理类：
+	private Mirror<? extends T>			lazyAgentMirror;		// 懒加载代理类
 	// 实体间的继承关系
-	private EnColumnMappingImpl enTypeCol;// 使用单表时用该字段来区分
-	private EnMappingImpl<?> parent;
-	private List<EnMappingImpl> children;
-	private EntityIdGenerator idTableGenerator;
-	private INamingStrategy naming;
-	private boolean syncedTable = false;
-	private boolean syncedRefTable = false;
-	private boolean readonly;
-	private List<String[]> uniqueFields;
-	private List<String[]> indexFields;
-	private List<EnColumnMapping> generatorColumns;
+	private EnColumnMappingImpl			enTypeCol;				// 使用单表时用该字段来区分
+	private EnMappingImpl<?>			parent;
+	private List<EnMappingImpl>			children;
+	private EntityIdGenerator			idTableGenerator;
+	private INamingStrategy				naming;
+	private boolean						syncedTable	= false;
+	private boolean						syncedRefTable	= false;
+	private boolean						readonly;
+	private List<String[]>				uniqueFields;
+	private List<String[]>				indexFields;
+	private List<EnColumnMapping>		generatorColumns;
 
 	public void release() {
 		super.release();
@@ -326,5 +326,10 @@ public class EnMappingImpl<T> extends Entity<T> implements EnMapping {
 
 	public String toString() {
 		return this.getType().getSimpleName() + "(" + this.getTableName() + ")";
+	}
+
+	@Override
+	public EnColumnMapping getColumnMapping(String name) {
+		return (EnColumnMapping) getField(name);
 	}
 }

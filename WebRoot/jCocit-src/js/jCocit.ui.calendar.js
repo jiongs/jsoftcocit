@@ -99,8 +99,11 @@
 		var $target = $(targetDIV);
 
 		$ac("calendar", $target).wrapInner(
-				'<div class="calendar-header">' + '<div class="calendar-prevmonth"></div>' + '<div class="calendar-nextmonth"></div>' + '<div class="calendar-prevyear"></div>' + '<div class="calendar-nextyear"></div>' + '<div class="calendar-title"><span>Aprial 2010</span></div>' + '</div>' + '<div class="calendar-body">' + '<div class="calendar-menu">' + '<div class="calendar-menu-year-inner">' + '<span class="calendar-menu-prev"></span>'
-						+ '<span><input class="calendar-menu-year" type="text"></input></span>' + '<span class="calendar-menu-next"></span>' + '</div>' + '<div class="calendar-menu-month-inner"></div>' + '</div>' + '</div>');
+				'<div class="calendar-header">' + '<div class="calendar-prevmonth"></div>' + '<div class="calendar-nextmonth"></div>' + '<div class="calendar-prevyear"></div>'
+						+ '<div class="calendar-nextyear"></div>' + '<div class="calendar-title"><span>Aprial 2010</span></div>' + '</div>' + '<div class="calendar-body">'
+						+ '<div class="calendar-menu">' + '<div class="calendar-menu-year-inner">' + '<span class="calendar-menu-prev"></span>'
+						+ '<span><input class="calendar-menu-year" type="text"></input></span>' + '<span class="calendar-menu-next"></span>' + '</div>'
+						+ '<div class="calendar-menu-month-inner"></div>' + '</div>' + '</div>');
 
 		// bind hover/click events on the calendar title
 		$f(".calendar-title span", $target).hover(function() {
@@ -460,6 +463,12 @@
 			var yearMonthDate = $(this).attr("abbr").split(",");
 			opts.current = new Date(yearMonthDate[0], parseInt(yearMonthDate[1]) - 1, yearMonthDate[2]);
 			opts.onSelect.call(targetDIV, opts.current);
+		}).bind("dblclick", function() {
+			$rc("calendar-selected", $f(".calendar-selected", $monthDayTable));
+			$ac("calendar-selected", $(this));
+			var yearMonthDate = $(this).attr("abbr").split(",");
+			opts.current = new Date(yearMonthDate[0], parseInt(yearMonthDate[1]) - 1, yearMonthDate[2]);
+			opts.onDblClick.call(targetDIV, opts.current);
 		});
 
 	}
@@ -590,6 +599,12 @@
 		 * <p>
 		 * args: date - this is selected date
 		 */
-		onSelect : $n
+		onSelect : $n,
+		/**
+		 * this call-back function will be invoked when date be selected.
+		 * <p>
+		 * args: date - this is selected date
+		 */
+		onDblClick : $n
 	};
 })(jQuery, jCocit);

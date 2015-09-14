@@ -8,14 +8,14 @@ import java.util.Collection;
 import org.nutz.dao.entity.Link;
 
 import com.jsoft.cocit.Cocit;
-import com.jsoft.cocit.orm.ExtDao;
+import com.jsoft.cocit.orm.IExtDao;
 import com.jsoft.cocit.orm.expr.Expr;
 import com.jsoft.cocit.util.ClassUtil;
 import com.jsoft.cocit.util.ObjectUtil;
 
 public class OneFieldGetterIntercepter extends LinkFieldGetterIntercepter {
 
-	public OneFieldGetterIntercepter(ExtDao dao, Link link) {
+	public OneFieldGetterIntercepter(IExtDao dao, Link link) {
 		this.dao = dao;
 		this.link = link;
 		// FetchType fetch = (FetchType) link.get("fetch");

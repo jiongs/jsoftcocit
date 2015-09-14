@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.nutz.mvc.View;
 import org.nutz.mvc.view.JspView;
 
-import com.jsoft.cocimpl.ui.UIView;
 import com.jsoft.cocimpl.ui.view.SmartyView;
 import com.jsoft.cocimpl.util.ResponseUtil;
 import com.jsoft.cocit.Cocit;
@@ -23,6 +22,8 @@ import com.jsoft.cocit.constant.ViewKeys;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.exception.CocException;
 import com.jsoft.cocit.exception.CocSecurityException;
+import com.jsoft.cocit.service.LogService;
+import com.jsoft.cocit.ui.UIView;
 import com.jsoft.cocit.ui.model.BaseUIModel;
 import com.jsoft.cocit.ui.model.UIModel;
 import com.jsoft.cocit.ui.model.control.UIForm;
@@ -61,12 +62,15 @@ public class UIModelView implements View {
 			);
 		}
 
-		if (obj == null)
-			return;
+		Cocit coc = Cocit.me();
+		Throwable exception = null;
 
 		PrintWriter out = null;
-
 		try {
+
+			if (obj == null)
+				return;
+
 			out = resp.getWriter();
 
 			HttpContext httpContext = Cocit.me().getHttpContext();
@@ -158,10 +162,12 @@ public class UIModelView implements View {
 					if (uiModel instanceof UIForm) {
 						req.setAttribute(ViewKeys.BEAN_KEY, ((UIForm) uiModel).getDataObject());
 					}
-					Integer contentWidth = uiModel.get("width", httpContext.getClientUIWidth());
-					Integer contentHeight = uiModel.get("height", httpContext.getClientUIHeight());
-					req.setAttribute("contentHeight", contentHeight);
-					req.setAttribute("contentWidth", contentWidth);
+					int uiWidth = uiModel.get("width", httpContext.getClientUIWidth());
+					int uiHeight = uiModel.get("height", httpContext.getClientUIHeight());
+					req.setAttribute("contentHeight", uiHeight);
+					req.setAttribute("contentWidth", uiWidth);
+					req.setAttribute("uiHeight", uiHeight);
+					req.setAttribute("uiWidth", uiWidth);
 
 					// 输出 JSP 内容
 					new JspView(viewName).render(req, resp, null);
@@ -223,7 +229,9 @@ public class UIModelView implements View {
 			else if (obj instanceof Throwable) {
 				LogUtil.error("错误！", obj);
 
-				writeError(resp, out, (Throwable) obj, Const.CONTENT_TYPE_HTML);
+				exception = (Throwable) obj;
+
+				writeError(resp, out, exception, Const.CONTENT_TYPE_HTML);
 
 			} else {
 
@@ -236,12 +244,16 @@ public class UIModelView implements View {
 
 			}
 		} catch (Throwable e) {
+			exception = e;
 
 			LogUtil.error("UIModelRenderView.render: Error! %s", ExceptionUtil.msg(e), e);
 
 			out.write(ExceptionUtil.msg(e));
 
 		} finally {
+			LogService logService = coc.getLogService();
+			logService.makeVisitLog(exception);
+
 			resp.flushBuffer();
 			try {
 				if (out != null)

@@ -3,10 +3,10 @@ package com.jsoft.cocimpl.ui.view.jcocit;
 import java.io.Writer;
 import java.util.List;
 
-import com.jsoft.cocimpl.ui.view.BaseModelView;
 import com.jsoft.cocit.constant.ViewNames;
 import com.jsoft.cocit.ui.model.control.UIList;
 import com.jsoft.cocit.ui.model.datamodel.UIListData;
+import com.jsoft.cocit.ui.view.BaseModelView;
 import com.jsoft.cocit.util.JsonUtil;
 import com.jsoft.cocit.util.ObjectUtil;
 
@@ -46,7 +46,7 @@ public abstract class UIListViews {
 						noFirstRow = true;
 					}
 
-					sb.append(String.format("\"value\":%s", JsonUtil.toJson(ObjectUtil.getValue(obj, "key"))));
+					sb.append(String.format("\"value\":%s", JsonUtil.toJson(ObjectUtil.getValue(obj, "code"))));
 					sb.append(String.format(",\"text\":%s", JsonUtil.toJson(obj == null ? "" : obj.toString())));
 
 					// for (Column col : columns) {

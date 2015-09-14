@@ -25,13 +25,13 @@
 	<property name="STYLE_DIST_DIR" value="../jCocit/css" />
 
 	<!-- 设置UI模块 -->
-	<property name="JS.MODULES" value="utils,core,nls,cookie,parse,alerts,blockUI,ui.draggable,ui.droppable,ui.resizable,ui.panel,ui.window,ui.dialog,ui.messager,ui.tree,ui.combo,ui.combotree,ui.treedialog,ui.listtree,plugin.login,plugin.entity" />
-	<property name="JS.MODULES-UI" value="button,menu,validatebox,numberbox,spinner,spinnernumber,spinnertime,accordion,pagination,calendar,datagrid,combobox,combodate,combodatetime,combogrid,combodialog,menubar,toolbar,searchbox,slider,tabs,treegrid,propertygrid,upload,ckeditor" />
+	<property name="JS.MODULES" value="utils,core,nls,cookie,parse,alerts,blockUI,ui.draggable,ui.droppable,ui.resizable,ui.panel,ui.window,ui.dialog,ui.messager,ui.tree,ui.combo,ui.combotree,ui.treedialog,ui.listtree,ui.qtip,plugin.login,plugin.entity,plugin.workflow" />
+	<property name="JS.MODULES-UI" value="button,menu,validatebox,numberbox,spinner,spinnernumber,spinnertime,accordion,pagination,calendar,datagrid,combobox,combodate,combodatetime,combogrid,combodialog,menubar,toolbar,searchbox,slider,tabs,treegrid,propertygrid,ckeditor" />
 	<property name="JS.MODULES-WEB" value="web.KandyTabs,web.ad-gallery-v,web.ad-gallery" />
 	<property name="JS.MODULES-EXT" value="nls.zh,themes.admin1" />
 
-	<property name="CSS.MODULES" value="alerts,ui.panel,ui.window,ui.dialog,ui.messager,ui.tree,ui.combo,ui.listtree,plugin.login,ui.icon,common,plugin.entity" />
-	<property name="CSS.MODULES-UI" value="button,menu,validatebox,spinner,accordion,pagination,calendar,datagrid,combobox,combodate,menubar,toolbar,searchbox,slider,tabs,propertygrid,upload" />
+	<property name="CSS.MODULES" value="alerts,ui.panel,ui.window,ui.dialog,ui.messager,ui.tree,ui.combo,ui.listtree,plugin.login,ui.icon,ui.qtip,common,plugin.entity,plugin.workflow" />
+	<property name="CSS.MODULES-UI" value="button,menu,validatebox,spinner,accordion,pagination,calendar,datagrid,combobox,combodate,menubar,toolbar,searchbox,slider,tabs,propertygrid" />
 	<property name="CSS.MODULES-WEB" value="web.KandyTabs,web.ad-gallery-v,web.ad-gallery" />
 	<property name="CSS.MODULES-EXT" value="themes.admin1,themes.blue,themes.gray" />
 
